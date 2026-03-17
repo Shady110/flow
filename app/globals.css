@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
+@theme {
+  --font-display: var(--font-syne);
+  --font-body: var(--font-dm-sans);
+
+  --color-flow-green: #1B4D2E;
+  --color-flow-green-hover: #163D24;
+  --color-flow-lime: #C4F075;
+  --color-flow-lime-hover: #B2E860;
+  --color-flow-bg-soft: #F4FAF0;
+  --color-flow-bg-muted: #EAF4E2;
+  --color-flow-border: #D8EDD0;
+  --color-flow-text: #1A1A1A;
+  --color-flow-text-muted: #5A6B5E;
+  --color-flow-black: #0A0A0A;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-bg: #FFFFFF;
+  --color-bg-soft: #F4FAF0;
+  --color-bg-muted: #EAF4E2;
+  --color-dark-green: #1B4D2E;
+  --color-dark-green-hover: #163D24;
+  --color-lime: #C4F075;
+  --color-lime-hover: #B2E860;
+  --color-black: #0A0A0A;
+  --color-text: #1A1A1A;
+  --color-text-muted: #5A6B5E;
+  --color-border: #D8EDD0;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  scroll-behavior: smooth;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-syne), sans-serif;
 }
