@@ -119,7 +119,7 @@ export const metadata: Metadata = {
   },
 
   verification: {
-    google: 'google-site-verification=aZRBf_0F8me-RHBirHiO08nUL1LjF2958HzT7ZLCTAM',
+    google: 'aZRBf_0F8me-RHBirHiO08nUL1LjF2958HzT7ZLCTAM',
   },
 
   category: 'E-Commerce Services',
