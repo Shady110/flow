@@ -1,9 +1,43 @@
 'use client'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, MessageCircle, MapPin, Phone } from 'lucide-react'
 import { fadeUp } from '@/lib/animations'
 
+type Status = 'idle' | 'loading' | 'success' | 'error'
+
 export default function ContactSection() {
+  const [status, setStatus] = useState<Status>('idle')
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setStatus('loading')
+
+    const form = e.currentTarget
+    const data = {
+      name: (form.elements.namedItem('name') as HTMLInputElement).value,
+      email: (form.elements.namedItem('email') as HTMLInputElement).value,
+      phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
+      platform: (form.elements.namedItem('platform') as HTMLSelectElement).value,
+      products: (form.elements.namedItem('products') as HTMLInputElement).value,
+      service: (form.elements.namedItem('service') as HTMLSelectElement).value,
+      message: (form.elements.namedItem('message') as HTMLTextAreaElement).value,
+    }
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!res.ok) throw new Error()
+      setStatus('success')
+      form.reset()
+    } catch {
+      setStatus('error')
+    }
+  }
+
   return (
     <section id="contact" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
@@ -12,10 +46,10 @@ export default function ContactSection() {
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.15 }}
           custom={0}
         >
-          <span className="text-xs font-semibold uppercase tracking-widest text-flow-lime bg-flow-green px-3 py-1 rounded-full inline-block mb-4">
+          <span className="eyebrow-label mb-4">
             Get in Touch
           </span>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-flow-green mt-4 mb-6 leading-tight">
@@ -65,10 +99,10 @@ export default function ContactSection() {
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.15 }}
           custom={1}
         >
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-flow-green mb-1.5">
@@ -79,6 +113,7 @@ export default function ContactSection() {
                   name="name"
                   type="text"
                   placeholder="Your name"
+                  required
                   aria-required="true"
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime"
                 />
@@ -92,6 +127,7 @@ export default function ContactSection() {
                   name="email"
                   type="email"
                   placeholder="you@example.com"
+                  required
                   aria-required="true"
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime"
                 />
@@ -177,11 +213,23 @@ export default function ContactSection() {
               />
             </div>
 
+            {status === 'success' && (
+              <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                Message sent! We&apos;ll get back to you shortly.
+              </p>
+            )}
+            {status === 'error' && (
+              <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                Something went wrong. Please try again or contact us directly.
+              </p>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-flow-lime text-flow-green font-bold py-4 rounded-xl hover:bg-flow-lime-hover transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime focus-visible:ring-offset-2"
+              disabled={status === 'loading'}
+              className="w-full bg-flow-lime text-flow-green font-bold py-4 rounded-xl hover:bg-flow-lime-hover transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Send Message
+              {status === 'loading' ? 'Sending…' : 'Send Message'}
             </button>
 
             <a
