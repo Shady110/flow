@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { Mail, MessageCircle, MapPin } from 'lucide-react'
+import { Mail, MessageCircle, MapPin, Phone } from 'lucide-react'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
@@ -37,21 +37,33 @@ export default function ContactSection() {
           <div className="space-y-5">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
-                <Mail size={18} className="text-flow-green" />
+                <Phone size={18} className="text-flow-green" />
               </div>
-              <span className="text-flow-text-muted text-sm">contact@flowstudio.co</span>
+              <a href="tel:+201550408340" className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">01550408340</a>
             </div>
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
                 <MessageCircle size={18} className="text-flow-green" />
               </div>
-              <span className="text-flow-text-muted text-sm">WhatsApp — add your number</span>
+              <a href="tel:+201121443286" className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">01121443286</a>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
+                <MessageCircle size={18} className="text-flow-green" />
+              </div>
+              <a href="tel:+201125450608" className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">01125450608</a>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
+                <Mail size={18} className="text-flow-green" />
+              </div>
+              <a href="mailto:flowagency.eg@gmail.com" className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">flowagency.eg@gmail.com</a>
             </div>
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
                 <MapPin size={18} className="text-flow-green" />
               </div>
-              <span className="text-flow-text-muted text-sm">Egypt 🇪🇬</span>
+              <span className="text-flow-text-muted text-sm">Cairo, Egypt</span>
             </div>
           </div>
         </motion.div>
@@ -159,6 +171,16 @@ export default function ContactSection() {
             >
               Send Message
             </button>
+
+            <a
+              href="https://wa.me/201550408340"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 border-2 border-green-700 text-green-700 font-bold py-4 rounded-xl hover:bg-green-700 hover:text-white transition-colors text-sm"
+            >
+              <MessageCircle size={18} />
+              Chat on WhatsApp
+            </a>
           </form>
         </motion.div>
       </div>

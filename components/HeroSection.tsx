@@ -65,9 +65,10 @@ export default function HeroSection() {
             custom={2}
             className="text-flow-text-muted text-lg leading-relaxed mb-10 max-w-xl"
           >
-            We handle everything from product photography and listing creation
-            to marketplace publishing and account management — so you can focus
-            on growing.
+            Egypt&apos;s e-commerce content agency. We handle product photography,
+            bilingual listing creation, SEO optimization, account management,
+            and full marketplace management for Amazon, Noon, TikTok Shop &amp;
+            Shopify sellers.
           </motion.p>
 
           <motion.div

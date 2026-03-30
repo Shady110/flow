@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/HeroSection'
@@ -8,6 +9,18 @@ import WorkflowSection from '@/components/WorkflowSection'
 import PricingSection from '@/components/PricingSection'
 import ContactSection from '@/components/ContactSection'
 import Footer from '@/components/Footer'
+
+export const metadata: Metadata = {
+  title: 'E-Commerce Content Agency in Egypt | Product Photography, Listing Optimization & Account Management',
+  description:
+    'FLOW Agency helps Amazon, Noon, TikTok Shop & Shopify sellers ' +
+    'in Egypt with professional product photography, bilingual listing ' +
+    'content, SEO optimization, and full marketplace account management. ' +
+    'Starting from 15 EGP per product.',
+  alternates: {
+    canonical: 'https://flow-agency-eg.com',
+  },
+}
 
 export default function Home() {
   return (

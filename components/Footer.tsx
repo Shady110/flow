@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { Phone, Mail, MapPin } from 'lucide-react'
 
 const serviceLinks = [
   'Photography',
@@ -56,9 +57,26 @@ export default function Footer() {
               Contact
             </p>
             <div className="space-y-3">
-              <p className="text-white/60 text-sm">contact@flowstudio.co</p>
-              <p className="text-white/60 text-sm">WhatsApp — add your number</p>
-              <p className="text-white/60 text-sm">Egypt 🇪🇬</p>
+              <div className="flex items-center gap-2">
+                <Phone size={14} className="text-white/60 shrink-0" />
+                <a href="tel:+201550408340" className="text-white/60 text-sm hover:text-white transition-colors">01550408340</a>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone size={14} className="text-white/60 shrink-0" />
+                <a href="tel:+201121443286" className="text-white/60 text-sm hover:text-white transition-colors">01121443286</a>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone size={14} className="text-white/60 shrink-0" />
+                <a href="tel:+201125450608" className="text-white/60 text-sm hover:text-white transition-colors">01125450608</a>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail size={14} className="text-white/60 shrink-0" />
+                <a href="mailto:flowagency.eg@gmail.com" className="text-white/60 text-sm hover:text-white transition-colors">flowagency.eg@gmail.com</a>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin size={14} className="text-white/60 shrink-0" />
+                <span className="text-white/60 text-sm">Cairo, Egypt</span>
+              </div>
             </div>
           </div>
         </div>

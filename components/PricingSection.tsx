@@ -215,13 +215,50 @@ export default function PricingSection() {
             </a>
           </motion.div>
 
-          {/* Card 5 — Social Media Content */}
+          {/* Card 5 — E-commerce Website */}
           <motion.div
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             custom={5}
+            className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col"
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-4">
+              Website Creation Service
+            </p>
+            <div className="mb-1">
+              <span className="font-display text-4xl font-bold text-flow-green">Custom Pricing</span>
+            </div>
+            <p className="text-sm text-flow-text-muted mb-6">Tailored to your project scope</p>
+            <p className="font-semibold text-flow-green text-base mb-4">E-commerce Website</p>
+            <ul className="space-y-3 flex-1 mb-8">
+              {[
+                'Custom e-commerce website design',
+                'Product catalog integration',
+                'Marketplace-ready storefront',
+              ].map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-flow-text-muted">
+                  <Check size={14} className="text-flow-green mt-0.5 shrink-0" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <a
+              href="#contact"
+              className="block text-center border-2 border-flow-green text-flow-green font-semibold py-3 rounded-xl hover:bg-flow-green hover:text-white transition-colors text-sm"
+            >
+              Request a Quote
+            </a>
+          </motion.div>
+
+          {/* Card 6 — Social Media Content */}
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            custom={6}
             className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col relative"
           >
             <span className="absolute top-4 right-4 bg-flow-bg-muted text-flow-green text-xs font-bold px-3 py-1 rounded-full border border-flow-border">
@@ -257,45 +294,54 @@ export default function PricingSection() {
             </a>
           </motion.div>
 
-          {/* Card 6 — E-commerce Website */}
+          {/* Card 7 — Account Management (full-width) */}
           <motion.div
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
-            custom={6}
-            className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col relative opacity-75"
+            custom={7}
+            className="col-span-1 md:col-span-2 lg:col-span-3 bg-white rounded-2xl border border-flow-border p-8 relative"
           >
-            <span className="absolute top-4 right-4 bg-gray-100 text-gray-500 text-xs font-bold px-3 py-1 rounded-full">
-              Coming Soon
-            </span>
-            <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-4">
-              Website Creation Service
-            </p>
-            <div className="mb-1">
-              <span className="font-display text-4xl font-bold text-gray-400">—</span>
+            <div className="flex flex-col md:flex-row md:gap-12 md:items-center">
+              {/* Left — price & title */}
+              <div className="md:w-[35%] mb-8 md:mb-0">
+                <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-4">
+                  Full Marketplace Account Management
+                </p>
+                <div className="mb-1">
+                  <span className="font-display text-4xl font-bold text-flow-green">10,000 EGP</span>
+                </div>
+                <p className="text-sm text-flow-text-muted mb-1">/ per month</p>
+                <p className="text-sm font-semibold text-flow-green mb-6">+ 5% of sales</p>
+                <p className="font-semibold text-flow-green text-base mb-6">Account Management</p>
+              </div>
+              {/* Right — features + button */}
+              <div className="md:w-[65%] flex flex-col gap-6">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                  {[
+                    'Complete seller account management',
+                    'Listing uploads & catalog management',
+                    'Product updates & maintenance',
+                    'Marketplace compliance monitoring',
+                    'Performance tracking & reporting',
+                    'Multi-platform support (Amazon, Noon, TikTok Shop, Shopify)',
+                    'Dedicated account manager',
+                  ].map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-flow-text-muted">
+                      <Check size={14} className="text-flow-green mt-0.5 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="#contact"
+                  className="inline-block text-center border-2 border-flow-green text-flow-green font-semibold py-3 px-8 rounded-xl hover:bg-flow-green hover:text-white transition-colors text-sm self-start"
+                >
+                  Get Started
+                </a>
+              </div>
             </div>
-            <p className="text-sm text-flow-text-muted mb-6">Pricing available soon</p>
-            <p className="font-semibold text-flow-green text-base mb-4">E-commerce Website</p>
-            <ul className="space-y-3 flex-1 mb-8">
-              {[
-                'Custom e-commerce website design',
-                'Product catalog integration',
-                'Marketplace-ready storefront',
-                'Pricing available soon',
-              ].map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-flow-text-muted">
-                  <Check size={14} className="text-gray-300 mt-0.5 shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button
-              disabled
-              className="block w-full text-center border-2 border-gray-200 text-gray-400 font-semibold py-3 rounded-xl cursor-not-allowed text-sm"
-            >
-              Notify Me
-            </button>
           </motion.div>
         </div>
       </div>
