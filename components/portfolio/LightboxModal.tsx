@@ -49,6 +49,9 @@ export default function LightboxModal({ images, currentIndex, onClose, onPrev, o
 
   return (
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image viewer"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -59,7 +62,8 @@ export default function LightboxModal({ images, currentIndex, onClose, onPrev, o
       {/* Close */}
       <button
         onClick={onClose}
-        className="absolute top-5 right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-flow-lime hover:text-flow-green text-white flex items-center justify-center transition-colors z-10"
+        aria-label="Close image viewer"
+        className="absolute top-5 right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-flow-lime hover:text-flow-green text-white flex items-center justify-center transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
         <X size={20} />
       </button>
@@ -68,7 +72,8 @@ export default function LightboxModal({ images, currentIndex, onClose, onPrev, o
       <button
         onClick={e => { e.stopPropagation(); prev() }}
         disabled={currentIndex === 0}
-        className="absolute left-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors disabled:opacity-20 z-10"
+        aria-label="Previous image"
+        className="absolute left-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors disabled:opacity-20 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
         <ChevronLeft size={24} />
       </button>
@@ -100,13 +105,17 @@ export default function LightboxModal({ images, currentIndex, onClose, onPrev, o
       <button
         onClick={e => { e.stopPropagation(); next() }}
         disabled={currentIndex === images.length - 1}
-        className="absolute right-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors disabled:opacity-20 z-10"
+        aria-label="Next image"
+        className="absolute right-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors disabled:opacity-20 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
         <ChevronRight size={24} />
       </button>
 
       {/* Counter */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/60 text-sm font-medium">
+      <div
+        aria-live="polite"
+        className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/60 text-sm font-medium"
+      >
         {currentIndex + 1} / {images.length}
       </div>
     </motion.div>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/HeroSection'
@@ -6,8 +7,17 @@ import ProblemSection from '@/components/ProblemSection'
 import SolutionSection from '@/components/SolutionSection'
 import ServicesSection from '@/components/ServicesSection'
 import WorkflowSection from '@/components/WorkflowSection'
-import PricingSection from '@/components/PricingSection'
-import ContactSection from '@/components/ContactSection'
+
+const PricingSection = dynamic(
+  () => import('@/components/PricingSection'),
+  { loading: () => <div className="h-96 animate-pulse bg-flow-bg-soft rounded-xl" /> }
+)
+
+const ContactSection = dynamic(
+  () => import('@/components/ContactSection'),
+  { loading: () => <div className="h-96 animate-pulse bg-flow-bg-soft rounded-xl" /> }
+)
+
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
@@ -44,7 +54,7 @@ export default function Home() {
           </div>
           <Link
             href="/portfolio"
-            className="bg-flow-green text-white font-semibold px-6 py-3 rounded-full hover:bg-flow-green-hover transition-colors whitespace-nowrap"
+            className="bg-flow-green text-white font-semibold px-6 py-3 rounded-full hover:bg-flow-green-hover transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-green focus-visible:ring-offset-2"
           >
             View Portfolio →
           </Link>

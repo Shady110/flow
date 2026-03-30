@@ -66,9 +66,6 @@ const logos: LogoEntry[] = [
 export default function LogoMarquee() {
   return (
     <div className="w-full">
-      <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-5">
-        Trusted on
-      </p>
 
       {/* Fade edges */}
       <div

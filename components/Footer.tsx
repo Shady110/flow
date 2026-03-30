@@ -89,3 +89,5 @@ export default function Footer() {
     </footer>
   )
 }
+
+Footer.displayName = 'Footer'

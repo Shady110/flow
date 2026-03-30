@@ -1,15 +1,7 @@
 'use client'
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.5, ease: 'easeOut' as const },
-  }),
-}
+import { fadeUp } from '@/lib/animations'
 
 export default function PricingSection() {
   return (
@@ -19,7 +11,7 @@ export default function PricingSection() {
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.15 }}
           custom={0}
           className="text-center mb-16"
         >
@@ -40,7 +32,7 @@ export default function PricingSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={1}
             className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col"
           >
@@ -79,7 +71,7 @@ export default function PricingSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={2}
             className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col"
           >
@@ -121,7 +113,7 @@ export default function PricingSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={3}
             className="rounded-2xl p-8 flex flex-col relative lg:row-span-1 md:col-span-2 lg:col-span-1"
             style={{ backgroundColor: '#1B4D2E' }}
@@ -182,7 +174,7 @@ export default function PricingSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={4}
             className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col"
           >
@@ -220,7 +212,7 @@ export default function PricingSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={5}
             className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col"
           >
@@ -257,7 +249,7 @@ export default function PricingSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={6}
             className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col relative"
           >
@@ -299,7 +291,7 @@ export default function PricingSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={7}
             className="col-span-1 md:col-span-2 lg:col-span-3 bg-white rounded-2xl border border-flow-border p-8 relative"
           >
@@ -348,3 +340,5 @@ export default function PricingSection() {
     </section>
   )
 }
+
+PricingSection.displayName = 'PricingSection'

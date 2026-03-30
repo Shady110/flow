@@ -57,3 +57,46 @@ body {
 h1, h2, h3, h4 {
   font-family: var(--font-syne), sans-serif;
 }
+
+@layer components {
+  .btn-primary {
+    @apply bg-flow-lime text-flow-green font-semibold
+           px-6 py-3 rounded-full transition-colors
+           hover:bg-flow-lime-hover
+           focus-visible:outline-none
+           focus-visible:ring-2
+           focus-visible:ring-flow-lime
+           focus-visible:ring-offset-2;
+  }
+
+  .btn-outline {
+    @apply border-2 border-flow-green text-flow-green
+           font-semibold px-6 py-3 rounded-full
+           transition-colors hover:bg-flow-green
+           hover:text-white
+           focus-visible:outline-none
+           focus-visible:ring-2
+           focus-visible:ring-flow-green
+           focus-visible:ring-offset-2;
+  }
+
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-20 md:py-24 lg:py-28;
+  }
+
+  .eyebrow-label {
+    @apply text-xs font-semibold uppercase tracking-widest
+           text-flow-lime bg-flow-green px-3 py-1
+           rounded-full inline-block;
+  }
+
+  .card-base {
+    @apply bg-white rounded-2xl border border-flow-border
+           p-6 transition-all duration-300
+           hover:shadow-lg hover:scale-[1.02];
+  }
+}

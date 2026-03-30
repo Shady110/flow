@@ -1,14 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.5, ease: 'easeOut' as const },
-  }),
-}
+import { fadeUp } from '@/lib/animations'
 
 const pipelineSteps = [
   { num: '①', label: 'Product' },
@@ -31,7 +23,7 @@ export default function SolutionSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={0}
           >
             <span className="text-xs font-semibold uppercase tracking-widest text-flow-lime bg-flow-green px-3 py-1 rounded-full inline-block mb-4">
@@ -43,7 +35,7 @@ export default function SolutionSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={1}
             className="font-display text-4xl md:text-5xl font-bold text-flow-green mt-4 mb-6 leading-tight"
           >
@@ -54,7 +46,7 @@ export default function SolutionSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={2}
             className="text-flow-text-muted text-base leading-relaxed mb-8"
           >
@@ -67,7 +59,7 @@ export default function SolutionSection() {
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             custom={3}
             className="flex flex-wrap gap-3"
           >
@@ -87,7 +79,7 @@ export default function SolutionSection() {
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.15 }}
           custom={2}
           className="flex justify-center lg:justify-end"
         >
