@@ -26,15 +26,6 @@ export default function Footer() {
       className="relative grain-overlay overflow-hidden"
       style={{ backgroundImage: 'var(--gradient-dark-panel)' }}
     >
-      {/* Giant low-opacity background wordmark */}
-      <p
-        aria-hidden="true"
-        className="absolute -bottom-10 left-0 right-0 text-center font-display font-bold text-white/[0.04] leading-none pointer-events-none select-none"
-        style={{ fontSize: 'clamp(6rem, 22vw, 18rem)' }}
-      >
-        FLOW
-      </p>
-
       <div className="max-w-7xl mx-auto px-6 py-16 relative">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Left — wider brand block */}

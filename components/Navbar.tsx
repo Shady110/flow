@@ -67,11 +67,11 @@ export default function Navbar() {
             <Image
               src="/assets/White%20type%20-%20transparent.png"
               alt="FLOW Agency"
-              width={150}
-              height={54}
-              className="object-contain h-7 w-auto"
+              width={200}
+              height={72}
+              className="object-contain h-9 md:h-10 w-auto"
               priority
-              sizes="150px"
+              sizes="200px"
             />
           </Link>
 
