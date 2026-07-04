@@ -1,12 +1,16 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import ScrollProgress from '@/components/ui/ScrollProgress'
 import HeroSection from '@/components/HeroSection'
+import LogoMarquee from '@/components/LogoMarquee'
 import ProblemSection from '@/components/ProblemSection'
 import SolutionSection from '@/components/SolutionSection'
 import ServicesSection from '@/components/ServicesSection'
+import PortfolioGridSection from '@/components/PortfolioGridSection'
 import WorkflowSection from '@/components/WorkflowSection'
+import TeamSection from '@/components/TeamSection'
+import FAQSection from '@/components/FAQSection'
 
 const PricingSection = dynamic(
   () => import('@/components/PricingSection'),
@@ -35,34 +39,28 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main>
+      <ScrollProgress />
       <Navbar />
       <HeroSection />
-      <ProblemSection />
-      <SolutionSection />
-      <ServicesSection />
 
-      {/* Portfolio CTA */}
-      <section className="py-16 bg-flow-bg-soft">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <h3 className="font-display text-2xl font-bold text-flow-green">
-              See our work in action.
-            </h3>
-            <p className="text-flow-text-muted mt-1">
-              Browse 210+ product photos across every category.
-            </p>
-          </div>
-          <Link
-            href="/portfolio"
-            className="bg-flow-green text-white font-semibold px-6 py-3 rounded-full hover:bg-flow-green-hover transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-green focus-visible:ring-offset-2"
-          >
-            View Portfolio →
-          </Link>
+      {/* Trust strip */}
+      <section className="bg-flow-bg border-y border-flow-border py-10">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-flow-text-muted mb-7">
+            Trusted for marketplaces sellers rely on
+          </p>
+          <LogoMarquee />
         </div>
       </section>
 
+      <ProblemSection />
+      <SolutionSection />
+      <ServicesSection />
+      <PortfolioGridSection />
       <WorkflowSection />
       <PricingSection />
+      <TeamSection />
+      <FAQSection />
       <ContactSection />
       <Footer />
     </main>

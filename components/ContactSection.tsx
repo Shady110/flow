@@ -1,10 +1,19 @@
 'use client'
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Mail, MessageCircle, MapPin, Phone } from 'lucide-react'
-import { fadeUp } from '@/lib/animations'
+import { fadeUp, staggerContainer, revealUp } from '@/lib/animations'
+import MagneticButton from './ui/MagneticButton'
+import RevealHeading from './ui/RevealHeading'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
+
+const contactDetails = [
+  { icon: Phone, href: 'tel:+201550408340', label: '01550408340' },
+  { icon: MessageCircle, href: 'tel:+201121443286', label: '01121443286' },
+  { icon: MessageCircle, href: 'tel:+201125450608', label: '01125450608' },
+  { icon: Mail, href: 'mailto:flowagency.eg@gmail.com', label: 'flowagency.eg@gmail.com' },
+]
 
 export default function ContactSection() {
   const [status, setStatus] = useState<Status>('idle')
@@ -39,8 +48,13 @@ export default function ContactSection() {
   }
 
   return (
-    <section id="contact" className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+    <section id="contact" className="section-padding bg-flow-bg relative overflow-hidden">
+      {/* Layered angled background panel behind the asymmetric split */}
+      <div
+        className="hidden lg:block absolute right-0 top-0 bottom-0 w-2/3 bg-flow-bg-soft pointer-events-none"
+        style={{ clipPath: 'polygon(18% 0, 100% 0, 100% 100%, 0% 100%)' }}
+      />
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
         {/* Left */}
         <motion.div
           variants={fadeUp}
@@ -48,50 +62,55 @@ export default function ContactSection() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}
           custom={0}
+          className="lg:col-span-4"
         >
-          <span className="eyebrow-label mb-4">
-            Get in Touch
-          </span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-flow-green mt-4 mb-6 leading-tight">
-            Ready to start your flow?
-          </h2>
+          <span className="eyebrow-index mb-6" data-index="09">Get in Touch</span>
+          <RevealHeading
+            text="Ready to start your flow?"
+            accent={['flow?']}
+            className="section-title mt-6 mb-6"
+          />
           <p className="text-flow-text-muted text-base leading-relaxed mb-10">
             Tell us about your products and we&apos;ll put together a plan that fits
             your needs and budget. Fast response guaranteed.
           </p>
 
-          <div className="space-y-5">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
-                <Phone size={18} className="text-flow-green" />
-              </div>
-              <a href="tel:+201550408340" className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">01550408340</a>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
-                <MessageCircle size={18} className="text-flow-green" />
-              </div>
-              <a href="tel:+201121443286" className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">01121443286</a>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
-                <MessageCircle size={18} className="text-flow-green" />
-              </div>
-              <a href="tel:+201125450608" className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">01125450608</a>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
-                <Mail size={18} className="text-flow-green" />
-              </div>
-              <a href="mailto:flowagency.eg@gmail.com" className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">flowagency.eg@gmail.com</a>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.15 }}
+            className="space-y-5"
+          >
+            {contactDetails.map(({ icon: Icon, href, label }) => (
+              <motion.div key={label} variants={revealUp} className="flex items-center gap-4">
+                <motion.div
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true, amount: 0.6 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0"
+                >
+                  <Icon size={18} className="text-flow-green" />
+                </motion.div>
+                <a href={href} className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">
+                  {label}
+                </a>
+              </motion.div>
+            ))}
+            <motion.div variants={revealUp} className="flex items-center gap-4">
+              <motion.div
+                initial={{ scale: 0.6, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true, amount: 0.6 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0"
+              >
                 <MapPin size={18} className="text-flow-green" />
-              </div>
+              </motion.div>
               <span className="text-flow-text-muted text-sm">Cairo, Egypt</span>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </motion.div>
 
         {/* Right — Form */}
@@ -101,8 +120,9 @@ export default function ContactSection() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}
           custom={1}
+          className="lg:col-span-8"
         >
-          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+          <form className="glass-card space-y-5 p-8" onSubmit={handleSubmit} noValidate>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-flow-green mb-1.5">
@@ -115,7 +135,7 @@ export default function ContactSection() {
                   placeholder="Your name"
                   required
                   aria-required="true"
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime"
+                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
                 />
               </div>
               <div>
@@ -129,7 +149,7 @@ export default function ContactSection() {
                   placeholder="you@example.com"
                   required
                   aria-required="true"
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime"
+                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
                 />
               </div>
             </div>
@@ -144,7 +164,7 @@ export default function ContactSection() {
                   name="phone"
                   type="tel"
                   placeholder="+20 ..."
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime"
+                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
                 />
               </div>
               <div>
@@ -154,7 +174,7 @@ export default function ContactSection() {
                 <select
                   id="platform"
                   name="platform"
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white focus-visible:ring-2 focus-visible:ring-flow-lime"
+                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white/80 focus-visible:ring-2 focus-visible:ring-flow-lime"
                 >
                   <option value="">Select platform</option>
                   <option value="amazon">Amazon</option>
@@ -176,7 +196,7 @@ export default function ContactSection() {
                   name="products"
                   type="text"
                   placeholder="e.g. 50–200 products"
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime"
+                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
                 />
               </div>
               <div>
@@ -186,7 +206,7 @@ export default function ContactSection() {
                 <select
                   id="service"
                   name="service"
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white focus-visible:ring-2 focus-visible:ring-flow-lime"
+                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white/80 focus-visible:ring-2 focus-visible:ring-flow-lime"
                 >
                   <option value="">Select service</option>
                   <option value="complete-package">Complete Package</option>
@@ -209,38 +229,56 @@ export default function ContactSection() {
                 name="message"
                 rows={4}
                 placeholder="Tell us about your products and goals..."
-                className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow resize-none focus-visible:ring-2 focus-visible:ring-flow-lime"
+                className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow resize-none focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
               />
             </div>
 
-            {status === 'success' && (
-              <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-                Message sent! We&apos;ll get back to you shortly.
-              </p>
-            )}
-            {status === 'error' && (
-              <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-                Something went wrong. Please try again or contact us directly.
-              </p>
-            )}
+            <AnimatePresence mode="wait">
+              {status === 'success' && (
+                <motion.p
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3 overflow-hidden"
+                >
+                  Message sent! We&apos;ll get back to you shortly.
+                </motion.p>
+              )}
+              {status === 'error' && (
+                <motion.p
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3 overflow-hidden"
+                >
+                  Something went wrong. Please try again or contact us directly.
+                </motion.p>
+              )}
+            </AnimatePresence>
 
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="w-full bg-flow-lime text-flow-green font-bold py-4 rounded-xl hover:bg-flow-lime-hover transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {status === 'loading' ? 'Sending…' : 'Send Message'}
-            </button>
+            <MagneticButton strength={0.15} className="block w-full">
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                className="w-full bg-flow-lime text-flow-green font-bold py-4 rounded-xl hover:bg-flow-lime-hover transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-glow-lime)]"
+              >
+                {status === 'loading' ? 'Sending…' : 'Send Message'}
+              </button>
+            </MagneticButton>
 
-            <a
-              href="https://wa.me/201550408340"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 border-2 border-green-700 text-green-700 font-bold py-4 rounded-xl hover:bg-green-700 hover:text-white transition-colors text-sm"
-            >
-              <MessageCircle size={18} />
-              Chat on WhatsApp
-            </a>
+            <MagneticButton strength={0.15} className="block w-full">
+              <a
+                href="https://wa.me/201550408340"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 border-2 border-green-700 text-green-700 font-bold py-4 rounded-xl hover:bg-green-700 hover:text-white transition-colors text-sm"
+              >
+                <MessageCircle size={18} />
+                Chat on WhatsApp
+              </a>
+            </MagneticButton>
           </form>
         </motion.div>
       </div>

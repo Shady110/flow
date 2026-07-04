@@ -1,48 +1,92 @@
 'use client'
 import { motion } from 'framer-motion'
-import { fadeUp } from '@/lib/animations'
+import { staggerContainer, revealUp } from '@/lib/animations'
 import { problems } from '@/data/problems'
+import RevealHeading from './ui/RevealHeading'
 
 export default function ProblemSection() {
+  const [featured, ...rest] = problems
+
   return (
-    <section className="py-24 bg-flow-bg-soft">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="section-padding bg-flow-bg-soft">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+        {/* Off-center header */}
         <motion.div
-          variants={fadeUp}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="grid md:grid-cols-12 gap-6 mb-16 items-end"
+        >
+          <div className="md:col-span-7">
+            <span className="eyebrow-index mb-6" data-index="01">The Problem</span>
+            <RevealHeading
+              text="Selling online is harder than it looks."
+              accent={['harder']}
+              className="section-title mt-6"
+            />
+          </div>
+          <div className="md:col-span-5">
+            <p className="text-flow-text-muted text-base leading-relaxed md:text-right md:ml-auto md:max-w-sm">
+              Most sellers lose time and revenue because marketplace management is
+              complex, repetitive, and easy to get wrong.
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Bento grid — one large tile + three smaller tiles */}
+        <motion.div
+          variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}
-          custom={0}
-          className="text-center mb-16"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-6"
         >
-          <span className="eyebrow-label mb-4">
-            The Problem
-          </span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-flow-green mt-4 mb-4">
-            Selling online is harder than it looks.
-          </h2>
-          <p className="text-flow-text-muted text-base leading-relaxed max-w-2xl mx-auto">
-            Most sellers lose time and revenue because marketplace management is
-            complex, repetitive, and easy to get wrong.
-          </p>
-        </motion.div>
+          <motion.div
+            variants={revealUp}
+            className="surface-elevated p-10 flex flex-col justify-between md:col-start-1 md:col-span-2 md:row-start-1 md:row-span-2"
+          >
+            <div>
+              <motion.div
+                initial={{ scale: 0.6, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true, amount: 0.6 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+                className="w-14 h-14 rounded-full bg-flow-lime flex items-center justify-center mb-6"
+              >
+                <featured.icon size={24} className="text-flow-green" />
+              </motion.div>
+              <h3 className="font-display text-2xl font-bold text-flow-green mb-3">
+                {featured.title}
+              </h3>
+              <p className="text-flow-text-muted text-base leading-relaxed max-w-md">
+                {featured.description}
+              </p>
+            </div>
+          </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {problems.map((p, i) => {
+          {rest.map((p, i) => {
             const Icon = p.icon
+            const positions = [
+              'md:col-start-3 md:col-span-2 md:row-start-1 md:row-span-1',
+              'md:col-start-3 md:col-span-1 md:row-start-2 md:row-span-1',
+              'md:col-start-4 md:col-span-1 md:row-start-2 md:row-span-1',
+            ]
             return (
               <motion.div
                 key={p.title}
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.15 }}
-                custom={i + 1}
-                className="bg-white rounded-2xl border border-flow-border p-8 hover:shadow-lg transition-shadow duration-300"
+                variants={revealUp}
+                className={`surface-elevated p-8 ${positions[i]}`}
               >
-                <div className="w-12 h-12 rounded-full bg-flow-lime flex items-center justify-center mb-5">
+                <motion.div
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true, amount: 0.6 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+                  className="w-12 h-12 rounded-full bg-flow-lime flex items-center justify-center mb-5"
+                >
                   <Icon size={20} className="text-flow-green" />
-                </div>
+                </motion.div>
                 <h3 className="font-display text-lg font-bold text-flow-green mb-2">
                   {p.title}
                 </h3>
@@ -52,7 +96,7 @@ export default function ProblemSection() {
               </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   )
