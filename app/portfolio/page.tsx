@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
+import ScrollProgress from '@/components/ui/ScrollProgress'
 import PortfolioClient from '@/components/portfolio/PortfolioClient'
 import { portfolioData } from '@/data/portfolioData'
 
@@ -22,5 +25,12 @@ export const metadata: Metadata = {
 }
 
 export default function PortfolioPage() {
-  return <PortfolioClient data={portfolioData} />
+  return (
+    <main>
+      <ScrollProgress />
+      <Navbar />
+      <PortfolioClient data={portfolioData} />
+      <Footer />
+    </main>
+  )
 }

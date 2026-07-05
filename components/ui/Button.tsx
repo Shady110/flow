@@ -19,9 +19,9 @@ const sizeClasses = {
 
 const variantClasses = {
   primary:
-    'bg-flow-lime text-flow-green hover:bg-flow-lime-hover font-semibold rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime focus-visible:ring-offset-2',
+    'bg-flow-lime text-flow-green hover:bg-flow-lime-hover font-semibold rounded-full transition-all duration-300 shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-glow-lime)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime focus-visible:ring-offset-2',
   outline:
-    'border-2 border-flow-green text-flow-green hover:bg-flow-green hover:text-white font-semibold rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-green focus-visible:ring-offset-2',
+    'border border-flow-green/25 text-flow-green hover:bg-flow-green hover:text-flow-bg font-semibold rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-green focus-visible:ring-offset-2',
   ghost:
     'text-flow-green hover:opacity-70 font-medium transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-green focus-visible:ring-offset-2',
 }

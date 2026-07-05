@@ -1,144 +1,176 @@
 'use client'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
-import LogoMarquee from './LogoMarquee'
+import { ArrowRight } from 'lucide-react'
+import { portfolioData, getAllImagesFromCategory } from '@/data/portfolioData'
+import MagneticButton from './ui/MagneticButton'
+import ParallaxLayer from './ui/ParallaxLayer'
+import Counter from './ui/Counter'
+import RevealHeading from './ui/RevealHeading'
 import { fadeUp } from '@/lib/animations'
 
-const pipelineSteps = [
-  'Product',
-  'Content Creation',
-  'Listing Optimization',
-  'Marketplace Publishing',
-  'Account Management',
-  'Sales Growth',
+const stats = [
+  { value: 210, suffix: '+', label: 'Products shot' },
+  { value: 4, suffix: '', label: 'Marketplaces' },
+  { value: 15, suffix: ' EGP', label: 'Starting price' },
 ]
 
+// A curated strip of real product shots for the floating gallery.
+const gallery = portfolioData.slice(0, 5).map((cat) => ({
+  src: getAllImagesFromCategory(cat)[0]?.src ?? '',
+  alt: `${cat.name} product photography`,
+}))
+
+// Depth/rotation per card so the row feels hand-arranged.
+const tilts = [
+  { rotate: -6, y: 28, z: 10 },
+  { rotate: 4, y: 8, z: 20 },
+  { rotate: -2, y: -8, z: 30 },
+  { rotate: 5, y: 6, z: 20 },
+  { rotate: -5, y: 26, z: 10 },
+]
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center bg-white overflow-hidden">
-      {/* Radial gradient blob */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse at center, #EAF4E2 0%, rgba(244,250,240,0.5) 50%, transparent 70%)',
-        }}
-      />
+    <section className="relative min-h-screen flex flex-col items-center overflow-hidden bg-flow-bg grain-overlay">
+      {/* Layered background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0" style={{ background: 'var(--gradient-hero-mesh)' }} />
+        <ParallaxLayer speed={0.5} className="absolute top-1/4 right-[12%]">
+          <div
+            className="w-[420px] h-[420px] rounded-full blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(196,240,117,0.28) 0%, transparent 70%)' }}
+          />
+        </ParallaxLayer>
+        <ParallaxLayer speed={0.3} className="absolute top-1/3 left-[8%]">
+          <div
+            className="w-[320px] h-[320px] rounded-full blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(20,60,40,0.10) 0%, transparent 70%)' }}
+          />
+        </ParallaxLayer>
+      </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-32 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center w-full">
-        {/* Left — Text */}
-        <div>
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            custom={0}
-          >
-            <span className="text-xs font-semibold uppercase tracking-widest text-flow-lime bg-flow-green px-3 py-1 rounded-full inline-block mb-6">
-              Commerce Operations Studio
-            </span>
-          </motion.div>
+      {/* Text block */}
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-5 sm:px-6 text-center pt-32 md:pt-36">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="inline-flex items-center gap-2.5 rounded-full border border-flow-border bg-white/70 backdrop-blur px-3 py-1.5 mb-8 shadow-[var(--shadow-xs)]"
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-flow-green opacity-60 animate-ping" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-flow-green" />
+          </span>
+          <span className="text-xs font-semibold text-flow-green">
+            2 onboarding spots open this month
+          </span>
+        </motion.div>
 
-          <motion.h1
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            custom={1}
-            className="font-display text-5xl md:text-6xl font-bold text-flow-green leading-[1.1] mb-6"
-          >
-            From Product to Marketplace —{' '}
-            <span className="text-flow-green">in One Flow.</span>
-          </motion.h1>
+        <RevealHeading
+          as="h1"
+          text="From product to marketplace — in one flow."
+          accent={['one', 'flow.']}
+          whileInView={false}
+          className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-flow-green leading-[0.98] tracking-tight"
+        />
 
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            custom={2}
-            className="text-flow-text-muted text-lg leading-relaxed mb-10 max-w-xl"
-          >
-            Egypt&apos;s e-commerce content agency. We handle product photography,
-            bilingual listing creation, SEO optimization, account management,
-            and full marketplace management for Amazon, Noon, TikTok Shop &amp;
-            Shopify sellers.
-          </motion.p>
+        <motion.p
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          custom={3}
+          className="text-flow-text-muted text-base sm:text-lg leading-relaxed mt-7 max-w-2xl mx-auto"
+        >
+          Egypt&apos;s elite e-commerce content studio. We turn raw products into
+          high-converting listings — photography, bilingual copy, SEO, and full
+          account management for Amazon, Noon, TikTok Shop &amp; Shopify sellers.
+        </motion.p>
 
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            custom={3}
-            className="flex flex-wrap gap-4 mb-12"
-          >
-            <a
-              href="#contact"
-              className="bg-flow-lime text-flow-green font-semibold px-7 py-3.5 rounded-full hover:bg-flow-lime-hover transition-colors text-sm"
-            >
-              Start Your Flow
-            </a>
-            <a
-              href="#workflow"
-              className="border-2 border-flow-green text-flow-green font-semibold px-7 py-3.5 rounded-full hover:bg-flow-green hover:text-white transition-colors text-sm"
-            >
-              See How It Works
-            </a>
-          </motion.div>
-
-          {/* Logo marquee */}
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            custom={4}
-          >
-            <LogoMarquee />
-          </motion.div>
-        </div>
-
-        {/* Right — Pipeline card */}
         <motion.div
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          custom={2}
-          className="hidden lg:flex justify-center"
+          custom={4}
+          className="flex flex-wrap justify-center gap-4 mt-10"
         >
-          <div className="bg-white border border-flow-border rounded-2xl shadow-xl p-8 w-full max-w-sm">
-            <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-6">
-              The FLOW Pipeline
-            </p>
-            <div className="flex flex-col">
-              {pipelineSteps.map((step, i) => (
-                <div key={step} className="flex items-start gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="w-9 h-9 rounded-full bg-flow-lime flex items-center justify-center text-flow-green font-bold text-xs shrink-0">
-                      {String(i + 1).padStart(2, '0')}
-                    </div>
-                    {i < pipelineSteps.length - 1 && (
-                      <div className="w-px flex-1 my-1 border-l-2 border-dashed border-flow-border" style={{ minHeight: 28 }} />
+          <MagneticButton>
+            <a
+              href="#contact"
+              className="flex items-center gap-2 bg-flow-green text-flow-bg font-semibold px-7 py-3.5 rounded-full hover:bg-flow-green-hover transition-colors text-sm shadow-[var(--shadow-md)]"
+            >
+              Start Your Flow
+              <ArrowRight size={16} />
+            </a>
+          </MagneticButton>
+          <MagneticButton strength={0.2}>
+            <a
+              href="#workflow"
+              className="block border border-flow-green/25 text-flow-green font-semibold px-7 py-3.5 rounded-full hover:bg-flow-green hover:text-flow-bg transition-colors text-sm bg-white/50 backdrop-blur"
+            >
+              See how it works
+            </a>
+          </MagneticButton>
+        </motion.div>
+
+        {/* Inline stats */}
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          custom={5}
+          className="flex items-center justify-center gap-8 sm:gap-12 mt-12"
+        >
+          {stats.map((s, i) => (
+            <div key={s.label} className="flex items-center gap-8 sm:gap-12">
+              {i > 0 && <div className="w-px h-8 bg-flow-border" />}
+              <div className="text-center">
+                <p className="font-display text-2xl sm:text-3xl font-bold text-flow-green">
+                  <Counter value={s.value} suffix={s.suffix} />
+                </p>
+                <p className="text-[11px] sm:text-xs text-flow-text-muted uppercase tracking-wide mt-1 whitespace-nowrap">
+                  {s.label}
+                </p>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+
+      {/* Floating portfolio gallery */}
+      <div className="relative z-10 w-full mt-10 md:mt-14 flex-1 flex items-end">
+        <div className="w-full flex justify-center items-end gap-3 sm:gap-5 px-4 pb-0 -mb-6 md:-mb-10">
+          {gallery.map((img, i) => {
+            const t = tilts[i]
+            // Hide the outermost cards on small screens to avoid crowding.
+            const responsive = i === 0 || i === 4 ? 'hidden lg:block' : i === 1 || i === 3 ? 'hidden sm:block' : ''
+            return (
+              <motion.div
+                key={img.src}
+                initial={{ opacity: 0, y: 60, rotate: t.rotate }}
+                animate={{ opacity: 1, y: t.y, rotate: t.rotate }}
+                transition={{ delay: 0.5 + i * 0.09, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                style={{ zIndex: t.z }}
+                className={`relative shrink-0 ${responsive}`}
+              >
+                <div className="animate-float-slow" style={{ animationDelay: `${i * 0.6}s` }}>
+                  <div className="relative w-40 h-52 sm:w-44 sm:h-56 md:w-52 md:h-64 rounded-2xl overflow-hidden border-4 border-white shadow-[var(--shadow-xl)] bg-flow-bg-muted">
+                    {img.src && (
+                      <Image
+                        src={img.src}
+                        alt={img.alt}
+                        fill
+                        sizes="(max-width: 768px) 40vw, 220px"
+                        className="object-cover"
+                        priority={i === 2}
+                      />
                     )}
                   </div>
-                  <div className="pb-6">
-                    <p
-                      className={`text-sm font-semibold ${
-                        i === pipelineSteps.length - 1
-                          ? 'text-flow-green'
-                          : 'text-flow-text'
-                      }`}
-                    >
-                      {step}
-                      {i === pipelineSteps.length - 1 && (
-                        <span className="ml-2 text-xs bg-flow-lime text-flow-green px-2 py-0.5 rounded-full font-semibold">
-                          ✓
-                        </span>
-                      )}
-                    </p>
-                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+              </motion.div>
+            )
+          })}
+        </div>
       </div>
     </section>
   )

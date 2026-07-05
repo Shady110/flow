@@ -2,31 +2,34 @@
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { fadeUp } from '@/lib/animations'
+import Counter from './ui/Counter'
+import MagneticButton from './ui/MagneticButton'
+import RevealHeading from './ui/RevealHeading'
 
 export default function PricingSection() {
   return (
-    <section id="pricing" className="py-24 bg-flow-bg-soft">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="pricing" className="section-padding bg-flow-bg-soft">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         <motion.div
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}
           custom={0}
-          className="text-center mb-16"
+          className="flex flex-col items-center text-center mb-12"
         >
-          <span className="text-xs font-semibold uppercase tracking-widest text-flow-lime bg-flow-green px-3 py-1 rounded-full inline-block mb-4">
-            Pricing
-          </span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-flow-green mt-4 mb-4">
-            Simple, transparent pricing.
-          </h2>
+          <span className="eyebrow-index mb-6" data-index="06">Pricing</span>
+          <RevealHeading
+            text="Simple, transparent pricing."
+            accent={['transparent']}
+            className="section-title mt-6 mb-4"
+          />
           <p className="text-flow-text-muted text-base leading-relaxed max-w-2xl mx-auto">
             All prices in Egyptian Pounds (EGP). Volume discounts available for large batches.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:items-center">
           {/* Card 1 — Listing Optimization Only */}
           <motion.div
             variants={fadeUp}
@@ -34,13 +37,15 @@ export default function PricingSection() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.15 }}
             custom={1}
-            className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col"
+            className="surface-elevated p-8 flex flex-col"
           >
             <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-4">
               Premium Content Only
             </p>
             <div className="mb-1">
-              <span className="font-display text-4xl font-bold text-flow-green">15 EGP</span>
+              <span className="font-display text-4xl font-bold text-flow-green">
+                <Counter value={15} suffix=" EGP" />
+              </span>
             </div>
             <p className="text-sm text-flow-text-muted mb-6">/ per product</p>
             <p className="font-semibold text-flow-green text-base mb-4">Listing Optimization Only</p>
@@ -73,13 +78,15 @@ export default function PricingSection() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.15 }}
             custom={2}
-            className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col"
+            className="surface-elevated p-8 flex flex-col"
           >
             <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-4">
               Studio Photography Package
             </p>
             <div className="mb-1">
-              <span className="font-display text-4xl font-bold text-flow-green">30 EGP</span>
+              <span className="font-display text-4xl font-bold text-flow-green">
+                <Counter value={30} suffix=" EGP" />
+              </span>
             </div>
             <p className="text-sm text-flow-text-muted mb-6">/ per product</p>
             <p className="font-semibold text-flow-green text-base mb-4">Photography Only</p>
@@ -115,8 +122,8 @@ export default function PricingSection() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.15 }}
             custom={3}
-            className="rounded-2xl p-8 flex flex-col relative lg:row-span-1 md:col-span-2 lg:col-span-1"
-            style={{ backgroundColor: '#1B4D2E' }}
+            className="glass-card-dark p-8 lg:p-10 flex flex-col relative z-10 md:col-span-2 lg:col-span-1 lg:-my-6 lg:scale-105 origin-center"
+            style={{ backgroundImage: 'var(--gradient-dark-panel)', boxShadow: 'var(--shadow-glow-lime)' }}
           >
             <span className="absolute top-4 right-4 bg-flow-lime text-flow-green text-xs font-bold px-3 py-1 rounded-full">
               Most Popular
@@ -125,7 +132,9 @@ export default function PricingSection() {
               Photography + Professional Listing
             </p>
             <div className="mb-1">
-              <span className="font-display text-4xl font-bold text-white">40 EGP</span>
+              <span className="font-display text-4xl font-bold text-white">
+                <Counter value={40} suffix=" EGP" />
+              </span>
             </div>
             <p className="text-sm text-white/60 mb-6">/ per product</p>
             <p className="font-semibold text-flow-lime text-base mb-4">Complete Package</p>
@@ -145,7 +154,7 @@ export default function PricingSection() {
             </ul>
 
             {/* Bulk discount block */}
-            <div className="rounded-xl p-4 mb-6" style={{ backgroundColor: '#163D24' }}>
+            <div className="rounded-xl p-4 mb-6 bg-black/20 border border-white/10">
               <p className="text-xs font-bold text-flow-lime uppercase tracking-wider mb-3">
                 Bulk Discounts
               </p>
@@ -161,12 +170,14 @@ export default function PricingSection() {
               </div>
             </div>
 
-            <a
-              href="#contact"
-              className="block text-center bg-flow-lime text-flow-green font-bold py-3.5 rounded-xl hover:bg-flow-lime-hover transition-colors text-sm"
-            >
-              Start Your Flow
-            </a>
+            <MagneticButton className="block w-full">
+              <a
+                href="#contact"
+                className="block text-center bg-flow-lime text-flow-green font-bold py-3.5 rounded-xl hover:bg-flow-lime-hover transition-colors text-sm shadow-[var(--shadow-glow-lime)]"
+              >
+                Start Your Flow
+              </a>
+            </MagneticButton>
           </motion.div>
 
           {/* Card 4 — Product Video */}
@@ -176,13 +187,15 @@ export default function PricingSection() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.15 }}
             custom={4}
-            className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col"
+            className="surface-elevated p-8 flex flex-col"
           >
             <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-4">
               Professional Video Production
             </p>
             <div className="mb-1">
-              <span className="font-display text-4xl font-bold text-flow-green">500 EGP</span>
+              <span className="font-display text-4xl font-bold text-flow-green">
+                <Counter value={500} suffix=" EGP" />
+              </span>
             </div>
             <p className="text-sm text-flow-text-muted mb-6">/ per video</p>
             <p className="font-semibold text-flow-green text-base mb-4">Product Video</p>
@@ -214,7 +227,7 @@ export default function PricingSection() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.15 }}
             custom={5}
-            className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col"
+            className="surface-elevated p-8 flex flex-col"
           >
             <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-4">
               Website Creation Service
@@ -251,7 +264,7 @@ export default function PricingSection() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.15 }}
             custom={6}
-            className="bg-white rounded-2xl border border-flow-border p-8 flex flex-col relative"
+            className="surface-elevated p-8 flex flex-col relative"
           >
             <span className="absolute top-4 right-4 bg-flow-bg-muted text-flow-green text-xs font-bold px-3 py-1 rounded-full border border-flow-border">
               Custom
@@ -293,7 +306,7 @@ export default function PricingSection() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.15 }}
             custom={7}
-            className="col-span-1 md:col-span-2 lg:col-span-3 bg-white rounded-2xl border border-flow-border p-8 relative"
+            className="col-span-1 md:col-span-2 lg:col-span-3 surface-elevated p-8 relative"
           >
             <div className="flex flex-col md:flex-row md:gap-12 md:items-center">
               {/* Left — price & title */}
@@ -302,7 +315,9 @@ export default function PricingSection() {
                   Full Marketplace Account Management
                 </p>
                 <div className="mb-1">
-                  <span className="font-display text-4xl font-bold text-flow-green">10,000 EGP</span>
+                  <span className="font-display text-4xl font-bold text-flow-green">
+                    <Counter value={10000} suffix=" EGP" />
+                  </span>
                 </div>
                 <p className="text-sm text-flow-text-muted mb-1">/ per month</p>
                 <p className="text-sm font-semibold text-flow-green mb-6">+ 5% of sales</p>

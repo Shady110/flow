@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Category, getAllImagesFromCategory } from '@/data/portfolioData'
 import PortfolioHero from './PortfolioHero'
@@ -12,8 +12,30 @@ export default function PortfolioClient({ data }: { data: Category[] }) {
   const [activeCategoryId, setActiveCategoryId] = useState('all')
   const [activeSubcategoryId, setActiveSubcategoryId] = useState('all')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
 
   const activeCategory = data.find(c => c.id === activeCategoryId) ?? null
+
+  // Deep-link support: /portfolio#<category-id> opens that category directly
+  // (used by the landing-page portfolio tiles and the navbar "Work" menu).
+  useEffect(() => {
+    const applyHash = (scroll: boolean) => {
+      const id = window.location.hash.replace('#', '')
+      if (id && data.some(c => c.id === id)) {
+        setActiveCategoryId(id)
+        setActiveSubcategoryId('all')
+        if (scroll) {
+          requestAnimationFrame(() =>
+            gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          )
+        }
+      }
+    }
+    applyHash(true)
+    const onHash = () => applyHash(true)
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [data])
 
   const visibleImages = useMemo(() => {
     if (activeCategoryId === 'all') {
@@ -30,14 +52,17 @@ export default function PortfolioClient({ data }: { data: Category[] }) {
   function handleCategoryChange(id: string) {
     setActiveCategoryId(id)
     setActiveSubcategoryId('all')
+    // Keep the URL shareable/back-friendly without adding history entries.
+    const url = id === 'all' ? window.location.pathname : `#${id}`
+    window.history.replaceState(null, '', url)
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-flow-bg">
       <PortfolioHero totalImages={totalImages} totalCategories={data.length} />
 
       {/* Sticky filter bar */}
-      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-sm border-b border-flow-border">
+      <div ref={gridRef} className="sticky top-16 md:top-20 z-30 bg-flow-bg/90 backdrop-blur-md border-y border-flow-border">
         <div className="max-w-7xl mx-auto px-6">
           <CategoryTabs
             categories={data}
