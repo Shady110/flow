@@ -18,7 +18,7 @@ export default function FAQSection() {
           viewport={{ once: true, amount: 0.3 }}
           className="lg:col-span-5 lg:sticky lg:top-28"
         >
-          <span className="eyebrow-index mb-6" data-index="08">FAQ</span>
+          <span className="eyebrow-index mb-6" data-index="07">FAQ</span>
           <RevealHeading
             text="Questions, answered."
             accent={['answered.']}

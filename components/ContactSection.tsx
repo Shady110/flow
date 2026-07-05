@@ -64,7 +64,7 @@ export default function ContactSection() {
           custom={0}
           className="lg:col-span-4"
         >
-          <span className="eyebrow-index mb-6" data-index="09">Get in Touch</span>
+          <span className="eyebrow-index mb-6" data-index="08">Get in Touch</span>
           <RevealHeading
             text="Ready to start your flow?"
             accent={['flow?']}
