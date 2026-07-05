@@ -9,7 +9,7 @@ import SolutionSection from '@/components/SolutionSection'
 import ServicesSection from '@/components/ServicesSection'
 import PortfolioGridSection from '@/components/PortfolioGridSection'
 import WorkflowSection from '@/components/WorkflowSection'
-import TeamSection from '@/components/TeamSection'
+// import TeamSection from '@/components/TeamSection' // hidden until the full team photo is ready
 import FAQSection from '@/components/FAQSection'
 
 const PricingSection = dynamic(
@@ -59,7 +59,7 @@ export default function Home() {
       <PortfolioGridSection />
       <WorkflowSection />
       <PricingSection />
-      <TeamSection />
+      {/* <TeamSection /> hidden until the full team photo is ready */}
       <FAQSection />
       <ContactSection />
       <Footer />
