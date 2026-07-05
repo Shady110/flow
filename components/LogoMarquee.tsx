@@ -34,7 +34,6 @@ const logos: LogoEntry[] = [
     id: 'instashop',
     alt: 'InstaShop',
     src: '/assets/logos/instashop-seeklogo-2.svg',
-    height: H * 2,
   },
   {
     id: 'tiktok-shop',
