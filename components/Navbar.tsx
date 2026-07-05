@@ -33,9 +33,9 @@ const nav: NavItem[] = [
     label: 'Work',
     href: '/#work',
     children: [
-      { label: 'Fashion & Apparel', href: '/portfolio' },
-      { label: 'Electronics', href: '/portfolio' },
-      { label: 'Cosmetics & Beauty', href: '/portfolio' },
+      { label: 'Fashion & Apparel', href: '/portfolio#fashion' },
+      { label: 'Electronics', href: '/portfolio#electronics' },
+      { label: 'Cosmetics & Beauty', href: '/portfolio#cosmetics' },
       { label: 'View full portfolio →', href: '/portfolio' },
     ],
   },
@@ -65,13 +65,13 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto pl-5 pr-3 md:pl-6 md:pr-3 h-16 md:h-14 flex items-center justify-between gap-4">
           <Link href="/" className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime rounded">
             <Image
-              src="/assets/White%20type%20-%20transparent.png"
+              src="/assets/flow-wordmark-white.png"
               alt="FLOW Agency"
-              width={200}
-              height={72}
-              className="object-contain h-9 md:h-10 w-auto"
+              width={55}
+              height={34}
+              className="object-contain w-[30px] md:w-[46px] h-auto"
               priority
-              sizes="200px"
+              sizes="85px"
             />
           </Link>
 

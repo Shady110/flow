@@ -40,7 +40,7 @@ export default function PortfolioGridSection() {
     <section id="work" className="section-padding bg-flow-bg">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-14">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-10">
           <div className="max-w-2xl">
             <span className="eyebrow-index mb-6" data-index="04">Selected Work</span>
             <RevealHeading
@@ -82,7 +82,7 @@ export default function PortfolioGridSection() {
             >
               <TiltCard intensity={5} className="h-full">
                 <Link
-                  href="/portfolio"
+                  href={`/portfolio#${cat.id}`}
                   aria-label={`View ${cat.name} portfolio`}
                   className="relative block h-full w-full overflow-hidden rounded-3xl border border-flow-border bg-flow-bg-muted shadow-[var(--shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-green focus-visible:ring-offset-2"
                 >

@@ -16,7 +16,7 @@ export default function ProblemSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="grid md:grid-cols-12 gap-6 mb-16 items-end"
+          className="grid md:grid-cols-12 gap-6 mb-12 items-end"
         >
           <div className="md:col-span-7">
             <span className="eyebrow-index mb-6" data-index="01">The Problem</span>

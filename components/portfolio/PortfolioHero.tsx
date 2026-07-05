@@ -14,16 +14,18 @@ const stats = (total: number, cats: number) => [
 
 export default function PortfolioHero({ totalImages, totalCategories }: Props) {
   return (
-    <section className="pt-32 pb-16 bg-white text-center">
-      <div className="max-w-3xl mx-auto px-6">
+    <section className="pt-36 md:pt-40 pb-14 text-center grain-overlay bg-flow-bg relative overflow-hidden">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'var(--gradient-hero-mesh)' }}
+      />
+      <div className="relative max-w-3xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <span className="text-xs font-semibold uppercase tracking-widest text-flow-lime bg-flow-green px-3 py-1 rounded-full inline-block mb-6">
-            Our Work
-          </span>
+          <span className="eyebrow-label mb-6">Our Work</span>
         </motion.div>
 
         <motion.h1

@@ -128,7 +128,7 @@ h1, h2, h3, h4 {
   }
 
   .section-padding {
-    @apply py-24 md:py-28 lg:py-32;
+    @apply py-16 md:py-20 lg:py-24;
   }
 
   /* Compact pill eyebrow (kept for backwards-compat) */

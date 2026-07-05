@@ -10,7 +10,7 @@ export default function TeamSection() {
     <section id="team" className="section-padding bg-flow-bg-soft">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="grid md:grid-cols-12 gap-8 items-end mb-16">
+        <div className="grid md:grid-cols-12 gap-8 items-end mb-12">
           <div className="md:col-span-7">
             <span className="eyebrow-index mb-6" data-index="07">The Team</span>
             <RevealHeading

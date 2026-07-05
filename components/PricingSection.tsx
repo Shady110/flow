@@ -16,7 +16,7 @@ export default function PricingSection() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}
           custom={0}
-          className="flex flex-col items-center text-center mb-16"
+          className="flex flex-col items-center text-center mb-12"
         >
           <span className="eyebrow-index mb-6" data-index="06">Pricing</span>
           <RevealHeading

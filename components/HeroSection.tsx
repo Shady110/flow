@@ -51,7 +51,7 @@ export default function HeroSection() {
       </div>
 
       {/* Text block */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-5 sm:px-6 text-center pt-36 md:pt-40">
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-5 sm:px-6 text-center pt-32 md:pt-36">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -138,7 +138,7 @@ export default function HeroSection() {
       </div>
 
       {/* Floating portfolio gallery */}
-      <div className="relative z-10 w-full mt-14 md:mt-20 flex-1 flex items-end">
+      <div className="relative z-10 w-full mt-10 md:mt-14 flex-1 flex items-end">
         <div className="w-full flex justify-center items-end gap-3 sm:gap-5 px-4 pb-0 -mb-6 md:-mb-10">
           {gallery.map((img, i) => {
             const t = tilts[i]

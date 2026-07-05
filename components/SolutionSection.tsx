@@ -24,7 +24,7 @@ export default function SolutionSection() {
       <div className="absolute inset-0 bg-flow-bg/80" />
       <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         {/* Text block spans full width on top, no more 50/50 split */}
-        <div className="max-w-2xl mb-20">
+        <div className="max-w-2xl mb-12">
           <motion.div
             variants={fadeUp}
             initial="hidden"

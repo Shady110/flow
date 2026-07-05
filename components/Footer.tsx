@@ -37,10 +37,10 @@ export default function Footer() {
               style={{ background: 'radial-gradient(circle, rgba(196,240,117,0.35) 0%, transparent 70%)' }}
             />
             <Image
-              src="/assets/White%20type%20-%20transparent.png"
+              src="/assets/flow-wordmark-white.png"
               alt="FLOW"
-              width={200}
-              height={72}
+              width={220}
+              height={88}
               className="relative object-contain mb-4"
             />
             <p className="relative text-white font-semibold text-sm mb-3">
