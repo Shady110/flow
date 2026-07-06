@@ -15,9 +15,16 @@ const stats = [
   { value: 15, suffix: ' EGP', label: 'Starting price' },
 ]
 
+// Some categories lead with a lifestyle/model shot — pin those to a
+// product-only cover so the hero strip shows products, never people.
+const productCovers: Record<string, string> = {
+  accessories: '/assets/portfolio/Accessories/Wallet/61BygHH-M2L._AC_UY1000_.jpg',
+  home: '/assets/portfolio/Home/cookware/Gemini_Generated_Image_5d0wwd5d0wwd5d0w.png',
+}
+
 // A curated strip of real product shots for the floating gallery.
 const gallery = portfolioData.slice(0, 5).map((cat) => ({
-  src: getAllImagesFromCategory(cat)[0]?.src ?? '',
+  src: productCovers[cat.id] ?? getAllImagesFromCategory(cat)[0]?.src ?? '',
   alt: `${cat.name} product photography`,
 }))
 
@@ -137,8 +144,8 @@ export default function HeroSection() {
         </motion.div>
       </div>
 
-      {/* Floating portfolio gallery */}
-      <div className="relative z-10 w-full mt-10 md:mt-14 flex-1 flex items-end">
+      {/* Floating portfolio gallery — hidden on mobile */}
+      <div className="relative z-10 w-full mt-10 md:mt-14 flex-1 hidden md:flex items-end">
         <div className="w-full flex justify-center items-end gap-3 sm:gap-5 px-4 pb-0 -mb-6 md:-mb-10">
           {gallery.map((img, i) => {
             const t = tilts[i]
