@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-display: var(--font-syne);
@@ -220,5 +223,139 @@ h1, h2, h3, h4 {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   shadcn/ui token contract — mapped onto the FLOW elevated-green
+   palette. Used by the dashboard & client-portal UI.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --radius: 0.625rem;
+
+  --background: #FBFBF7;
+  --foreground: #10231A;
+  --card: #FFFFFF;
+  --card-foreground: #10231A;
+  --popover: #FFFFFF;
+  --popover-foreground: #10231A;
+  --primary: #143C28;
+  --primary-foreground: #FBFBF7;
+  --secondary: #EAF1DE;
+  --secondary-foreground: #143C28;
+  --muted: #F4F7EC;
+  --muted-foreground: #55685C;
+  --accent: #C4F075;
+  --accent-foreground: #143C28;
+  --destructive: #C0392B;
+  --destructive-foreground: #FBFBF7;
+  --success: #2E6B45;
+  --warning: #C98A1B;
+  --border: #DEE9D0;
+  --input: #DEE9D0;
+  --ring: #2E6B45;
+
+  --chart-1: #2E6B45;
+  --chart-2: #C4F075;
+  --chart-3: #143C28;
+  --chart-4: #8FB08A;
+  --chart-5: #55685C;
+
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #10231A;
+  --sidebar-primary: #143C28;
+  --sidebar-primary-foreground: #FBFBF7;
+  --sidebar-accent: #F4F7EC;
+  --sidebar-accent-foreground: #143C28;
+  --sidebar-border: #DEE9D0;
+  --sidebar-ring: #2E6B45;
+}
+
+.dark {
+  --background: #0B2417;
+  --foreground: #F4F7EC;
+  --card: #143C28;
+  --card-foreground: #F4F7EC;
+  --popover: #143C28;
+  --popover-foreground: #F4F7EC;
+  --primary: #C4F075;
+  --primary-foreground: #0B2417;
+  --secondary: #1C4A32;
+  --secondary-foreground: #F4F7EC;
+  --muted: #14321F;
+  --muted-foreground: #A9C0A9;
+  --accent: #2E6B45;
+  --accent-foreground: #F4F7EC;
+  --destructive: #E06B5B;
+  --destructive-foreground: #0B2417;
+  --success: #7FC49A;
+  --warning: #E5B65C;
+  --border: rgba(255, 255, 255, 0.10);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #C4F075;
+
+  --chart-1: #C4F075;
+  --chart-2: #7FC49A;
+  --chart-3: #2E6B45;
+  --chart-4: #E8F8CE;
+  --chart-5: #A9C0A9;
+
+  --sidebar: #0E2E1E;
+  --sidebar-foreground: #F4F7EC;
+  --sidebar-primary: #C4F075;
+  --sidebar-primary-foreground: #0B2417;
+  --sidebar-accent: #14321F;
+  --sidebar-accent-foreground: #F4F7EC;
+  --sidebar-border: rgba(255, 255, 255, 0.10);
+  --sidebar-ring: #C4F075;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
   }
 }
