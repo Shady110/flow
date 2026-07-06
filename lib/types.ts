@@ -20,6 +20,8 @@ export type PermissionKey =
   | 'users.invite'
   | 'users.manage'
   | 'settings.manage'
+  | 'products.view'
+  | 'products.manage'
 
 export type ProfileStatus = 'invited' | 'active' | 'disabled'
 export type ClientStatus = 'lead' | 'active' | 'paused' | 'churned'
@@ -98,6 +100,63 @@ export interface TaskActivity {
   action: string
   detail: Record<string, unknown> | null
   created_at: string
+}
+
+export type ProductStatus = 'draft' | 'in_progress' | 'review' | 'live' | 'rejected' | 'paused'
+
+export interface ClientUser {
+  id: string
+  client_id: string
+  user_id: string | null
+  full_name: string
+  email: string
+  role_at_company: string | null
+  status: string
+  created_at: string
+}
+
+export interface Product {
+  id: string
+  client_id: string
+  name: string
+  sku: string | null
+  marketplace: string | null
+  status: ProductStatus
+  image_url: string | null
+  price: number | null
+  notes: string | null
+  updated_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Conversation {
+  id: string
+  client_id: string
+  client_user_id: string
+  subject: string | null
+  last_message_at: string | null
+  created_at: string
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_type: 'admin' | 'client'
+  sender_profile_id: string | null
+  sender_client_user_id: string | null
+  body: string
+  read_at: string | null
+  created_at: string
+}
+
+export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
+  draft: 'Draft',
+  in_progress: 'In progress',
+  review: 'In review',
+  live: 'Live',
+  rejected: 'Rejected',
+  paused: 'Paused',
 }
 
 export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {

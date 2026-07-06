@@ -4,9 +4,11 @@ import {
   CLIENT_STATUS_LABELS,
   TASK_STATUS_LABELS,
   TASK_PRIORITY_LABELS,
+  PRODUCT_STATUS_LABELS,
   type ClientStatus,
   type TaskStatus,
   type TaskPriority,
+  type ProductStatus,
 } from '@/lib/types'
 import { deadlineState, DEADLINE_META } from '@/lib/deadlines'
 
@@ -50,6 +52,23 @@ const PRIORITY_STYLE: Record<TaskPriority, string> = {
 
 export function PriorityLabel({ priority }: { priority: TaskPriority }) {
   return <span className={cn('text-sm font-medium', PRIORITY_STYLE[priority])}>{TASK_PRIORITY_LABELS[priority]}</span>
+}
+
+const PRODUCT_STATUS_STYLE: Record<ProductStatus, string> = {
+  draft: 'bg-muted text-muted-foreground',
+  in_progress: 'bg-secondary text-secondary-foreground',
+  review: 'bg-warning/15 text-warning',
+  live: 'bg-flow-lime text-flow-green',
+  rejected: 'bg-destructive/15 text-destructive',
+  paused: 'bg-muted text-muted-foreground',
+}
+
+export function ProductStatusBadge({ status }: { status: ProductStatus }) {
+  return (
+    <Badge className={cn('border-transparent font-medium', PRODUCT_STATUS_STYLE[status])}>
+      {PRODUCT_STATUS_LABELS[status]}
+    </Badge>
+  )
 }
 
 export function DeadlineIndicator({
