@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, FileText } from 'lucide-react'
 import { getClient, getTasks, getTeam } from '@/lib/db/queries'
 import { getInvoices } from '@/lib/db/finance-queries'
 import { getCurrentUser } from '@/lib/auth/session'
@@ -79,9 +79,22 @@ export default async function ClientDetailPage({
         title={client.name}
         description={`${client.slug}.flow…`}
         actions={
-          canCreateTask ? (
-            <TaskDialog clients={clientOptions} team={teamOptions} fixedClientId={client.id} />
-          ) : undefined
+          <div className="flex flex-wrap items-center gap-2">
+            {canIssueInvoice && (
+              <NewInvoiceDialog
+                clients={clientOptions}
+                fixedClientId={client.id}
+                trigger={
+                  <Button variant="outline">
+                    <FileText className="h-4 w-4" /> New invoice
+                  </Button>
+                }
+              />
+            )}
+            {canCreateTask && (
+              <TaskDialog clients={clientOptions} team={teamOptions} fixedClientId={client.id} />
+            )}
+          </div>
         }
       />
 
