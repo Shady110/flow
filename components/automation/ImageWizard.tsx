@@ -1,38 +1,48 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { UploadCloud, Loader2, AlertTriangle } from 'lucide-react'
+import { UploadCloud, Loader2, AlertTriangle, Plus, Trash2, ImagePlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/browser'
 import { getUploadUrlAction, createImageJobAction } from '@/lib/db/automation-actions'
 import { Button } from '@/components/ds/button'
+import { Input } from '@/components/ds/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
 
-/** Group files by SKU = filename before the last underscore (e.g. SKU123_1.jpg → SKU123). */
-function skuOf(filename: string) {
-  const base = filename.replace(/\.[^.]+$/, '')
-  const i = base.lastIndexOf('_')
-  return i > 0 ? base.slice(0, i) : base
+interface Product {
+  id: string
+  sku: string
+  files: File[]
+}
+
+function sanitizeSku(s: string) {
+  return s.trim().replace(/[^a-zA-Z0-9._-]/g, '-').replace(/-+/g, '-') || 'product'
 }
 
 export function ImageWizard() {
   const router = useRouter()
-  const [files, setFiles] = useState<File[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
+  const addRef = useRef<HTMLInputElement>(null)
 
-  const groups = useMemo(() => {
-    const map = new Map<string, File[]>()
-    for (const f of files) {
-      const sku = skuOf(f.name)
-      if (!map.has(sku)) map.set(sku, [])
-      map.get(sku)!.push(f)
-    }
-    return [...map.entries()].map(([sku, fs]) => ({ sku, files: fs }))
-  }, [files])
+  function addProduct(fileList: FileList | null) {
+    const files = Array.from(fileList ?? [])
+    if (files.length === 0) return
+    setProducts((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), sku: `product-${prev.length + 1}`, files },
+    ])
+  }
 
-  const validGroups = groups.filter((g) => g.files.length >= 2)
+  function addImagesTo(id: string, fileList: FileList | null) {
+    const files = Array.from(fileList ?? [])
+    if (files.length === 0) return
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, files: [...p.files, ...files] } : p)))
+  }
+
+  const validCount = products.filter((p) => p.files.length >= 2).length
 
   async function create() {
     setBusy(true)
@@ -40,14 +50,17 @@ export function ImageWizard() {
     try {
       const supabase = createClient()
       const folder = crypto.randomUUID()
-      const products: { sku: string; paths: string[] }[] = []
+      const valid = products.filter((p) => p.files.length >= 2)
+      const payload: { sku: string; paths: string[] }[] = []
+      const totalFiles = valid.reduce((s, p) => s + p.files.length, 0)
       let uploaded = 0
-      const totalFiles = validGroups.reduce((s, g) => s + g.files.length, 0)
 
-      for (const group of validGroups) {
+      for (const product of valid) {
+        const sku = sanitizeSku(product.sku)
         const paths: string[] = []
-        for (const file of group.files) {
-          const urlRes = await getUploadUrlAction(folder, `${group.sku}/${file.name}`)
+        for (const [i, file] of product.files.entries()) {
+          const ext = file.name.split('.').pop() || 'jpg'
+          const urlRes = await getUploadUrlAction(folder, `${sku}_src${i}.${ext}`)
           if (!urlRes.ok) throw new Error(urlRes.error)
           const { error } = await supabase.storage
             .from('automation-inputs')
@@ -57,10 +70,10 @@ export function ImageWizard() {
           uploaded++
           setProgress(Math.round((uploaded / totalFiles) * 100))
         }
-        products.push({ sku: group.sku, paths })
+        payload.push({ sku, paths })
       }
 
-      const res = await createImageJobAction({ products })
+      const res = await createImageJobAction({ products: payload })
       if (!res.ok) throw new Error(res.error)
       router.push(`/automations/${res.jobId}`)
     } catch (e) {
@@ -73,45 +86,84 @@ export function ImageWizard() {
     <div className="space-y-4">
       <Card>
         <CardContent className="p-8">
-          <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border py-16 text-center transition-colors hover:border-flow-green/40 hover:bg-muted/40">
+          <button
+            type="button"
+            onClick={() => addRef.current?.click()}
+            className="flex w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border py-16 text-center transition-colors hover:border-flow-green/40 hover:bg-muted/40"
+          >
             <UploadCloud className="h-8 w-8 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium">Upload product photos</p>
+              <p className="text-sm font-medium">Add a product</p>
               <p className="text-xs text-muted-foreground">
-                Name files <code>SKU_1.jpg</code>, <code>SKU_2.jpg</code> — 2+ per product
+                Select its 2+ angle photos together — one product per selection
               </p>
             </div>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-            />
-          </label>
+          </button>
+          <input
+            ref={addRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              addProduct(e.target.files)
+              e.target.value = ''
+            }}
+          />
         </CardContent>
       </Card>
 
-      {groups.length > 0 && (
+      {products.length > 0 && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">
-              {validGroups.length} product{validGroups.length === 1 ? '' : 's'} ready
+              {validCount} product{validCount === 1 ? '' : 's'} ready
             </CardTitle>
+            <Button variant="outline" size="sm" onClick={() => addRef.current?.click()}>
+              <Plus className="h-4 w-4" /> Add product
+            </Button>
           </CardHeader>
           <CardContent className="space-y-2">
-            {groups.map((g) => (
-              <div key={g.sku} className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">
-                <span className="font-medium">{g.sku}</span>
-                <span className={g.files.length >= 2 ? 'text-muted-foreground' : 'text-warning'}>
-                  {g.files.length} image{g.files.length === 1 ? '' : 's'}
-                  {g.files.length < 2 && (
-                    <AlertTriangle className="ml-1 inline h-3.5 w-3.5" />
-                  )}
+            {products.map((p) => (
+              <div key={p.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                <Input
+                  value={p.sku}
+                  onChange={(e) =>
+                    setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, sku: e.target.value } : x)))
+                  }
+                  className="h-9 max-w-[220px]"
+                  placeholder="SKU / product name"
+                />
+                <span
+                  className={`flex items-center gap-1 text-sm ${p.files.length >= 2 ? 'text-muted-foreground' : 'text-warning'}`}
+                >
+                  {p.files.length} image{p.files.length === 1 ? '' : 's'}
+                  {p.files.length < 2 && <AlertTriangle className="h-3.5 w-3.5" />}
                 </span>
+                <label className="cursor-pointer text-muted-foreground hover:text-foreground" title="Add more images">
+                  <ImagePlus className="h-4 w-4" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      addImagesTo(p.id, e.target.files)
+                      e.target.value = ''
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="ml-auto text-muted-foreground hover:text-destructive"
+                  onClick={() => setProducts((prev) => prev.filter((x) => x.id !== p.id))}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
             ))}
-            {groups.some((g) => g.files.length < 2) && (
+
+            {products.some((p) => p.files.length < 2) && (
               <p className="text-xs text-warning">Products with fewer than 2 images are skipped.</p>
             )}
 
@@ -126,8 +178,8 @@ export function ImageWizard() {
               </div>
             ) : (
               <div className="flex justify-end pt-2">
-                <Button onClick={create} disabled={validGroups.length === 0}>
-                  Generate images for {validGroups.length} product{validGroups.length === 1 ? '' : 's'}
+                <Button onClick={create} disabled={validCount === 0}>
+                  Generate images for {validCount} product{validCount === 1 ? '' : 's'}
                 </Button>
               </div>
             )}
