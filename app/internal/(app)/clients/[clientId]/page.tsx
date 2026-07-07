@@ -2,14 +2,20 @@ import { notFound } from 'next/navigation'
 import { ArrowUpRight } from 'lucide-react'
 import { getClient, getTasks, getTeam } from '@/lib/db/queries'
 import { getCurrentUser } from '@/lib/auth/session'
+import { createClient } from '@/lib/supabase/server'
 import { deadlineState } from '@/lib/deadlines'
+import type { Product, ClientUser } from '@/lib/types'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { TaskDialog } from '@/components/dashboard/TaskDialog'
 import { TaskStatusSelect } from '@/components/dashboard/TaskStatusSelect'
+import { ProductDialog } from '@/components/dashboard/ProductDialog'
+import { AddClientUserDialog } from '@/components/dashboard/AddClientUserDialog'
+import { MessageClientUserButton } from '@/components/dashboard/MessageClientUserButton'
 import {
   ClientStatusBadge,
   DeadlineIndicator,
   PriorityLabel,
+  ProductStatusBadge,
 } from '@/components/dashboard/indicators'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
 import { Button } from '@/components/ds/button'
@@ -20,17 +26,25 @@ export default async function ClientDetailPage({
   params: Promise<{ clientId: string }>
 }) {
   const { clientId } = await params
-  const [client, tasks, team, user] = await Promise.all([
+  const supabase = await createClient()
+  const [client, tasks, team, user, { data: products }, { data: clientUsers }] = await Promise.all([
     getClient(clientId),
     getTasks(clientId),
     getTeam(),
     getCurrentUser(),
+    supabase.from('products').select('*').eq('client_id', clientId).order('updated_at', { ascending: false }),
+    supabase.from('client_users').select('*').eq('client_id', clientId).order('created_at'),
   ])
   if (!client) notFound()
 
+  const productList = (products as Product[]) ?? []
+  const clientUserList = (clientUsers as ClientUser[]) ?? []
   const memberName = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
   const canCreateTask = !!user?.permissions.has('tasks.create')
   const canEditTask = !!user?.permissions.has('tasks.edit')
+  const canManageProducts = !!user?.permissions.has('products.manage')
+  const canEditClient = !!user?.permissions.has('clients.edit')
+  const canChat = !!user?.permissions.has('chat.access')
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000'
   const portalProtocol = rootDomain.includes('localhost') ? 'http' : 'https'
@@ -134,6 +148,86 @@ export default async function ClientDetailPage({
               </div>
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      {/* Products */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">Products</CardTitle>
+          {canManageProducts && <ProductDialog clientId={client.id} />}
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {productList.length === 0 && (
+            <p className="text-sm text-muted-foreground">No products yet.</p>
+          )}
+          {productList.map((p) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between gap-3 rounded-lg border border-border p-3"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{p.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {[p.sku, p.marketplace].filter(Boolean).join(' · ') || '—'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <ProductStatusBadge status={p.status} />
+                {canManageProducts && (
+                  <ProductDialog
+                    clientId={client.id}
+                    product={p}
+                    trigger={
+                      <Button variant="ghost" size="sm">
+                        Edit
+                      </Button>
+                    }
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Portal users */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">Portal users</CardTitle>
+          {canEditClient && <AddClientUserDialog clientId={client.id} />}
+        </CardHeader>
+        <CardContent className="space-y-2.5">
+          {clientUserList.length === 0 && (
+            <p className="py-2 text-sm text-muted-foreground">
+              No portal users yet. Add one to give this client access to their dashboard.
+            </p>
+          )}
+          {clientUserList.map((cu) => {
+            const initials = cu.full_name
+              .split(/\s+/)
+              .slice(0, 2)
+              .map((s) => s[0]?.toUpperCase() ?? '')
+              .join('')
+            return (
+              <div
+                key={cu.id}
+                className="flex items-center gap-3 rounded-xl border border-border p-4"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
+                  {initials}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{cu.full_name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {cu.email}
+                    {cu.role_at_company ? ` · ${cu.role_at_company}` : ''}
+                  </p>
+                </div>
+                {canChat && <MessageClientUserButton clientUserId={cu.id} clientId={client.id} />}
+              </div>
+            )
+          })}
         </CardContent>
       </Card>
     </div>

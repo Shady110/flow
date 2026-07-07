@@ -25,7 +25,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ds/dialog'
-import { CLIENT_STATUS_LABELS, type ClientStatus } from '@/lib/types'
+import { CLIENT_STATUS_LABELS } from '@/lib/constants'
+import type { ClientStatus } from '@/lib/types'
 
 function slugify(v: string) {
   return v

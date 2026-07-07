@@ -20,6 +20,8 @@ export type PermissionKey =
   | 'users.invite'
   | 'users.manage'
   | 'settings.manage'
+  | 'products.view'
+  | 'products.manage'
 
 export type ProfileStatus = 'invited' | 'active' | 'disabled'
 export type ClientStatus = 'lead' | 'active' | 'paused' | 'churned'
@@ -100,24 +102,53 @@ export interface TaskActivity {
   created_at: string
 }
 
-export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
-  lead: 'Lead',
-  active: 'Active',
-  paused: 'Paused',
-  churned: 'Churned',
+export type ProductStatus = 'draft' | 'in_progress' | 'review' | 'live' | 'rejected' | 'paused'
+
+export interface ClientUser {
+  id: string
+  client_id: string
+  user_id: string | null
+  full_name: string
+  email: string
+  role_at_company: string | null
+  status: string
+  created_at: string
 }
 
-export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-  todo: 'To do',
-  in_progress: 'In progress',
-  blocked: 'Blocked',
-  review: 'Review',
-  done: 'Done',
+export interface Product {
+  id: string
+  client_id: string
+  name: string
+  sku: string | null
+  marketplace: string | null
+  status: ProductStatus
+  image_url: string | null
+  price: number | null
+  notes: string | null
+  updated_by: string | null
+  created_at: string
+  updated_at: string
 }
 
-export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  urgent: 'Urgent',
+export interface Conversation {
+  id: string
+  client_id: string
+  client_user_id: string
+  subject: string | null
+  last_message_at: string | null
+  created_at: string
 }
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_type: 'admin' | 'client'
+  sender_profile_id: string | null
+  sender_client_user_id: string | null
+  body: string
+  read_at: string | null
+  created_at: string
+}
+
+// Runtime label maps + ALL_PERMISSION_KEYS live in lib/constants.ts so this
+// module stays type-only (see the note there).

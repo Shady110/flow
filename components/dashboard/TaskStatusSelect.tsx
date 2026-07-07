@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ds/select'
-import { TASK_STATUS_LABELS, type TaskStatus } from '@/lib/types'
+import { TASK_STATUS_LABELS } from '@/lib/constants'
+import type { TaskStatus } from '@/lib/types'
 
 export function TaskStatusSelect({
   taskId,

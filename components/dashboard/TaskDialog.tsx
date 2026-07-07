@@ -24,13 +24,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ds/dialog'
-import {
-  TASK_STATUS_LABELS,
-  TASK_PRIORITY_LABELS,
-  type Task,
-  type TaskStatus,
-  type TaskPriority,
-} from '@/lib/types'
+import { TASK_STATUS_LABELS, TASK_PRIORITY_LABELS } from '@/lib/constants'
+import type { Task, TaskStatus, TaskPriority } from '@/lib/types'
 
 interface Option {
   id: string

@@ -1,6 +1,7 @@
 'use client'
 
-import { LogOut } from 'lucide-react'
+import Link from 'next/link'
+import { LogOut, MessageSquare } from 'lucide-react'
 import { signOut } from '@/lib/auth/actions'
 import {
   Avatar,
@@ -19,6 +20,7 @@ interface TopbarProps {
   name: string
   email: string
   roleName: string | null
+  canChat?: boolean
 }
 
 function initials(name: string, email: string) {
@@ -30,10 +32,18 @@ function initials(name: string, email: string) {
     .join('')
 }
 
-export function Topbar({ name, email, roleName }: TopbarProps) {
+export function Topbar({ name, email, roleName, canChat }: TopbarProps) {
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur">
-      <div />
+    <header className="flex h-16 items-center justify-end gap-3 border-b border-border bg-background/80 px-6 backdrop-blur">
+      {canChat && (
+        <Link
+          href="/inbox"
+          aria-label="Inbox"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <MessageSquare className="h-5 w-5" />
+        </Link>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-3 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <div className="hidden text-right sm:block">
