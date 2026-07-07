@@ -150,33 +150,5 @@ export interface Message {
   created_at: string
 }
 
-export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
-  draft: 'Draft',
-  in_progress: 'In progress',
-  review: 'In review',
-  live: 'Live',
-  rejected: 'Rejected',
-  paused: 'Paused',
-}
-
-export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
-  lead: 'Lead',
-  active: 'Active',
-  paused: 'Paused',
-  churned: 'Churned',
-}
-
-export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-  todo: 'To do',
-  in_progress: 'In progress',
-  blocked: 'Blocked',
-  review: 'Review',
-  done: 'Done',
-}
-
-export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  urgent: 'Urgent',
-}
+// Runtime label maps + ALL_PERMISSION_KEYS live in lib/constants.ts so this
+// module stays type-only (see the note there).

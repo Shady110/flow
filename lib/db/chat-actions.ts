@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import type { ActionResult } from '@/lib/db/client-actions'
+import type { Message } from '@/lib/types'
 
 /**
  * Get (or create) the conversation for a given client user. Used by the admin
@@ -54,11 +54,16 @@ const sendSchema = z.object({
   body: z.string().min(1).max(4000),
 })
 
+export type SendMessageResult =
+  | { ok: true; message: Message }
+  | { ok: false; error: string }
+
 /**
  * Send a message. The sender identity (admin vs client) is derived from the
- * session; RLS enforces that the sender is a participant.
+ * session; RLS enforces that the sender is a participant. Returns the inserted
+ * row so the UI can echo it instantly (realtime handles the other participant).
  */
-export async function sendMessageAction(input: unknown): Promise<ActionResult> {
+export async function sendMessageAction(input: unknown): Promise<SendMessageResult> {
   const parsed = sendSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: 'Message is empty.' }
 
@@ -94,7 +99,7 @@ export async function sendMessageAction(input: unknown): Promise<ActionResult> {
     }
   }
 
-  const { error } = await supabase.from('messages').insert(payload)
+  const { data: message, error } = await supabase.from('messages').insert(payload).select('*').single()
   if (error) return { ok: false, error: error.message }
 
   await supabase
@@ -102,5 +107,5 @@ export async function sendMessageAction(input: unknown): Promise<ActionResult> {
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', parsed.data.conversationId)
 
-  return { ok: true }
+  return { ok: true, message: message as Message }
 }

@@ -1,6 +1,7 @@
 import 'server-only'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { ALL_PERMISSION_KEYS } from '@/lib/constants'
 import type { CurrentUser, PermissionKey } from '@/lib/types'
 
 /**
@@ -30,11 +31,16 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   // Supabase returns the joined relation as an array or object depending on FK;
   // normalise to a single role object.
   const role = Array.isArray(profile.role) ? profile.role[0] : profile.role
-  const permissions = new Set<PermissionKey>(
-    (role?.role_permissions ?? []).map(
-      (rp: { permission_key: string }) => rp.permission_key as PermissionKey,
-    ),
-  )
+  // Co-founders implicitly hold every permission (mirrors the DB has_permission
+  // function), so newly-added permissions don't need to be re-granted to them.
+  const permissions =
+    role?.name === 'co-founder'
+      ? new Set<PermissionKey>(ALL_PERMISSION_KEYS)
+      : new Set<PermissionKey>(
+          (role?.role_permissions ?? []).map(
+            (rp: { permission_key: string }) => rp.permission_key as PermissionKey,
+          ),
+        )
 
   return {
     id: profile.id,

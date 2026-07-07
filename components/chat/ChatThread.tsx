@@ -27,27 +27,41 @@ export function ChatThread({ conversationId, initialMessages, mySide, accentClas
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Realtime subscription for new messages in this conversation.
+  // The socket must carry the user's JWT or RLS silently drops every event,
+  // so we set the realtime auth token before subscribing.
   useEffect(() => {
     const supabase = createClient()
-    const channel = supabase
-      .channel(`conv:${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          const msg = payload.new as Message
-          setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]))
-        },
-      )
-      .subscribe()
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    let cancelled = false
+
+    ;(async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (cancelled) return
+      if (session?.access_token) supabase.realtime.setAuth(session.access_token)
+
+      channel = supabase
+        .channel(`conv:${conversationId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `conversation_id=eq.${conversationId}`,
+          },
+          (payload) => {
+            const msg = payload.new as Message
+            setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]))
+          },
+        )
+        .subscribe()
+    })()
 
     return () => {
-      supabase.removeChannel(channel)
+      cancelled = true
+      if (channel) supabase.removeChannel(channel)
     }
   }, [conversationId])
 
@@ -63,51 +77,80 @@ export function ChatThread({ conversationId, initialMessages, mySide, accentClas
     setBody('')
     const res = await sendMessageAction({ conversationId, body: text })
     setSending(false)
-    if (!res.ok) setBody(text) // restore on failure
+    if (!res.ok) {
+      setBody(text) // restore on failure
+      return
+    }
+    // Echo instantly (dedup against the realtime event that follows).
+    const msg = res.message
+    setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]))
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-3 overflow-y-auto p-4">
-        {messages.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No messages yet. Say hello 👋
-          </p>
-        )}
-        {messages.map((m) => {
-          const mine = m.sender_type === mySide
-          return (
-            <div key={m.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
+    <div className="flex h-full flex-col bg-muted/20">
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto flex w-full max-w-2xl flex-col px-4 py-6">
+          {messages.length === 0 && (
+            <p className="py-16 text-center text-sm text-muted-foreground">
+              No messages yet. Say hello 👋
+            </p>
+          )}
+          {messages.map((m, i) => {
+            const mine = m.sender_type === mySide
+            const prev = messages[i - 1]
+            const grouped = prev && prev.sender_type === m.sender_type
+            return (
               <div
+                key={m.id}
                 className={cn(
-                  'max-w-[75%] rounded-2xl px-4 py-2 text-sm',
-                  mine
-                    ? cn('rounded-br-sm bg-flow-green text-flow-bg', accentClass)
-                    : 'rounded-bl-sm bg-muted text-foreground',
+                  'flex w-full',
+                  mine ? 'justify-end' : 'justify-start',
+                  grouped ? 'mt-1' : 'mt-4',
                 )}
               >
-                <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                <p className={cn('mt-1 text-[10px]', mine ? 'text-flow-bg/60' : 'text-muted-foreground')}>
-                  {timeLabel(m.created_at)}
-                </p>
+                <div
+                  className={cn(
+                    'flex max-w-[85%] items-end gap-2.5 rounded-2xl px-4 py-2.5 shadow-xs',
+                    mine
+                      ? cn('rounded-br-sm bg-flow-green text-flow-bg', accentClass)
+                      : 'rounded-bl-sm border border-border bg-background text-foreground',
+                  )}
+                >
+                  <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{m.body}</p>
+                  <span
+                    className={cn(
+                      'shrink-0 translate-y-0.5 text-[10px] tabular-nums',
+                      mine ? 'text-flow-bg/60' : 'text-muted-foreground',
+                    )}
+                  >
+                    {timeLabel(m.created_at)}
+                  </span>
+                </div>
               </div>
-            </div>
-          )
-        })}
-        <div ref={bottomRef} />
+            )
+          })}
+          <div ref={bottomRef} />
+        </div>
       </div>
 
-      <form onSubmit={send} className="flex items-center gap-2 border-t border-border p-3">
-        <input
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Type a message…"
-          className="flex-1 rounded-full border border-input bg-background px-4 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <Button type="submit" size="icon" className="rounded-full" disabled={sending || !body.trim()}>
-          <Send className="h-4 w-4" />
-        </Button>
-      </form>
+      <div className="border-t border-border bg-background">
+        <form onSubmit={send} className="mx-auto flex w-full max-w-2xl items-center gap-3 px-4 py-3">
+          <input
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Type a message…"
+            className="h-11 min-w-0 flex-1 rounded-full border border-input bg-muted/30 px-4 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <Button
+            type="submit"
+            size="icon"
+            className="h-11 w-11 shrink-0 rounded-full"
+            disabled={sending || !body.trim()}
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </form>
+      </div>
     </div>
   )
 }

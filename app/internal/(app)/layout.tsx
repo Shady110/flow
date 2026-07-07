@@ -17,6 +17,7 @@ export default async function AuthedInternalLayout({
           name={user.full_name ?? ''}
           email={user.email}
           roleName={user.role?.name ?? null}
+          canChat={user.permissions.has('chat.access')}
         />
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
       </div>

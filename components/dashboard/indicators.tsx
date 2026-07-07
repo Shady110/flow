@@ -5,11 +5,8 @@ import {
   TASK_STATUS_LABELS,
   TASK_PRIORITY_LABELS,
   PRODUCT_STATUS_LABELS,
-  type ClientStatus,
-  type TaskStatus,
-  type TaskPriority,
-  type ProductStatus,
-} from '@/lib/types'
+} from '@/lib/constants'
+import type { ClientStatus, TaskStatus, TaskPriority, ProductStatus } from '@/lib/types'
 import { deadlineState, DEADLINE_META } from '@/lib/deadlines'
 
 const CLIENT_STATUS_STYLE: Record<ClientStatus, string> = {

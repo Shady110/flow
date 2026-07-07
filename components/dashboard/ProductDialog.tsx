@@ -24,7 +24,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ds/dialog'
-import { PRODUCT_STATUS_LABELS, type Product, type ProductStatus } from '@/lib/types'
+import { PRODUCT_STATUS_LABELS } from '@/lib/constants'
+import type { Product, ProductStatus } from '@/lib/types'
 
 export function ProductDialog({
   clientId,

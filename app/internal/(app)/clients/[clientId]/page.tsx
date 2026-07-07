@@ -197,27 +197,37 @@ export default async function ClientDetailPage({
           <CardTitle className="text-base">Portal users</CardTitle>
           {canEditClient && <AddClientUserDialog clientId={client.id} />}
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-2.5">
           {clientUserList.length === 0 && (
-            <p className="text-sm text-muted-foreground">
+            <p className="py-2 text-sm text-muted-foreground">
               No portal users yet. Add one to give this client access to their dashboard.
             </p>
           )}
-          {clientUserList.map((cu) => (
-            <div
-              key={cu.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-border p-3"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{cu.full_name}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {cu.email}
-                  {cu.role_at_company ? ` · ${cu.role_at_company}` : ''}
-                </p>
+          {clientUserList.map((cu) => {
+            const initials = cu.full_name
+              .split(/\s+/)
+              .slice(0, 2)
+              .map((s) => s[0]?.toUpperCase() ?? '')
+              .join('')
+            return (
+              <div
+                key={cu.id}
+                className="flex items-center gap-3 rounded-xl border border-border p-4"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
+                  {initials}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{cu.full_name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {cu.email}
+                    {cu.role_at_company ? ` · ${cu.role_at_company}` : ''}
+                  </p>
+                </div>
+                {canChat && <MessageClientUserButton clientUserId={cu.id} clientId={client.id} />}
               </div>
-              {canChat && <MessageClientUserButton clientUserId={cu.id} clientId={client.id} />}
-            </div>
-          ))}
+            )
+          })}
         </CardContent>
       </Card>
     </div>

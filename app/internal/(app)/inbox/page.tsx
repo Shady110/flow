@@ -40,17 +40,26 @@ export default async function InboxPage() {
             {rows.map((r) => {
               const cu = one(r.client_user)
               const cl = one(r.client)
+              const name = cu?.full_name ?? 'Unknown'
+              const initials = name
+                .split(/\s+/)
+                .slice(0, 2)
+                .map((s) => s[0]?.toUpperCase() ?? '')
+                .join('')
               return (
                 <li key={r.id}>
                   <Link
                     href={`/inbox/${r.id}`}
-                    className="flex items-center justify-between gap-3 px-5 py-4 hover:bg-muted/50"
+                    className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/50"
                   >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{cu?.full_name ?? 'Unknown'}</p>
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
+                      {initials}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{name}</p>
                       <p className="truncate text-xs text-muted-foreground">{cl?.name}</p>
                     </div>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="shrink-0 text-xs text-muted-foreground">
                       {r.last_message_at
                         ? new Date(r.last_message_at).toLocaleDateString(undefined, {
                             month: 'short',
