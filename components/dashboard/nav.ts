@@ -27,7 +27,7 @@ export const INTERNAL_NAV: NavItem[] = [
   { label: 'Tasks', href: '/tasks', icon: ListChecks, permission: 'tasks.view' },
   { label: 'Inbox', href: '/inbox', icon: MessageSquare, permission: 'chat.access' },
   { label: 'Team', href: '/team', icon: BarChart3, permission: 'team.view' },
-  { label: 'Finance', href: '/finance', icon: Wallet, permission: 'finance.view', soon: true },
+  { label: 'Finance', href: '/finance', icon: Wallet, permission: 'finance.view' },
   { label: 'Automations', href: '/automations', icon: Sparkles, permission: 'automation.run', soon: true },
   { label: 'Roles & access', href: '/settings/roles', icon: Shield, permission: 'roles.manage' },
 ]

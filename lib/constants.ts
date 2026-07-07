@@ -8,7 +8,20 @@ import type {
   ClientStatus,
   TaskStatus,
   TaskPriority,
+  InvoiceStatus,
 } from '@/lib/types'
+
+/** Default trading currency for the agency. */
+export const DEFAULT_CURRENCY = 'EGP'
+
+export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
+  draft: 'Draft',
+  sent: 'Sent',
+  paid: 'Paid',
+  void: 'Void',
+}
+
+export const PAYMENT_METHODS = ['Cash', 'Bank transfer', 'InstaPay', 'Card', 'Other'] as const
 
 /** Every permission key — co-founders implicitly hold all of these. */
 export const ALL_PERMISSION_KEYS: PermissionKey[] = [

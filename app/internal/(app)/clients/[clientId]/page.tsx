@@ -1,9 +1,12 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowUpRight } from 'lucide-react'
 import { getClient, getTasks, getTeam } from '@/lib/db/queries'
+import { getInvoices } from '@/lib/db/finance-queries'
 import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { deadlineState } from '@/lib/deadlines'
+import { formatMoney } from '@/lib/money'
 import type { Product, ClientUser } from '@/lib/types'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { TaskDialog } from '@/components/dashboard/TaskDialog'
@@ -11,11 +14,14 @@ import { TaskStatusSelect } from '@/components/dashboard/TaskStatusSelect'
 import { ProductDialog } from '@/components/dashboard/ProductDialog'
 import { AddClientUserDialog } from '@/components/dashboard/AddClientUserDialog'
 import { MessageClientUserButton } from '@/components/dashboard/MessageClientUserButton'
+import { NewInvoiceDialog } from '@/components/dashboard/NewInvoiceDialog'
+import { RecordPaymentDialog } from '@/components/dashboard/RecordPaymentDialog'
 import {
   ClientStatusBadge,
   DeadlineIndicator,
   PriorityLabel,
   ProductStatusBadge,
+  InvoiceStatusBadge,
 } from '@/components/dashboard/indicators'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
 import { Button } from '@/components/ds/button'
@@ -37,6 +43,8 @@ export default async function ClientDetailPage({
   ])
   if (!client) notFound()
 
+  const invoices = user?.permissions.has('finance.view') ? await getInvoices(clientId) : []
+
   const productList = (products as Product[]) ?? []
   const clientUserList = (clientUsers as ClientUser[]) ?? []
   const memberName = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
@@ -45,6 +53,16 @@ export default async function ClientDetailPage({
   const canManageProducts = !!user?.permissions.has('products.manage')
   const canEditClient = !!user?.permissions.has('clients.edit')
   const canChat = !!user?.permissions.has('chat.access')
+  const canViewFinance = !!user?.permissions.has('finance.view')
+  const canIssueInvoice = !!user?.permissions.has('invoices.issue')
+  const canManageFinance = !!user?.permissions.has('finance.manage')
+
+  const balanceOwed = invoices
+    .filter((i) => i.status === 'sent' || i.status === 'paid')
+    .reduce((s, i) => s + i.balance, 0)
+  const invoiceOptions = invoices
+    .filter((i) => i.balance > 0 && i.status !== 'void')
+    .map((i) => ({ id: i.id, client_id: i.client_id, label: `${i.number} · ${formatMoney(i.balance, i.currency)} due` }))
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000'
   const portalProtocol = rootDomain.includes('localhost') ? 'http' : 'https'
@@ -190,6 +208,71 @@ export default async function ClientDetailPage({
           ))}
         </CardContent>
       </Card>
+
+      {/* Finance */}
+      {canViewFinance && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <div>
+              <CardTitle className="text-base">Finance</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Balance owed:{' '}
+                <span className={balanceOwed > 0 ? 'font-medium text-warning' : 'text-muted-foreground'}>
+                  {formatMoney(balanceOwed)}
+                </span>
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {canManageFinance && (
+                <RecordPaymentDialog
+                  clients={[{ id: client.id, label: client.name }]}
+                  invoices={invoiceOptions}
+                  fixedClientId={client.id}
+                  trigger={
+                    <Button variant="ghost" size="sm">
+                      Record payment
+                    </Button>
+                  }
+                />
+              )}
+              {canIssueInvoice && (
+                <NewInvoiceDialog
+                  clients={[{ id: client.id, label: client.name }]}
+                  fixedClientId={client.id}
+                  trigger={
+                    <Button variant="outline" size="sm">
+                      New invoice
+                    </Button>
+                  }
+                />
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {invoices.length === 0 && (
+              <p className="text-sm text-muted-foreground">No invoices yet.</p>
+            )}
+            {invoices.map((i) => (
+              <Link
+                key={i.id}
+                href={`/finance/invoices/${i.id}`}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium">{i.number}</span>
+                  <InvoiceStatusBadge status={i.status} />
+                </div>
+                <div className="text-right text-sm">
+                  <span className="tabular-nums">{formatMoney(i.total, i.currency)}</span>
+                  {i.balance > 0 && (
+                    <span className="ml-2 text-xs text-warning">{formatMoney(i.balance, i.currency)} due</span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Portal users */}
       <Card>

@@ -150,5 +150,53 @@ export interface Message {
   created_at: string
 }
 
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'void'
+
+export interface Invoice {
+  id: string
+  client_id: string
+  number: string
+  status: InvoiceStatus
+  currency: string
+  issue_date: string
+  due_date: string | null
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface InvoiceItem {
+  id: string
+  invoice_id: string
+  description: string
+  quantity: number
+  unit_price: number
+  position: number
+}
+
+export interface Payment {
+  id: string
+  client_id: string
+  invoice_id: string | null
+  amount: number
+  method: string | null
+  paid_at: string
+  notes: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface Expense {
+  id: string
+  client_id: string | null
+  category: string | null
+  description: string | null
+  amount: number
+  incurred_on: string
+  created_by: string | null
+  created_at: string
+}
+
 // Runtime label maps + ALL_PERMISSION_KEYS live in lib/constants.ts so this
 // module stays type-only (see the note there).

@@ -359,3 +359,25 @@ h1, h2, h3, h4 {
     border-color: var(--border);
   }
 }
+
+/* Print: strip the dashboard chrome so only the invoice document prints. */
+@media print {
+  aside,
+  header,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  .print-invoice {
+    max-width: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}
