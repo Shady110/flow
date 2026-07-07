@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, ListChecks, MessageSquare, type LucideIcon } from 'lucide-react'
+import { LayoutDashboard, Package, ListChecks, FileText, MessageSquare, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ITEMS: { label: string; href: string; icon: LucideIcon }[] = [
   { label: 'Overview', href: '/', icon: LayoutDashboard },
   { label: 'Products', href: '/products', icon: Package },
   { label: 'Tasks', href: '/tasks', icon: ListChecks },
+  { label: 'Invoices', href: '/invoices', icon: FileText },
   { label: 'Chat', href: '/chat', icon: MessageSquare },
 ]
 

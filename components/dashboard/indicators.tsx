@@ -5,8 +5,9 @@ import {
   TASK_STATUS_LABELS,
   TASK_PRIORITY_LABELS,
   PRODUCT_STATUS_LABELS,
+  INVOICE_STATUS_LABELS,
 } from '@/lib/constants'
-import type { ClientStatus, TaskStatus, TaskPriority, ProductStatus } from '@/lib/types'
+import type { ClientStatus, TaskStatus, TaskPriority, ProductStatus, InvoiceStatus } from '@/lib/types'
 import { deadlineState, DEADLINE_META } from '@/lib/deadlines'
 
 const CLIENT_STATUS_STYLE: Record<ClientStatus, string> = {
@@ -64,6 +65,21 @@ export function ProductStatusBadge({ status }: { status: ProductStatus }) {
   return (
     <Badge className={cn('border-transparent font-medium', PRODUCT_STATUS_STYLE[status])}>
       {PRODUCT_STATUS_LABELS[status]}
+    </Badge>
+  )
+}
+
+const INVOICE_STATUS_STYLE: Record<InvoiceStatus, string> = {
+  draft: 'bg-muted text-muted-foreground',
+  sent: 'bg-warning/15 text-warning',
+  paid: 'bg-flow-lime text-flow-green',
+  void: 'bg-destructive/15 text-destructive',
+}
+
+export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
+  return (
+    <Badge className={cn('border-transparent font-medium', INVOICE_STATUS_STYLE[status])}>
+      {INVOICE_STATUS_LABELS[status]}
     </Badge>
   )
 }
