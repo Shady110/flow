@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Download, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
-import { getJobDownloadUrlAction } from '@/lib/db/automation-actions'
+import { getJobDownloadUrlAction, retryFailedItemsAction } from '@/lib/db/automation-actions'
 import type { AutomationJob } from '@/lib/types'
 import { Button } from '@/components/ds/button'
 import { Card, CardContent } from '@/components/ds/card'
@@ -68,6 +68,18 @@ export function JobRunner({ job }: { job: AutomationJob }) {
     window.open(res.url, '_blank')
   }
 
+  async function retryFailed() {
+    const res = await retryFailedItemsAction(job.id)
+    if (!res.ok) {
+      toast.error(res.error)
+      return
+    }
+    setProgress((p) => ({ ...p, remaining: p.remaining + p.failed, failed: 0 }))
+    setStatus('processing')
+    started.current = false
+    run()
+  }
+
   const pct = progress.total ? Math.round(((progress.done + progress.failed) / progress.total) * 100) : 0
   const finished = progress.remaining === 0 && progress.total > 0
   const downloadLabel = job.type === 'image' ? 'Download images (.zip)' : 'Download sheet (.xlsx)'
@@ -98,17 +110,21 @@ export function JobRunner({ job }: { job: AutomationJob }) {
           <div className="h-full rounded-full bg-flow-green transition-all" style={{ width: `${pct}%` }} />
         </div>
 
-        <div className="flex gap-2">
-          {finished ? (
+        <div className="flex flex-wrap gap-2">
+          {finished && progress.done > 0 && (
             <Button onClick={download}>
               <Download className="h-4 w-4" /> {downloadLabel}
             </Button>
-          ) : (
-            !running && (
-              <Button onClick={run} variant="outline">
-                Resume processing
-              </Button>
-            )
+          )}
+          {!running && progress.remaining > 0 && (
+            <Button onClick={run} variant="outline">
+              Resume processing
+            </Button>
+          )}
+          {!running && progress.failed > 0 && (
+            <Button onClick={retryFailed} variant="outline">
+              Retry {progress.failed} failed
+            </Button>
           )}
         </div>
       </CardContent>

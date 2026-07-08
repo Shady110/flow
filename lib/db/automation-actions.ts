@@ -95,6 +95,25 @@ export async function createListingJobAction(input: {
   }
 }
 
+/** Requeue only the failed items of a job and set it processing again. */
+export async function retryFailedItemsAction(jobId: string): Promise<ActionResult> {
+  try {
+    await requireAutomation()
+    const supabase = await createClient()
+    const { error } = await supabase
+      .from('automation_items')
+      .update({ status: 'queued', error: null })
+      .eq('job_id', jobId)
+      .eq('status', 'failed')
+    if (error) return { ok: false, error: error.message }
+    await supabase.from('automation_jobs').update({ status: 'processing' }).eq('id', jobId)
+    revalidatePath(`/automations/${jobId}`)
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Retry failed' }
+  }
+}
+
 /** Signed download URL for a finished job's output file. */
 export async function getJobDownloadUrlAction(
   jobId: string,

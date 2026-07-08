@@ -23,6 +23,12 @@ export default async function AutomationsPage() {
     <div className="space-y-8">
       <PageHeader title="Automations" description="AI-assisted listing & image production." />
 
+      <p className="rounded-lg bg-muted px-4 py-2.5 text-xs text-muted-foreground">
+        On the Gemini free tier, large batches are paced under the rate limit and may hit a
+        daily cap — jobs are resumable and you can &ldquo;Retry failed&rdquo; later. Enable
+        billing for faster bulk runs.
+      </p>
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Link href="/automations/listing/new">
           <Card className="h-full transition-shadow hover:shadow-md">

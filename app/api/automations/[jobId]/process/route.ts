@@ -11,9 +11,10 @@ import { getMarketplace } from '@/lib/automation/marketplaces'
 import type { AutomationItem, AutomationJob } from '@/lib/types'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60
+export const maxDuration = 300
 
 const ANGLES = ['front', 'side', 'back'] as const
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 function mimeFromPath(p: string) {
   const ext = p.split('.').pop()?.toLowerCase()
@@ -32,16 +33,47 @@ async function processImageItem(jobId: string, item: AutomationItem) {
   const images: Record<string, string> = {}
   for (const angle of ANGLES) {
     const raw = await generateProductImage(refs, angle)
-    const jpg = await sharp(raw)
-      .flatten({ background: '#ffffff' })
-      .resize(2000, 2000, { fit: 'contain', background: '#ffffff' })
-      .jpeg({ quality: 90 })
-      .toBuffer()
+    const jpg = await toWhiteCanvas(raw)
     const outPath = `${jobId}/${input.sku}_${angle}.jpg`
     await uploadBuffer(OUTPUT_BUCKET, outPath, jpg, 'image/jpeg')
     images[angle] = outPath
+    await sleep(800) // gentle pacing between angle generations
   }
   return { sku: input.sku, images }
+}
+
+const CANVAS = 2000 // final square size
+const PRODUCT_MAX = 1720 // product bounding box (leaves an even white margin)
+
+/**
+ * Deterministically standardize a generated image onto a pure-white square:
+ * flatten any alpha to white, trim the near-white border down to the product's
+ * bounding box, then centre it on a fresh RGB(255,255,255) canvas. This
+ * guarantees a clean white background + consistent framing regardless of what
+ * the model returned.
+ */
+async function toWhiteCanvas(raw: Buffer): Promise<Buffer> {
+  let product: Buffer
+  try {
+    product = await sharp(raw)
+      .flatten({ background: '#ffffff' })
+      .trim({ background: '#ffffff', threshold: 22 })
+      .resize(PRODUCT_MAX, PRODUCT_MAX, { fit: 'inside', withoutEnlargement: false })
+      .toBuffer()
+  } catch {
+    // trim can throw if the image is uniform; fall back to a plain contain resize.
+    product = await sharp(raw)
+      .flatten({ background: '#ffffff' })
+      .resize(PRODUCT_MAX, PRODUCT_MAX, { fit: 'inside' })
+      .toBuffer()
+  }
+
+  return sharp({
+    create: { width: CANVAS, height: CANVAS, channels: 3, background: '#ffffff' },
+  })
+    .composite([{ input: product, gravity: 'center' }])
+    .jpeg({ quality: 90, chromaSubsampling: '4:4:4' })
+    .toBuffer()
 }
 
 async function finalizeListing(job: AutomationJob, supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -102,8 +134,9 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ jo
     return NextResponse.json({ done: j.done_count, failed: j.failed_count, total: j.total, remaining: 0 })
   }
 
-  // Claim a small chunk of queued items (1 image product / 3 listing rows per call).
-  const chunk = j.type === 'image' ? 1 : 3
+  // One item per call keeps each request short and avoids bursting the rate limit;
+  // withRetry() handles pacing/backoff on 429s.
+  const chunk = 1
   const { data: queued } = await supabase
     .from('automation_items')
     .select('*')
