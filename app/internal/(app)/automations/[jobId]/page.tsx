@@ -1,0 +1,74 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
+import { requirePermission } from '@/lib/auth/session'
+import { getJob, getJobItems } from '@/lib/db/automation-queries'
+import { PageHeader } from '@/components/dashboard/PageHeader'
+import { JobRunner } from '@/components/automation/JobRunner'
+import { Card } from '@/components/ds/card'
+import { Badge } from '@/components/ds/badge'
+import { cn } from '@/lib/utils'
+import type { ItemStatus } from '@/lib/types'
+
+const ITEM_STATUS_STYLE: Record<ItemStatus, string> = {
+  queued: 'bg-muted text-muted-foreground',
+  processing: 'bg-warning/15 text-warning',
+  done: 'bg-flow-lime text-flow-green',
+  failed: 'bg-destructive/15 text-destructive',
+}
+
+export default async function JobDetailPage({
+  params,
+}: {
+  params: Promise<{ jobId: string }>
+}) {
+  await requirePermission('automation.run')
+  const { jobId } = await params
+  const job = await getJob(jobId)
+  if (!job) notFound()
+  const items = await getJobItems(jobId)
+
+  const itemLabel = (input: Record<string, unknown>, position: number) => {
+    if (job.type === 'image') return String(input.sku ?? `Product ${position + 1}`)
+    const canonical = (input.canonical ?? {}) as Record<string, string>
+    return canonical.sku || canonical.name || `Row ${position + 1}`
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <Link
+        href="/automations"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to automations
+      </Link>
+      <PageHeader
+        title={job.type === 'image' ? 'Image job' : 'Listing job'}
+        description={
+          job.type === 'listing'
+            ? `${job.marketplace ?? ''} · ${job.total} products`
+            : `${job.total} products · front / side / back`
+        }
+      />
+      <JobRunner job={job} />
+
+      <Card className="p-0">
+        <ul className="divide-y divide-border">
+          {items.map((it) => (
+            <li key={it.id} className="flex items-start justify-between gap-3 px-5 py-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{itemLabel(it.input, it.position)}</p>
+                {it.status === 'failed' && it.error && (
+                  <p className="mt-0.5 text-xs text-destructive">{it.error}</p>
+                )}
+              </div>
+              <Badge className={cn('border-transparent font-medium capitalize', ITEM_STATUS_STYLE[it.status])}>
+                {it.status}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </div>
+  )
+}

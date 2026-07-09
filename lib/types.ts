@@ -198,5 +198,38 @@ export interface Expense {
   created_at: string
 }
 
+export type AutomationType = 'listing' | 'image'
+export type JobStatus = 'draft' | 'processing' | 'done' | 'failed'
+export type ItemStatus = 'queued' | 'processing' | 'done' | 'failed'
+
+export interface AutomationJob {
+  id: string
+  type: AutomationType
+  status: JobStatus
+  client_id: string | null
+  marketplace: string | null
+  params: Record<string, unknown>
+  input_path: string | null
+  output_path: string | null
+  total: number
+  done_count: number
+  failed_count: number
+  error: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AutomationItem {
+  id: string
+  job_id: string
+  status: ItemStatus
+  position: number
+  input: Record<string, unknown>
+  output: Record<string, unknown> | null
+  error: string | null
+  created_at: string
+}
+
 // Runtime label maps + ALL_PERMISSION_KEYS live in lib/constants.ts so this
 // module stays type-only (see the note there).
