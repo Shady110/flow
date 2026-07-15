@@ -1,8 +1,8 @@
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { requireClientContext } from '@/lib/auth/client-session'
 import { getInvoices } from '@/lib/db/finance-queries'
 import { formatMoney } from '@/lib/money'
+import { LinkedTableRow } from '@/components/dashboard/LinkedTableRow'
 import { Card } from '@/components/ds/card'
 import {
   Table,
@@ -49,12 +49,8 @@ export default async function PortalInvoices() {
               </TableRow>
             )}
             {invoices.map((i) => (
-              <TableRow key={i.id}>
-                <TableCell className="font-medium">
-                  <Link href={`/invoices/${i.id}`} className="hover:underline">
-                    {i.number}
-                  </Link>
-                </TableCell>
+              <LinkedTableRow key={i.id} href={`/invoices/${i.id}`}>
+                <TableCell className="font-medium">{i.number}</TableCell>
                 <TableCell className="text-end">{formatMoney(i.total, i.currency)}</TableCell>
                 <TableCell className="text-end">
                   {i.balance > 0 ? (
@@ -63,7 +59,7 @@ export default async function PortalInvoices() {
                     '—'
                   )}
                 </TableCell>
-              </TableRow>
+              </LinkedTableRow>
             ))}
           </TableBody>
         </Table>

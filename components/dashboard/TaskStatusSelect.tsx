@@ -41,17 +41,20 @@ export function TaskStatusSelect({
   }
 
   return (
-    <Select value={status} onValueChange={onChange} disabled={pending}>
-      <SelectTrigger className="h-8 w-[140px] text-xs">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {TASK_STATUSES.map((s) => (
-          <SelectItem key={s} value={s} className="text-xs">
-            {t(s)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    // Stop clicks/keys from bubbling to a clickable parent row (LinkedTableRow).
+    <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+      <Select value={status} onValueChange={onChange} disabled={pending}>
+        <SelectTrigger className="h-8 w-[140px] text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {TASK_STATUSES.map((s) => (
+            <SelectItem key={s} value={s} className="text-xs">
+              {t(s)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </span>
   )
 }

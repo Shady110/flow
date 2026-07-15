@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { TrendingUp, Calendar, AlertCircle, PiggyBank } from 'lucide-react'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
@@ -9,6 +8,7 @@ import { PageHeader } from '@/components/dashboard/PageHeader'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { GroupedBars } from '@/components/dashboard/charts'
 import { InvoiceStatusBadge } from '@/components/dashboard/indicators'
+import { LinkedTableRow } from '@/components/dashboard/LinkedTableRow'
 import { NewInvoiceDialog } from '@/components/dashboard/NewInvoiceDialog'
 import { RecordPaymentDialog } from '@/components/dashboard/RecordPaymentDialog'
 import { AddExpenseDialog } from '@/components/dashboard/AddExpenseDialog'
@@ -111,12 +111,8 @@ export default async function FinancePage() {
                 </TableRow>
               )}
               {invoices.map((i) => (
-                <TableRow key={i.id}>
-                  <TableCell className="font-medium">
-                    <Link href={`/finance/invoices/${i.id}`} className="hover:underline">
-                      {i.number}
-                    </Link>
-                  </TableCell>
+                <LinkedTableRow key={i.id} href={`/finance/invoices/${i.id}`}>
+                  <TableCell className="font-medium">{i.number}</TableCell>
                   <TableCell className="text-muted-foreground">{i.client_name}</TableCell>
                   <TableCell>
                     <InvoiceStatusBadge status={i.status} />
@@ -129,7 +125,7 @@ export default async function FinancePage() {
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                </TableRow>
+                </LinkedTableRow>
               ))}
             </TableBody>
           </Table>

@@ -1,10 +1,10 @@
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { getClients, getTasks, getTeam } from '@/lib/db/queries'
 import { getCurrentUser } from '@/lib/auth/session'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { TaskDialog } from '@/components/dashboard/TaskDialog'
 import { TaskStatusSelect } from '@/components/dashboard/TaskStatusSelect'
+import { LinkedTableRow } from '@/components/dashboard/LinkedTableRow'
 import { DeadlineIndicator, PriorityLabel, TaskStatusBadge } from '@/components/dashboard/indicators'
 import { Card } from '@/components/ds/card'
 import {
@@ -66,12 +66,10 @@ export default async function TasksPage() {
               </TableRow>
             )}
             {tasks.map((t) => (
-              <TableRow key={t.id}>
+              <LinkedTableRow key={t.id} href={`/clients/${t.client_id}`}>
                 <TableCell className="font-medium">{t.title}</TableCell>
-                <TableCell>
-                  <Link href={`/clients/${t.client_id}`} className="text-muted-foreground hover:underline">
-                    {clientName.get(t.client_id)}
-                  </Link>
+                <TableCell className="text-muted-foreground">
+                  {clientName.get(t.client_id)}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {memberName.get(t.assignee_id ?? '') ?? tc('unassigned')}
@@ -89,7 +87,7 @@ export default async function TasksPage() {
                     <TaskStatusBadge status={t.status} />
                   )}
                 </TableCell>
-              </TableRow>
+              </LinkedTableRow>
             ))}
           </TableBody>
         </Table>
