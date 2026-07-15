@@ -371,6 +371,12 @@ h1, h2, h3, h4 {
   }
 }
 
+/* Keep brand backgrounds (e.g. the invoice logo lockup) when printing / saving to PDF. */
+.print-exact {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
 /* Print: strip the dashboard chrome so only the invoice document prints. */
 @media print {
   aside,

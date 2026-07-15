@@ -28,7 +28,7 @@ export default async function PortalInvoiceDetail({
         </Link>
         <PrintButton />
       </div>
-      <InvoiceDocument invoice={invoice} />
+      <InvoiceDocument invoice={invoice} portal />
     </div>
   )
 }

@@ -4,25 +4,37 @@ import type { InvoiceWithMeta } from '@/lib/db/finance-queries'
 /**
  * Branded, print-friendly invoice document. Purely presentational so it can be
  * rendered in the internal dashboard and the client portal alike.
+ *
+ * `portal` hides the Issued date and Status entirely (client-facing view).
+ * On the internal view those two fields show on screen but are marked
+ * `no-print`, so they never appear in a downloaded/printed PDF.
  */
-export function InvoiceDocument({ invoice }: { invoice: InvoiceWithMeta }) {
+export function InvoiceDocument({
+  invoice,
+  portal = false,
+}: {
+  invoice: InvoiceWithMeta
+  portal?: boolean
+}) {
   const { currency } = invoice
   return (
     <div className="print-invoice mx-auto max-w-3xl rounded-2xl border border-flow-border bg-white p-8 text-flow-text shadow-sm sm:p-10">
       {/* Header */}
       <div className="flex flex-col justify-between gap-6 border-b border-flow-border pb-6 sm:flex-row sm:items-start">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="font-display text-2xl font-bold tracking-tight text-flow-green">FLOW</span>
-            <span className="rounded-full bg-flow-lime px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-flow-green">
-              Agency
-            </span>
+          <div className="print-exact inline-flex items-center rounded-xl bg-flow-green px-4 py-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/flow-wordmark-white.png"
+              alt="FLOW Agency"
+              className="h-7 w-auto object-contain"
+            />
           </div>
-          <p className="mt-2 text-xs text-flow-text-muted">
+          <p className="mt-3 text-xs text-flow-text-muted">
             FLOW Agency · E-commerce content & marketplace management
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-end">
           <p className="font-display text-xl font-bold uppercase tracking-wide text-flow-green">Invoice</p>
           <p className="mt-1 text-sm font-medium">{invoice.number}</p>
         </div>
@@ -34,20 +46,24 @@ export function InvoiceDocument({ invoice }: { invoice: InvoiceWithMeta }) {
           <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Billed to</p>
           <p className="mt-1 text-sm font-medium">{invoice.client_name}</p>
         </div>
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Issued</p>
-          <p className="mt-1 text-sm">{new Date(invoice.issue_date).toLocaleDateString()}</p>
-        </div>
+        {!portal && (
+          <div className="no-print">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Issued</p>
+            <p className="mt-1 text-sm">{new Date(invoice.issue_date).toLocaleDateString()}</p>
+          </div>
+        )}
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Due</p>
           <p className="mt-1 text-sm">
             {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : '—'}
           </p>
         </div>
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Status</p>
-          <p className="mt-1 text-sm capitalize">{invoice.status}</p>
-        </div>
+        {!portal && (
+          <div className="no-print">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Status</p>
+            <p className="mt-1 text-sm capitalize">{invoice.status}</p>
+          </div>
+        )}
       </div>
 
       {/* Line items */}

@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server'
 import { requireClientContext } from '@/lib/auth/client-session'
 import { getInvoices } from '@/lib/db/finance-queries'
 import { formatMoney } from '@/lib/money'
-import { InvoiceStatusBadge } from '@/components/dashboard/indicators'
 import { Card } from '@/components/ds/card'
 import {
   Table,
@@ -37,8 +36,6 @@ export default async function PortalInvoices() {
           <TableHeader>
             <TableRow>
               <TableHead>{t('invoice')}</TableHead>
-              <TableHead>{t('issued')}</TableHead>
-              <TableHead>{t('status')}</TableHead>
               <TableHead className="text-end">{t('total')}</TableHead>
               <TableHead className="text-end">{t('balance')}</TableHead>
             </TableRow>
@@ -46,7 +43,7 @@ export default async function PortalInvoices() {
           <TableBody>
             {invoices.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={3} className="py-10 text-center text-sm text-muted-foreground">
                   {t('noInvoices')}
                 </TableCell>
               </TableRow>
@@ -57,12 +54,6 @@ export default async function PortalInvoices() {
                   <Link href={`/invoices/${i.id}`} className="hover:underline">
                     {i.number}
                   </Link>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {new Date(i.issue_date).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <InvoiceStatusBadge status={i.status} />
                 </TableCell>
                 <TableCell className="text-end">{formatMoney(i.total, i.currency)}</TableCell>
                 <TableCell className="text-end">
