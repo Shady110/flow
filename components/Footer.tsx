@@ -1,15 +1,8 @@
 'use client'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin } from 'lucide-react'
-
-const serviceLinks = [
-  'Photography',
-  'Listing Optimization',
-  'Marketplace Management',
-  'Product Video',
-  'Social Media Content',
-]
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -21,6 +14,14 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
 }
 
 export default function Footer() {
+  const t = useTranslations('marketing.footer')
+  const serviceLinks = [
+    t('services.photography'),
+    t('services.listing'),
+    t('services.management'),
+    t('services.video'),
+    t('services.social'),
+  ]
   return (
     <footer
       className="relative grain-overlay overflow-hidden"
@@ -44,19 +45,17 @@ export default function Footer() {
               className="relative object-contain mb-4"
             />
             <p className="relative text-white font-semibold text-sm mb-3">
-              Elevate every listing. Amplify every sale.
+              {t('tagline')}
             </p>
             <p className="relative text-white/60 text-sm leading-relaxed">
-              An elite e-commerce content studio helping sellers transform raw
-              products into high-performing marketplace listings across Egypt and
-              the Arab world.
+              {t('blurb')}
             </p>
           </div>
 
           {/* Center */}
           <div className="md:col-span-3">
             <p className="text-white font-semibold text-sm uppercase tracking-wider mb-5">
-              Services
+              {t('servicesTitle')}
             </p>
             <ul className="space-y-3">
               {serviceLinks.map((s) => (
@@ -70,7 +69,7 @@ export default function Footer() {
           {/* Right */}
           <div className="md:col-span-4">
             <p className="text-white font-semibold text-sm uppercase tracking-wider mb-5">
-              Contact
+              {t('contactTitle')}
             </p>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
@@ -91,7 +90,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-white/60 shrink-0" />
-                <span className="text-white/60 text-sm">Cairo, Egypt</span>
+                <span className="text-white/60 text-sm">{t('location')}</span>
               </div>
             </div>
           </div>
@@ -99,7 +98,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-white/10 mt-12 pt-6 text-center">
-          <p className="text-white/40 text-sm">© 2026 FLOW Agency. All rights reserved.</p>
+          <p className="text-white/40 text-sm">{t('rights')}</p>
         </div>
       </div>
     </footer>

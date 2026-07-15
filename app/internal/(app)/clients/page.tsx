@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { getClients, getTasks } from '@/lib/db/queries'
 import { getCurrentUser } from '@/lib/auth/session'
 import { deadlineState } from '@/lib/deadlines'
@@ -7,7 +8,12 @@ import { ClientsTable, type ClientRow } from '@/components/dashboard/ClientsTabl
 import { Card } from '@/components/ds/card'
 
 export default async function ClientsPage() {
-  const [clients, tasks, user] = await Promise.all([getClients(), getTasks(), getCurrentUser()])
+  const [clients, tasks, user, t] = await Promise.all([
+    getClients(),
+    getTasks(),
+    getCurrentUser(),
+    getTranslations('internal.clients'),
+  ])
   const canCreate = !!user?.permissions.has('clients.create')
 
   const rows: ClientRow[] = clients.map((c) => {
@@ -25,8 +31,8 @@ export default async function ClientsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Clients"
-        description="Every company we work with and the state of their engagement."
+        title={t('title')}
+        description={t('description')}
         actions={canCreate ? <NewClientDialog /> : undefined}
       />
 

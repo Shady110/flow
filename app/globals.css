@@ -31,6 +31,17 @@
   --color-flow-black: #08150E;
 }
 
+/* Arabic locale — swap the display & body faces to Cairo, which carries a
+   full Arabic glyph set. Cascades to every `font-display` / `font-body`
+   utility because those resolve to these custom properties. */
+html[lang="ar"] {
+  --font-display: var(--font-cairo);
+  --font-body: var(--font-cairo);
+}
+html[lang="ar"] body {
+  font-family: var(--font-cairo), sans-serif;
+}
+
 :root {
   --color-bg: #FBFBF7;
   --color-bg-soft: #F4F7EC;
@@ -358,6 +369,12 @@ h1, h2, h3, h4 {
   * {
     border-color: var(--border);
   }
+}
+
+/* Keep brand backgrounds (e.g. the invoice logo lockup) when printing / saving to PDF. */
+.print-exact {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 /* Print: strip the dashboard chrome so only the invoice document prints. */

@@ -2,19 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { LayoutDashboard, Package, ListChecks, FileText, MessageSquare, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const ITEMS: { label: string; href: string; icon: LucideIcon }[] = [
-  { label: 'Overview', href: '/', icon: LayoutDashboard },
-  { label: 'Products', href: '/products', icon: Package },
-  { label: 'Tasks', href: '/tasks', icon: ListChecks },
-  { label: 'Invoices', href: '/invoices', icon: FileText },
-  { label: 'Chat', href: '/chat', icon: MessageSquare },
+const ITEMS: { key: string; href: string; icon: LucideIcon }[] = [
+  { key: 'overview', href: '/', icon: LayoutDashboard },
+  { key: 'products', href: '/products', icon: Package },
+  { key: 'tasks', href: '/tasks', icon: ListChecks },
+  { key: 'invoices', href: '/invoices', icon: FileText },
+  { key: 'chat', href: '/chat', icon: MessageSquare },
 ]
 
 export function PortalNav() {
   const pathname = usePathname()
+  const t = useTranslations('portal.nav')
   return (
     <nav className="flex items-center gap-1">
       {ITEMS.map((item) => {
@@ -32,7 +34,7 @@ export function PortalNav() {
             )}
           >
             <Icon className="h-4 w-4" />
-            <span className="hidden sm:inline">{item.label}</span>
+            <span className="hidden sm:inline">{t(item.key)}</span>
           </Link>
         )
       })}

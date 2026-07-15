@@ -275,10 +275,10 @@ export default async function ClientDetailPage({
                   <span className="text-sm font-medium">{i.number}</span>
                   <InvoiceStatusBadge status={i.status} />
                 </div>
-                <div className="text-right text-sm">
+                <div className="text-end text-sm">
                   <span className="tabular-nums">{formatMoney(i.total, i.currency)}</span>
                   {i.balance > 0 && (
-                    <span className="ml-2 text-xs text-warning">{formatMoney(i.balance, i.currency)} due</span>
+                    <span className="ms-2 text-xs text-warning">{formatMoney(i.balance, i.currency)} due</span>
                   )}
                 </div>
               </Link>

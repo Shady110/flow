@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { updateTaskAction } from '@/lib/db/task-actions'
 import {
@@ -11,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ds/select'
-import { TASK_STATUS_LABELS } from '@/lib/constants'
 import type { TaskStatus } from '@/lib/types'
+
+const TASK_STATUSES: TaskStatus[] = ['todo', 'in_progress', 'blocked', 'review', 'done']
 
 export function TaskStatusSelect({
   taskId,
@@ -24,6 +26,7 @@ export function TaskStatusSelect({
   status: TaskStatus
 }) {
   const router = useRouter()
+  const t = useTranslations('internal.status')
   const [pending, startTransition] = useTransition()
 
   function onChange(next: string) {
@@ -38,17 +41,20 @@ export function TaskStatusSelect({
   }
 
   return (
-    <Select value={status} onValueChange={onChange} disabled={pending}>
-      <SelectTrigger className="h-8 w-[140px] text-xs">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {(Object.keys(TASK_STATUS_LABELS) as TaskStatus[]).map((s) => (
-          <SelectItem key={s} value={s} className="text-xs">
-            {TASK_STATUS_LABELS[s]}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    // Stop clicks/keys from bubbling to a clickable parent row (LinkedTableRow).
+    <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+      <Select value={status} onValueChange={onChange} disabled={pending}>
+        <SelectTrigger className="h-8 w-[140px] text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {TASK_STATUSES.map((s) => (
+            <SelectItem key={s} value={s} className="text-xs">
+              {t(s)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </span>
   )
 }

@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { getTasks, getTeam } from '@/lib/db/queries'
 import { requirePermission } from '@/lib/auth/session'
 import { deadlineState } from '@/lib/deadlines'
@@ -20,7 +21,11 @@ function onTime(completedAt: string | null, dueDate: string | null) {
 
 export default async function TeamPage() {
   await requirePermission('team.view')
-  const [tasks, team] = await Promise.all([getTasks(), getTeam()])
+  const [tasks, team, t] = await Promise.all([
+    getTasks(),
+    getTeam(),
+    getTranslations('internal.team'),
+  ])
 
   const rows = team.map((m) => {
     const mine = tasks.filter((t) => t.assignee_id === m.id)
@@ -50,21 +55,21 @@ export default async function TeamPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Team analytics"
-        description="Workload and delivery performance across the team."
+        title={t('title')}
+        description={t('description')}
       />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Workload by member</CardTitle>
+          <CardTitle className="text-base">{t('workload')}</CardTitle>
         </CardHeader>
         <CardContent>
           <GroupedBars
             data={chartData}
             bars={[
-              { key: 'Open', color: 'var(--chart-1)', label: 'Open' },
-              { key: 'Done', color: 'var(--chart-2)', label: 'Done' },
-              { key: 'Overdue', color: 'var(--destructive)', label: 'Overdue' },
+              { key: 'Open', color: 'var(--chart-1)', label: t('open') },
+              { key: 'Done', color: 'var(--chart-2)', label: t('done') },
+              { key: 'Overdue', color: 'var(--destructive)', label: t('overdue') },
             ]}
           />
         </CardContent>
@@ -74,12 +79,12 @@ export default async function TeamPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Member</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead className="text-right">Open</TableHead>
-              <TableHead className="text-right">Completed</TableHead>
-              <TableHead className="text-right">Overdue</TableHead>
-              <TableHead className="text-right">On-time</TableHead>
+              <TableHead>{t('member')}</TableHead>
+              <TableHead>{t('role')}</TableHead>
+              <TableHead className="text-end">{t('open')}</TableHead>
+              <TableHead className="text-end">{t('completed')}</TableHead>
+              <TableHead className="text-end">{t('overdue')}</TableHead>
+              <TableHead className="text-end">{t('onTime')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -87,12 +92,12 @@ export default async function TeamPage() {
               <TableRow key={r.id}>
                 <TableCell className="font-medium">{r.name}</TableCell>
                 <TableCell className="capitalize text-muted-foreground">{r.role ?? '—'}</TableCell>
-                <TableCell className="text-right">{r.open}</TableCell>
-                <TableCell className="text-right">{r.done}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-end">{r.open}</TableCell>
+                <TableCell className="text-end">{r.done}</TableCell>
+                <TableCell className="text-end">
                   {r.overdue > 0 ? <span className="font-medium text-destructive">{r.overdue}</span> : 0}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-end">
                   {r.onTimeRate === null ? '—' : `${r.onTimeRate}%`}
                 </TableCell>
               </TableRow>

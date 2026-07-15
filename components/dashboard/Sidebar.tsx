@@ -2,17 +2,19 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { INTERNAL_NAV } from './nav'
 import type { PermissionKey } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 export function Sidebar({ permissions }: { permissions: PermissionKey[] }) {
   const pathname = usePathname()
+  const t = useTranslations('internal.nav')
   const permSet = new Set(permissions)
   const items = INTERNAL_NAV.filter((i) => !i.permission || permSet.has(i.permission))
 
   return (
-    <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
+    <aside className="hidden md:flex w-60 shrink-0 flex-col border-e border-sidebar-border bg-sidebar">
       <div className="flex h-16 items-center gap-2 px-6">
         <span className="font-display text-xl font-bold tracking-tight text-flow-green">
           FLOW
@@ -39,7 +41,7 @@ export function Sidebar({ permissions }: { permissions: PermissionKey[] }) {
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1">{t(item.key)}</span>
               {item.soon && (
                 <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                   soon

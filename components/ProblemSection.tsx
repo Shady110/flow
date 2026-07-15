@@ -1,11 +1,20 @@
 'use client'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { staggerContainer, revealUp } from '@/lib/animations'
 import { problems } from '@/data/problems'
 import RevealHeading from './ui/RevealHeading'
 
+const problemKeys = ['complexity', 'time', 'performance', 'scaling'] as const
+
 export default function ProblemSection() {
-  const [featured, ...rest] = problems
+  const t = useTranslations('marketing.problem')
+  const items = problemKeys.map((key, i) => ({
+    icon: problems[i].icon,
+    title: t(`items.${key}.title`),
+    description: t(`items.${key}.description`),
+  }))
+  const [featured, ...rest] = items
 
   return (
     <section className="section-padding bg-flow-bg-soft">
@@ -19,17 +28,16 @@ export default function ProblemSection() {
           className="grid md:grid-cols-12 gap-6 mb-12 items-end"
         >
           <div className="md:col-span-7">
-            <span className="eyebrow-index mb-6" data-index="01">The Problem</span>
+            <span className="eyebrow-index mb-6" data-index="01">{t('eyebrow')}</span>
             <RevealHeading
-              text="Selling online is harder than it looks."
-              accent={['harder']}
+              text={t('heading')}
+              accent={[]}
               className="section-title mt-6"
             />
           </div>
           <div className="md:col-span-5">
-            <p className="text-flow-text-muted text-base leading-relaxed md:text-right md:ml-auto md:max-w-sm">
-              Most sellers lose time and revenue because marketplace management is
-              complex, repetitive, and easy to get wrong.
+            <p className="text-flow-text-muted text-base leading-relaxed md:text-end md:ms-auto md:max-w-sm">
+              {t('intro')}
             </p>
           </div>
         </motion.div>

@@ -29,7 +29,7 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete', 'tasks.assign',
   'team.view', 'finance.view', 'finance.manage', 'invoices.issue',
   'chat.access', 'automation.run', 'roles.manage', 'users.invite',
-  'users.manage', 'settings.manage', 'products.view', 'products.manage',
+  'users.manage', 'settings.manage', 'content.manage', 'products.view', 'products.manage',
 ]
 
 export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {

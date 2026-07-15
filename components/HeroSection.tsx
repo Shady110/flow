@@ -8,12 +8,7 @@ import ParallaxLayer from './ui/ParallaxLayer'
 import Counter from './ui/Counter'
 import RevealHeading from './ui/RevealHeading'
 import { fadeUp } from '@/lib/animations'
-
-const stats = [
-  { value: 210, suffix: '+', label: 'Products shot' },
-  { value: 4, suffix: '', label: 'Marketplaces' },
-  { value: 15, suffix: ' EGP', label: 'Starting price' },
-]
+import type { HeroContent } from '@/data/landing-content'
 
 // Some categories lead with a lifestyle/model shot — pin those to a
 // product-only cover so the hero strip shows products, never people.
@@ -37,7 +32,8 @@ const tilts = [
   { rotate: -5, y: 26, z: 10 },
 ]
 
-export default function HeroSection() {
+export default function HeroSection({ content }: { content: HeroContent }) {
+  const { badge, heading, accent, subheading, ctaPrimary, ctaSecondary, stats } = content
   return (
     <section className="relative min-h-screen flex flex-col items-center overflow-hidden bg-flow-bg grain-overlay">
       {/* Layered background */}
@@ -70,14 +66,14 @@ export default function HeroSection() {
             <span className="relative inline-flex h-2 w-2 rounded-full bg-flow-green" />
           </span>
           <span className="text-xs font-semibold text-flow-green">
-            2 onboarding spots open this month
+            {badge}
           </span>
         </motion.div>
 
         <RevealHeading
           as="h1"
-          text="From product to marketplace — in one flow."
-          accent={['one', 'flow.']}
+          text={heading}
+          accent={accent}
           whileInView={false}
           className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-flow-green leading-[0.98] tracking-tight"
         />
@@ -89,9 +85,7 @@ export default function HeroSection() {
           custom={3}
           className="text-flow-text-muted text-base sm:text-lg leading-relaxed mt-7 max-w-2xl mx-auto"
         >
-          Egypt&apos;s elite e-commerce content studio. We turn raw products into
-          high-converting listings — photography, bilingual copy, SEO, and full
-          account management for Amazon, Noon, TikTok Shop &amp; Shopify sellers.
+          {subheading}
         </motion.p>
 
         <motion.div
@@ -106,8 +100,8 @@ export default function HeroSection() {
               href="#contact"
               className="flex items-center gap-2 bg-flow-green text-flow-bg font-semibold px-7 py-3.5 rounded-full hover:bg-flow-green-hover transition-colors text-sm shadow-[var(--shadow-md)]"
             >
-              Start Your Flow
-              <ArrowRight size={16} />
+              {ctaPrimary}
+              <ArrowRight size={16} className="rtl:-scale-x-100" />
             </a>
           </MagneticButton>
           <MagneticButton strength={0.2}>
@@ -115,7 +109,7 @@ export default function HeroSection() {
               href="#workflow"
               className="block border border-flow-green/25 text-flow-green font-semibold px-7 py-3.5 rounded-full hover:bg-flow-green hover:text-flow-bg transition-colors text-sm bg-white/50 backdrop-blur"
             >
-              See how it works
+              {ctaSecondary}
             </a>
           </MagneticButton>
         </motion.div>

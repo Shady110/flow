@@ -6,6 +6,7 @@ import { getInvoice } from '@/lib/db/finance-queries'
 import { formatMoney } from '@/lib/money'
 import { InvoiceDocument } from '@/components/finance/InvoiceDocument'
 import { PrintButton } from '@/components/dashboard/PrintButton'
+import { DeleteInvoiceButton } from '@/components/dashboard/DeleteInvoiceButton'
 import { InvoiceStatusSelect } from '@/components/dashboard/InvoiceStatusSelect'
 import { RecordPaymentDialog } from '@/components/dashboard/RecordPaymentDialog'
 import { Button } from '@/components/ds/button'
@@ -43,6 +44,7 @@ export default async function InvoiceDetailPage({
             />
           )}
           <PrintButton />
+          {canManage && <DeleteInvoiceButton id={invoice.id} number={invoice.number} />}
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { ChevronRight } from 'lucide-react'
 import {
   Table,
@@ -24,16 +25,17 @@ export interface ClientRow {
 
 export function ClientsTable({ rows }: { rows: ClientRow[] }) {
   const router = useRouter()
+  const t = useTranslations('internal.clients')
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Client</TableHead>
-          <TableHead>Subdomain</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Open</TableHead>
-          <TableHead className="text-right">Overdue</TableHead>
+          <TableHead>{t('client')}</TableHead>
+          <TableHead>{t('subdomain')}</TableHead>
+          <TableHead>{t('status')}</TableHead>
+          <TableHead className="text-end">{t('open')}</TableHead>
+          <TableHead className="text-end">{t('overdue')}</TableHead>
           <TableHead className="w-8" />
         </TableRow>
       </TableHeader>
@@ -41,7 +43,7 @@ export function ClientsTable({ rows }: { rows: ClientRow[] }) {
         {rows.length === 0 && (
           <TableRow>
             <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-              No clients yet.
+              {t('noClients')}
             </TableCell>
           </TableRow>
         )}
@@ -60,15 +62,15 @@ export function ClientsTable({ rows }: { rows: ClientRow[] }) {
             <TableCell>
               <ClientStatusBadge status={c.status} />
             </TableCell>
-            <TableCell className="text-right">{c.open}</TableCell>
-            <TableCell className="text-right">
+            <TableCell className="text-end">{c.open}</TableCell>
+            <TableCell className="text-end">
               {c.overdue > 0 ? (
                 <span className="font-medium text-destructive">{c.overdue}</span>
               ) : (
                 <span className="text-muted-foreground">0</span>
               )}
             </TableCell>
-            <TableCell className="text-right text-muted-foreground">
+            <TableCell className="text-end text-muted-foreground">
               <ChevronRight className="h-4 w-4" />
             </TableCell>
           </TableRow>

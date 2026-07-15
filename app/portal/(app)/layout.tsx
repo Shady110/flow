@@ -1,7 +1,9 @@
 import { LogOut } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 import { requireClientContext } from '@/lib/auth/client-session'
 import { signOut } from '@/lib/auth/actions'
 import { PortalNav } from '@/components/portal/PortalNav'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +16,7 @@ import { Avatar, AvatarFallback } from '@/components/ds/avatar'
 
 export default async function PortalAppLayout({ children }: { children: React.ReactNode }) {
   const { client, clientUser, email } = await requireClientContext()
+  const t = await getTranslations('common')
   const accent = client.brand_color || '#143C28'
   const initials = clientUser.full_name
     .split(/\s+/)
@@ -43,6 +46,8 @@ export default async function PortalAppLayout({ children }: { children: React.Re
 
           <PortalNav />
 
+          <div className="flex items-center gap-1">
+          <LanguageSwitcher />
           <DropdownMenu>
             <DropdownMenuTrigger className="outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full">
               <Avatar className="h-9 w-9">
@@ -57,12 +62,13 @@ export default async function PortalAppLayout({ children }: { children: React.Re
               <DropdownMenuItem asChild className="cursor-pointer">
                 <form action={signOut}>
                   <button type="submit" className="flex w-full items-center">
-                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                    <LogOut className="me-2 h-4 w-4" /> {t('signOut')}
                   </button>
                 </form>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
       </header>
 

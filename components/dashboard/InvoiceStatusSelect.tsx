@@ -2,10 +2,12 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { updateInvoiceStatusAction } from '@/lib/db/finance-actions'
-import { INVOICE_STATUS_LABELS } from '@/lib/constants'
 import type { InvoiceStatus } from '@/lib/types'
+
+const INVOICE_STATUSES: InvoiceStatus[] = ['draft', 'sent', 'paid', 'void']
 import {
   Select,
   SelectContent,
@@ -16,6 +18,7 @@ import {
 
 export function InvoiceStatusSelect({ id, status }: { id: string; status: InvoiceStatus }) {
   const router = useRouter()
+  const t = useTranslations('internal.invoiceStatus')
   const [pending, startTransition] = useTransition()
 
   return (
@@ -38,9 +41,9 @@ export function InvoiceStatusSelect({ id, status }: { id: string; status: Invoic
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {(Object.keys(INVOICE_STATUS_LABELS) as InvoiceStatus[]).map((s) => (
+        {INVOICE_STATUSES.map((s) => (
           <SelectItem key={s} value={s}>
-            {INVOICE_STATUS_LABELS[s]}
+            {t(s)}
           </SelectItem>
         ))}
       </SelectContent>
