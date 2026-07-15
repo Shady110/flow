@@ -3,9 +3,14 @@ import { motion } from 'framer-motion'
 import { fadeUp, staggerContainer, revealUp } from '@/lib/animations'
 import { services } from '@/data/services'
 import RevealHeading from './ui/RevealHeading'
+import type { ServicesContent } from '@/data/landing-content'
 
-export default function ServicesSection() {
-  const [tall, stackedA, stackedB, featured] = services
+// Icons are structural (not translated); merge them with the localized copy.
+const icons = services.map((s) => s.icon)
+
+export default function ServicesSection({ content }: { content: ServicesContent }) {
+  const items = content.items.map((item, i) => ({ ...item, icon: icons[i] }))
+  const [tall, stackedA, stackedB, featured] = items
 
   return (
     <section id="services" className="section-padding bg-flow-bg-muted">
@@ -18,10 +23,10 @@ export default function ServicesSection() {
           custom={0}
           className="flex flex-col items-center text-center mb-12"
         >
-          <span className="eyebrow-index mb-6" data-index="03">What We Do</span>
+          <span className="eyebrow-index mb-6" data-index="03">{content.eyebrow}</span>
           <RevealHeading
-            text="Four core services. One seamless flow."
-            accent={['seamless']}
+            text={content.heading}
+            accent={content.accent}
             className="section-title mt-6 mb-4"
           />
         </motion.div>
@@ -92,8 +97,8 @@ export default function ServicesSection() {
             className="glass-card relative p-8 md:col-start-3 md:col-span-2 md:row-start-1 md:row-span-2"
             style={{ backgroundImage: 'var(--gradient-brand-soft)', boxShadow: 'var(--shadow-glow-lime)' }}
           >
-            <span className="absolute top-4 right-4 bg-flow-lime text-flow-green text-xs font-semibold px-3 py-1 rounded-full">
-              Full Service
+            <span className="absolute top-4 right-4 rtl:right-auto rtl:left-4 bg-flow-lime text-flow-green text-xs font-semibold px-3 py-1 rounded-full">
+              {content.fullServiceBadge}
             </span>
             <motion.div
               initial={{ scale: 0.5, rotate: -20, opacity: 0 }}

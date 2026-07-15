@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { requireClientContext } from '@/lib/auth/client-session'
 import { createClient } from '@/lib/supabase/server'
 import type { Product } from '@/lib/types'
@@ -14,6 +15,7 @@ import { ProductStatusBadge } from '@/components/dashboard/indicators'
 
 export default async function PortalProducts() {
   const { client } = await requireClientContext()
+  const t = await getTranslations('portal.products')
   const supabase = await createClient()
   const { data } = await supabase
     .from('products')
@@ -25,9 +27,9 @@ export default async function PortalProducts() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Products</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">{t('title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Live status of every product we&apos;re working on for you.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -35,17 +37,17 @@ export default async function PortalProducts() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Product</TableHead>
-              <TableHead>SKU</TableHead>
-              <TableHead>Marketplace</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t('product')}</TableHead>
+              <TableHead>{t('sku')}</TableHead>
+              <TableHead>{t('marketplace')}</TableHead>
+              <TableHead>{t('status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.length === 0 && (
               <TableRow>
                 <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
-                  No products yet.
+                  {t('noProducts')}
                 </TableCell>
               </TableRow>
             )}

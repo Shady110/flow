@@ -20,6 +20,7 @@ export type PermissionKey =
   | 'users.invite'
   | 'users.manage'
   | 'settings.manage'
+  | 'content.manage'
   | 'products.view'
   | 'products.manage'
 

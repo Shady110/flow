@@ -1,0 +1,355 @@
+{
+  "common": {
+    "language": "Language",
+    "english": "English",
+    "arabic": "العربية",
+    "switchToArabic": "التبديل إلى العربية",
+    "switchToEnglish": "Switch to English",
+    "signOut": "Sign out"
+  },
+  "marketing": {
+    "nav": {
+      "services": "Services",
+      "work": "Work",
+      "pricing": "Pricing",
+      "team": "Team",
+      "faq": "FAQ",
+      "cta": "Start Your Flow",
+      "spotsLeft": "2 spots left",
+      "toggleMenu": "Toggle menu",
+      "services_dd": {
+        "content": "Product Content Creation",
+        "contentDesc": "Studio photography + copy",
+        "listing": "Listing Optimization",
+        "listingDesc": "Rank higher, convert better",
+        "management": "Marketplace Management",
+        "managementDesc": "Catalog & uploads handled",
+        "account": "Account Management",
+        "accountDesc": "Full seller-account ownership"
+      },
+      "work_dd": {
+        "fashion": "Fashion & Apparel",
+        "electronics": "Electronics",
+        "cosmetics": "Cosmetics & Beauty",
+        "viewAll": "View full portfolio →"
+      }
+    },
+    "trust": {
+      "title": "Trusted for marketplaces sellers rely on"
+    },
+    "problem": {
+      "eyebrow": "The Problem",
+      "heading": "Selling online is harder than it looks.",
+      "intro": "Most sellers lose time and revenue because marketplace management is complex, repetitive, and easy to get wrong.",
+      "items": {
+        "complexity": { "title": "Technical Complexity", "description": "Every platform has different rules for images, titles, metadata, and SEO." },
+        "time": { "title": "Time-Consuming Workflows", "description": "Photography, descriptions, uploads — it all adds up to hours you don't have." },
+        "performance": { "title": "Poor Listing Performance", "description": "Unoptimized listings miss search traffic and fail to convert browsers into buyers." },
+        "scaling": { "title": "Scaling Challenges", "description": "More products means more chaos — without a system, growth becomes painful." }
+      }
+    },
+    "solution": {
+      "eyebrow": "The Solution",
+      "heading": "One partner. The entire pipeline.",
+      "intro": "FLOW combines AI-assisted workflows with human expertise to manage everything from product photography to marketplace publishing. You hand us the product — we handle the rest.",
+      "chips": {
+        "ai": "AI-Assisted Workflows",
+        "human": "Human Expertise",
+        "endToEnd": "End-to-End Service"
+      },
+      "pipeline": {
+        "product": "Product",
+        "content": "Content Creation",
+        "listing": "Listing Optimization",
+        "publishing": "Marketplace Publishing",
+        "account": "Account Management",
+        "growth": "Sales Growth"
+      }
+    },
+    "workflow": {
+      "eyebrow": "How It Works",
+      "heading": "Your product. Our process. Marketplace success.",
+      "intro": "A structured, repeatable workflow designed to get your products live faster and performing better.",
+      "steps": {
+        "s1": { "title": "Submit Your Products", "description": "Share your product details, images, or inventory list with us." },
+        "s2": { "title": "Content Creation", "description": "We photograph, write, and structure your listings professionally." },
+        "s3": { "title": "Listing Optimization", "description": "We optimize titles, keywords, and structure for each platform." },
+        "s4": { "title": "Marketplace Publishing", "description": "We upload and publish listings directly to your seller accounts." },
+        "s5": { "title": "Account Management", "description": "We monitor performance and manage updates on your behalf." },
+        "s6": { "title": "Sales Growth", "description": "Optimized listings drive more visibility, clicks, and conversions." }
+      }
+    },
+    "portfolio": {
+      "eyebrow": "Selected Work",
+      "heading": "Product photography that sells across every category.",
+      "productsShot": "Products shot",
+      "categories": "Categories",
+      "shots": "shots",
+      "cta": "Explore the full portfolio"
+    },
+    "footer": {
+      "tagline": "Elevate every listing. Amplify every sale.",
+      "blurb": "An elite e-commerce content studio helping sellers transform raw products into high-performing marketplace listings across Egypt and the Arab world.",
+      "servicesTitle": "Services",
+      "contactTitle": "Contact",
+      "services": {
+        "photography": "Photography",
+        "listing": "Listing Optimization",
+        "management": "Marketplace Management",
+        "video": "Product Video",
+        "social": "Social Media Content"
+      },
+      "location": "Cairo, Egypt",
+      "rights": "© 2026 FLOW Agency. All rights reserved."
+    },
+    "contactForm": {
+      "fullName": "Full Name",
+      "namePlaceholder": "Your name",
+      "email": "Email Address",
+      "emailPlaceholder": "you@example.com",
+      "phone": "Phone / WhatsApp",
+      "phonePlaceholder": "+20 ...",
+      "platform": "Platform",
+      "selectPlatform": "Select platform",
+      "products": "Number of Products",
+      "productsPlaceholder": "e.g. 50–200 products",
+      "service": "Service Interested In",
+      "selectService": "Select service",
+      "message": "Message",
+      "messagePlaceholder": "Tell us about your products and goals...",
+      "send": "Send Message",
+      "sending": "Sending…",
+      "success": "Message sent! We'll get back to you shortly.",
+      "error": "Something went wrong. Please try again or contact us directly.",
+      "whatsapp": "Chat on WhatsApp",
+      "serviceOptions": {
+        "complete": "Complete Package",
+        "photography": "Photography Only",
+        "listing": "Listing Optimization",
+        "video": "Video",
+        "social": "Social Media",
+        "website": "Website",
+        "notSure": "Not Sure Yet"
+      },
+      "platformOptions": {
+        "other": "Other"
+      }
+    }
+  },
+  "internal": {
+    "nav": {
+      "overview": "Overview",
+      "clients": "Clients",
+      "tasks": "Tasks",
+      "inbox": "Inbox",
+      "team": "Team",
+      "finance": "Finance",
+      "automations": "Automations",
+      "roles": "Roles & access",
+      "landing": "Landing content"
+    },
+    "topbar": {
+      "inbox": "Inbox"
+    },
+    "common": {
+      "add": "Add",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "close": "Close",
+      "create": "Create",
+      "update": "Update",
+      "search": "Search",
+      "unassigned": "Unassigned",
+      "total": "{count} total",
+      "openTasks": "{count} open tasks",
+      "overdueCount": "{count} overdue"
+    },
+    "status": {
+      "todo": "To do",
+      "in_progress": "In progress",
+      "blocked": "Blocked",
+      "review": "Review",
+      "done": "Done"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "clientStatus": {
+      "lead": "Lead",
+      "active": "Active",
+      "paused": "Paused",
+      "churned": "Churned"
+    },
+    "productStatus": {
+      "draft": "Draft",
+      "in_progress": "In progress",
+      "review": "In review",
+      "live": "Live",
+      "rejected": "Rejected",
+      "paused": "Paused"
+    },
+    "invoiceStatus": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "void": "Void"
+    },
+    "jobStatus": {
+      "draft": "Draft",
+      "processing": "Processing",
+      "done": "Done",
+      "failed": "Failed"
+    },
+    "deadline": {
+      "overdue": "Overdue",
+      "due_soon": "Due soon",
+      "on_track": "On track",
+      "done": "Done",
+      "none": "No date"
+    },
+    "overview": {
+      "title": "Business overview",
+      "description": "Live snapshot across every client and every active task.",
+      "activeClients": "Active clients",
+      "openTasks": "Open tasks",
+      "overdue": "Overdue",
+      "dueSoon": "Due soon",
+      "taskStatus": "Task status",
+      "needsAttention": "Needs attention",
+      "allClear": "Nothing overdue or due soon. 🎉",
+      "clients": "Clients",
+      "noClients": "No clients yet. Add your first client to start tracking work."
+    },
+    "clients": {
+      "title": "Clients",
+      "description": "Every company we work with and the state of their engagement.",
+      "client": "Client",
+      "subdomain": "Subdomain",
+      "status": "Status",
+      "open": "Open",
+      "overdue": "Overdue",
+      "noClients": "No clients yet."
+    },
+    "tasks": {
+      "title": "Tasks",
+      "description": "Every action across all clients.",
+      "task": "Task",
+      "client": "Client",
+      "owner": "Owner",
+      "priority": "Priority",
+      "due": "Due",
+      "status": "Status",
+      "noTasks": "No tasks yet."
+    },
+    "team": {
+      "title": "Team analytics",
+      "description": "Workload and delivery performance across the team.",
+      "workload": "Workload by member",
+      "member": "Member",
+      "role": "Role",
+      "open": "Open",
+      "completed": "Completed",
+      "overdue": "Overdue",
+      "onTime": "On-time",
+      "done": "Done"
+    },
+    "finance": {
+      "title": "Finance",
+      "description": "Revenue, outstanding balances and profitability.",
+      "revenueAllTime": "Revenue (all time)",
+      "thisMonth": "This month",
+      "outstanding": "Outstanding",
+      "profit": "Profit",
+      "expenses": "Expenses {amount}",
+      "expensesLabel": "Expenses",
+      "revenueVsExpenses": "Revenue vs expenses",
+      "revenue": "Revenue",
+      "invoices": "Invoices",
+      "invoice": "Invoice",
+      "client": "Client",
+      "status": "Status",
+      "total": "Total",
+      "balance": "Balance",
+      "noInvoices": "No invoices yet.",
+      "recentPayments": "Recent payments",
+      "noPayments": "No payments recorded yet.",
+      "unlinked": "Unlinked",
+      "due": "due"
+    },
+    "dialogs": {
+      "newClient": "New client",
+      "newClientDesc": "Each client gets their own portal subdomain.",
+      "companyName": "Company name",
+      "subdomain": "Subdomain",
+      "status": "Status",
+      "notes": "Notes",
+      "creating": "Creating…",
+      "createClient": "Create client",
+      "clientCreated": "Client created"
+    },
+    "automations": {
+      "title": "Automations",
+      "description": "AI-assisted listing & image production.",
+      "notice": "On the Gemini free tier, large batches are paced under the rate limit and may hit a daily cap — jobs are resumable and you can “Retry failed” later. Enable billing for faster bulk runs.",
+      "listingTitle": "Listing automation",
+      "listingDesc": "Turn a raw product sheet into marketplace-ready listings — titles, descriptions, bullets, size & weight.",
+      "newListing": "New listing job",
+      "imageTitle": "Image automation",
+      "imageDesc": "Turn product photos into clean white-background front, side & back shots for every marketplace.",
+      "newImage": "New image job",
+      "recentJobs": "Recent jobs",
+      "noJobs": "No automation jobs yet.",
+      "doneCount": "{done}/{total} done"
+    }
+  },
+  "portal": {
+    "nav": {
+      "overview": "Overview",
+      "products": "Products",
+      "tasks": "Tasks",
+      "invoices": "Invoices",
+      "chat": "Chat"
+    },
+    "overview": {
+      "welcome": "Welcome back, {name}",
+      "subtitle": "Here's the latest on your account with FLOW.",
+      "products": "Products",
+      "live": "Live",
+      "openTasks": "Open tasks",
+      "recentProducts": "Recent products",
+      "noProducts": "No products yet."
+    },
+    "products": {
+      "title": "Products",
+      "subtitle": "Live status of every product we're working on for you.",
+      "product": "Product",
+      "sku": "SKU",
+      "marketplace": "Marketplace",
+      "status": "Status",
+      "noProducts": "No products yet."
+    },
+    "tasks": {
+      "title": "Tasks",
+      "subtitle": "What the FLOW team is working on for you.",
+      "noTasks": "No tasks yet.",
+      "next": "Next: {step}"
+    },
+    "invoices": {
+      "title": "Invoices",
+      "outstanding": "You have {amount} outstanding.",
+      "paidUp": "You’re all paid up. Thank you!",
+      "invoice": "Invoice",
+      "issued": "Issued",
+      "status": "Status",
+      "total": "Total",
+      "balance": "Balance",
+      "noInvoices": "No invoices yet."
+    }
+  }
+}

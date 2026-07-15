@@ -1,6 +1,7 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { portfolioData, getAllImagesFromCategory } from '@/data/portfolioData'
@@ -36,16 +37,17 @@ const spans = [
 ]
 
 export default function PortfolioGridSection() {
+  const t = useTranslations('marketing.portfolio')
   return (
     <section id="work" className="section-padding bg-flow-bg">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-10">
           <div className="max-w-2xl">
-            <span className="eyebrow-index mb-6" data-index="04">Selected Work</span>
+            <span className="eyebrow-index mb-6" data-index="04">{t('eyebrow')}</span>
             <RevealHeading
-              text="Product photography that sells across every category."
-              accent={['sells']}
+              text={t('heading')}
+              accent={[]}
               className="section-title mt-6"
             />
           </div>
@@ -54,13 +56,13 @@ export default function PortfolioGridSection() {
               <p className="font-display text-4xl font-bold text-flow-green">
                 <Counter value={totalShots} suffix="+" />
               </p>
-              <p className="text-sm text-flow-text-muted mt-1">Products shot</p>
+              <p className="text-sm text-flow-text-muted mt-1">{t('productsShot')}</p>
             </div>
             <div>
               <p className="font-display text-4xl font-bold text-flow-green">
                 <Counter value={categories.length} />
               </p>
-              <p className="text-sm text-flow-text-muted mt-1">Categories</p>
+              <p className="text-sm text-flow-text-muted mt-1">{t('categories')}</p>
             </div>
           </div>
         </div>
@@ -103,7 +105,7 @@ export default function PortfolioGridSection() {
                       <p className="font-display text-lg font-bold text-white leading-tight">
                         {cat.name}
                       </p>
-                      <p className="text-xs text-white/70 mt-0.5">{cat.count} shots</p>
+                      <p className="text-xs text-white/70 mt-0.5">{cat.count} {t('shots')}</p>
                     </div>
                     <span className="w-9 h-9 rounded-full bg-flow-lime text-flow-green flex items-center justify-center opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                       <ArrowUpRight size={18} />
@@ -122,7 +124,7 @@ export default function PortfolioGridSection() {
               href="/portfolio"
               className="inline-flex items-center gap-2 bg-flow-green text-flow-bg font-semibold px-7 py-3.5 rounded-full hover:bg-flow-green-hover transition-colors text-sm shadow-[var(--shadow-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-green focus-visible:ring-offset-2"
             >
-              Explore the full portfolio
+              {t('cta')}
               <ArrowUpRight size={16} />
             </Link>
           </MagneticButton>

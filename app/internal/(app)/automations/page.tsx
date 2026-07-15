@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { FileSpreadsheet, ImageIcon, ArrowRight } from 'lucide-react'
 import { requirePermission } from '@/lib/auth/session'
 import { getJobs } from '@/lib/db/automation-queries'
@@ -17,16 +18,18 @@ const STATUS_STYLE: Record<JobStatus, string> = {
 
 export default async function AutomationsPage() {
   await requirePermission('automation.run')
-  const jobs = await getJobs()
+  const [jobs, t, tj] = await Promise.all([
+    getJobs(),
+    getTranslations('internal.automations'),
+    getTranslations('internal.jobStatus'),
+  ])
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Automations" description="AI-assisted listing & image production." />
+      <PageHeader title={t('title')} description={t('description')} />
 
       <p className="rounded-lg bg-muted px-4 py-2.5 text-xs text-muted-foreground">
-        On the Gemini free tier, large batches are paced under the rate limit and may hit a
-        daily cap — jobs are resumable and you can &ldquo;Retry failed&rdquo; later. Enable
-        billing for faster bulk runs.
+        {t('notice')}
       </p>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -37,13 +40,12 @@ export default async function AutomationsPage() {
                 <FileSpreadsheet className="h-6 w-6" />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-lg font-bold">Listing automation</h3>
+                <h3 className="font-display text-lg font-bold">{t('listingTitle')}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Turn a raw product sheet into marketplace-ready listings — titles,
-                  descriptions, bullets, size & weight.
+                  {t('listingDesc')}
                 </p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-flow-green">
-                  New listing job <ArrowRight className="h-3.5 w-3.5" />
+                  {t('newListing')} <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" />
                 </span>
               </div>
             </CardContent>
@@ -57,13 +59,12 @@ export default async function AutomationsPage() {
                 <ImageIcon className="h-6 w-6" />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-lg font-bold">Image automation</h3>
+                <h3 className="font-display text-lg font-bold">{t('imageTitle')}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Turn product photos into clean white-background front, side & back shots
-                  for every marketplace.
+                  {t('imageDesc')}
                 </p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-flow-green">
-                  New image job <ArrowRight className="h-3.5 w-3.5" />
+                  {t('newImage')} <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" />
                 </span>
               </div>
             </CardContent>
@@ -72,9 +73,9 @@ export default async function AutomationsPage() {
       </div>
 
       <div>
-        <h2 className="mb-3 font-display text-lg font-bold">Recent jobs</h2>
+        <h2 className="mb-3 font-display text-lg font-bold">{t('recentJobs')}</h2>
         {jobs.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No automation jobs yet.</p>
+          <p className="text-sm text-muted-foreground">{t('noJobs')}</p>
         ) : (
           <Card className="p-0">
             <ul className="divide-y divide-border">
@@ -95,12 +96,12 @@ export default async function AutomationsPage() {
                           {j.type} {j.marketplace ? `· ${j.marketplace}` : ''}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {j.done_count}/{j.total} done · {new Date(j.created_at).toLocaleString()}
+                          {t('doneCount', { done: j.done_count, total: j.total })} · {new Date(j.created_at).toLocaleString()}
                         </p>
                       </div>
                     </div>
-                    <Badge className={cn('border-transparent font-medium capitalize', STATUS_STYLE[j.status])}>
-                      {j.status}
+                    <Badge className={cn('border-transparent font-medium', STATUS_STYLE[j.status])}>
+                      {tj(j.status)}
                     </Badge>
                   </Link>
                 </li>

@@ -1,22 +1,29 @@
 'use client'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Mail, MessageCircle, MapPin, Phone } from 'lucide-react'
+import { Mail, MessageCircle, MapPin, Phone, type LucideIcon } from 'lucide-react'
 import { fadeUp, staggerContainer, revealUp } from '@/lib/animations'
 import MagneticButton from './ui/MagneticButton'
 import RevealHeading from './ui/RevealHeading'
+import type { ContactContent } from '@/data/landing-content'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
-const contactDetails = [
-  { icon: Phone, href: 'tel:+201550408340', label: '01550408340' },
-  { icon: MessageCircle, href: 'tel:+201121443286', label: '01121443286' },
-  { icon: MessageCircle, href: 'tel:+201125450608', label: '01125450608' },
-  { icon: Mail, href: 'mailto:flowagency.eg@gmail.com', label: 'flowagency.eg@gmail.com' },
-]
+const phoneIcons: LucideIcon[] = [Phone, MessageCircle, MessageCircle]
 
-export default function ContactSection() {
+export default function ContactSection({ content }: { content: ContactContent }) {
+  const t = useTranslations('marketing.contactForm')
   const [status, setStatus] = useState<Status>('idle')
+
+  const contactDetails = [
+    ...content.phones.map((label, i) => ({
+      icon: phoneIcons[i] ?? Phone,
+      href: `tel:+2${label}`,
+      label,
+    })),
+    { icon: Mail, href: `mailto:${content.email}`, label: content.email },
+  ]
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -64,15 +71,14 @@ export default function ContactSection() {
           custom={0}
           className="lg:col-span-4"
         >
-          <span className="eyebrow-index mb-6" data-index="08">Get in Touch</span>
+          <span className="eyebrow-index mb-6" data-index="08">{content.eyebrow}</span>
           <RevealHeading
-            text="Ready to start your flow?"
-            accent={['flow?']}
+            text={content.heading}
+            accent={content.accent}
             className="section-title mt-6 mb-6"
           />
           <p className="text-flow-text-muted text-base leading-relaxed mb-10">
-            Tell us about your products and we&apos;ll put together a plan that fits
-            your needs and budget. Fast response guaranteed.
+            {content.intro}
           </p>
 
           <motion.div
@@ -108,7 +114,7 @@ export default function ContactSection() {
               >
                 <MapPin size={18} className="text-flow-green" />
               </motion.div>
-              <span className="text-flow-text-muted text-sm">Cairo, Egypt</span>
+              <span className="text-flow-text-muted text-sm">{content.location}</span>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -126,13 +132,13 @@ export default function ContactSection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-flow-green mb-1.5">
-                  Full Name
+                  {t('fullName')}
                 </label>
                 <input
                   id="name"
                   name="name"
                   type="text"
-                  placeholder="Your name"
+                  placeholder={t('namePlaceholder')}
                   required
                   aria-required="true"
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
@@ -140,13 +146,13 @@ export default function ContactSection() {
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-flow-green mb-1.5">
-                  Email Address
+                  {t('email')}
                 </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t('emailPlaceholder')}
                   required
                   aria-required="true"
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
@@ -157,31 +163,31 @@ export default function ContactSection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-flow-green mb-1.5">
-                  Phone / WhatsApp
+                  {t('phone')}
                 </label>
                 <input
                   id="phone"
                   name="phone"
                   type="tel"
-                  placeholder="+20 ..."
+                  placeholder={t('phonePlaceholder')}
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
                 />
               </div>
               <div>
                 <label htmlFor="platform" className="block text-sm font-medium text-flow-green mb-1.5">
-                  Platform
+                  {t('platform')}
                 </label>
                 <select
                   id="platform"
                   name="platform"
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white/80 focus-visible:ring-2 focus-visible:ring-flow-lime"
                 >
-                  <option value="">Select platform</option>
+                  <option value="">{t('selectPlatform')}</option>
                   <option value="amazon">Amazon</option>
                   <option value="noon">Noon</option>
                   <option value="tiktok-shop">TikTok Shop</option>
                   <option value="shopify">Shopify</option>
-                  <option value="other">Other</option>
+                  <option value="other">{t('platformOptions.other')}</option>
                 </select>
               </div>
             </div>
@@ -189,46 +195,46 @@ export default function ContactSection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label htmlFor="products" className="block text-sm font-medium text-flow-green mb-1.5">
-                  Number of Products
+                  {t('products')}
                 </label>
                 <input
                   id="products"
                   name="products"
                   type="text"
-                  placeholder="e.g. 50–200 products"
+                  placeholder={t('productsPlaceholder')}
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
                 />
               </div>
               <div>
                 <label htmlFor="service" className="block text-sm font-medium text-flow-green mb-1.5">
-                  Service Interested In
+                  {t('service')}
                 </label>
                 <select
                   id="service"
                   name="service"
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white/80 focus-visible:ring-2 focus-visible:ring-flow-lime"
                 >
-                  <option value="">Select service</option>
-                  <option value="complete-package">Complete Package</option>
-                  <option value="photography">Photography Only</option>
-                  <option value="listing">Listing Optimization</option>
-                  <option value="video">Video</option>
-                  <option value="social-media">Social Media</option>
-                  <option value="website">Website</option>
-                  <option value="not-sure">Not Sure Yet</option>
+                  <option value="">{t('selectService')}</option>
+                  <option value="complete-package">{t('serviceOptions.complete')}</option>
+                  <option value="photography">{t('serviceOptions.photography')}</option>
+                  <option value="listing">{t('serviceOptions.listing')}</option>
+                  <option value="video">{t('serviceOptions.video')}</option>
+                  <option value="social-media">{t('serviceOptions.social')}</option>
+                  <option value="website">{t('serviceOptions.website')}</option>
+                  <option value="not-sure">{t('serviceOptions.notSure')}</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label htmlFor="message" className="block text-sm font-medium text-flow-green mb-1.5">
-                Message
+                {t('message')}
               </label>
               <textarea
                 id="message"
                 name="message"
                 rows={4}
-                placeholder="Tell us about your products and goals..."
+                placeholder={t('messagePlaceholder')}
                 className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow resize-none focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
               />
             </div>
@@ -242,7 +248,7 @@ export default function ContactSection() {
                   transition={{ duration: 0.3 }}
                   className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3 overflow-hidden"
                 >
-                  Message sent! We&apos;ll get back to you shortly.
+                  {t('success')}
                 </motion.p>
               )}
               {status === 'error' && (
@@ -253,7 +259,7 @@ export default function ContactSection() {
                   transition={{ duration: 0.3 }}
                   className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3 overflow-hidden"
                 >
-                  Something went wrong. Please try again or contact us directly.
+                  {t('error')}
                 </motion.p>
               )}
             </AnimatePresence>
@@ -264,19 +270,19 @@ export default function ContactSection() {
                 disabled={status === 'loading'}
                 className="w-full bg-flow-lime text-flow-green font-bold py-4 rounded-xl hover:bg-flow-lime-hover transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-glow-lime)]"
               >
-                {status === 'loading' ? 'Sending…' : 'Send Message'}
+                {status === 'loading' ? t('sending') : t('send')}
               </button>
             </MagneticButton>
 
             <MagneticButton strength={0.15} className="block w-full">
               <a
-                href="https://wa.me/201550408340"
+                href={`https://wa.me/2${content.phones[0] ?? ''}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 border-2 border-green-700 text-green-700 font-bold py-4 rounded-xl hover:bg-green-700 hover:text-white transition-colors text-sm"
               >
                 <MessageCircle size={18} />
-                Chat on WhatsApp
+                {t('whatsapp')}
               </a>
             </MagneticButton>
           </form>

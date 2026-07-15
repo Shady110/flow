@@ -1,13 +1,20 @@
 'use client'
 import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
-import { workflowSteps } from '@/data/workflow'
 import { useReducedMotion } from '@/lib/useReducedMotion'
 import RevealHeading from './ui/RevealHeading'
 
-const N = workflowSteps.length
+const stepKeys = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
+const N = stepKeys.length
 
 export default function WorkflowSection() {
+  const t = useTranslations('marketing.workflow')
+  const workflowSteps = stepKeys.map((key, i) => ({
+    num: String(i + 1).padStart(2, '0'),
+    title: t(`steps.${key}.title`),
+    description: t(`steps.${key}.description`),
+  }))
   const wrapperRef = useRef<HTMLElement>(null)
   const [active, setActive] = useState(0)
   const reduced = useReducedMotion()
@@ -40,15 +47,14 @@ export default function WorkflowSection() {
         <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <div className="mb-16 max-w-xl">
-              <span className="eyebrow-index text-white/50 mb-6" data-index="05">How It Works</span>
+              <span className="eyebrow-index text-white/50 mb-6" data-index="05">{t('eyebrow')}</span>
               <RevealHeading
-                text="Your product. Our process. Marketplace success."
-                accent={['success.']}
+                text={t('heading')}
+                accent={[]}
                 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.02] tracking-tight mt-6"
               />
               <p className="text-white/60 text-base leading-relaxed mt-5">
-                A structured, repeatable workflow designed to get your products live
-                faster and performing better.
+                {t('intro')}
               </p>
             </div>
 
@@ -104,18 +110,17 @@ export default function WorkflowSection() {
       <section className="md:hidden py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16 flex flex-col items-center">
-            <span className="eyebrow-index text-white/50 mb-6" data-index="05">How It Works</span>
+            <span className="eyebrow-index text-white/50 mb-6" data-index="05">{t('eyebrow')}</span>
             <h2 className="font-display text-3xl font-bold text-white leading-tight tracking-tight mt-6 mb-4">
-              Your product. Our process. Marketplace success.
+              {t('heading')}
             </h2>
             <p className="text-white/60 text-base leading-relaxed max-w-2xl mx-auto">
-              A structured, repeatable workflow designed to get your products live
-              faster and performing better.
+              {t('intro')}
             </p>
           </div>
 
           <div className="flex flex-col gap-0 relative">
-            <div className="absolute left-[21px] top-2 bottom-8 border-l-2 border-dashed border-white/15" />
+            <div className="absolute left-[21px] rtl:left-auto rtl:right-[21px] top-2 bottom-8 border-l-2 rtl:border-l-0 rtl:border-r-2 border-dashed border-white/15" />
             {workflowSteps.map((s, i) => (
               <motion.div
                 key={s.num}

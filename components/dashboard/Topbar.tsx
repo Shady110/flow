@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { LogOut, MessageSquare } from 'lucide-react'
 import { signOut } from '@/lib/auth/actions'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 import {
   Avatar,
   AvatarFallback,
@@ -33,8 +35,10 @@ function initials(name: string, email: string) {
 }
 
 export function Topbar({ name, email, roleName, canChat }: TopbarProps) {
+  const t = useTranslations('common')
   return (
     <header className="flex h-16 items-center justify-end gap-3 border-b border-border bg-background/80 px-6 backdrop-blur">
+      <LanguageSwitcher />
       {canChat && (
         <Link
           href="/inbox"
@@ -46,7 +50,7 @@ export function Topbar({ name, email, roleName, canChat }: TopbarProps) {
       )}
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-3 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <div className="hidden text-right sm:block">
+          <div className="hidden text-end sm:block">
             <p className="text-sm font-medium leading-tight text-foreground">{name || email}</p>
             {roleName && (
               <p className="text-xs capitalize text-muted-foreground">{roleName}</p>
@@ -64,7 +68,7 @@ export function Topbar({ name, email, roleName, canChat }: TopbarProps) {
           <DropdownMenuItem asChild className="cursor-pointer">
             <form action={signOut}>
               <button type="submit" className="flex w-full items-center">
-                <LogOut className="mr-2 h-4 w-4" /> Sign out
+                <LogOut className="me-2 h-4 w-4" /> {t('signOut')}
               </button>
             </form>
           </DropdownMenuItem>

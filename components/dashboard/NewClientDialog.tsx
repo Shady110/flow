@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClientAction } from '@/lib/db/client-actions'
@@ -25,8 +26,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ds/dialog'
-import { CLIENT_STATUS_LABELS } from '@/lib/constants'
 import type { ClientStatus } from '@/lib/types'
+
+const CLIENT_STATUSES: ClientStatus[] = ['lead', 'active', 'paused', 'churned']
 
 function slugify(v: string) {
   return v
@@ -40,6 +42,8 @@ function slugify(v: string) {
 
 export function NewClientDialog() {
   const router = useRouter()
+  const t = useTranslations('internal.dialogs')
+  const ts = useTranslations('internal.clientStatus')
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
@@ -57,7 +61,7 @@ export function NewClientDialog() {
       toast.error(res.error)
       return
     }
-    toast.success('Client created')
+    toast.success(t('clientCreated'))
     setOpen(false)
     setName('')
     setSlug('')
@@ -71,17 +75,17 @@ export function NewClientDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="h-4 w-4" /> New client
+          <Plus className="h-4 w-4" /> {t('newClient')}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New client</DialogTitle>
-          <DialogDescription>Each client gets their own portal subdomain.</DialogDescription>
+          <DialogTitle>{t('newClient')}</DialogTitle>
+          <DialogDescription>{t('newClientDesc')}</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="c-name">Company name</Label>
+            <Label htmlFor="c-name">{t('companyName')}</Label>
             <Input
               id="c-name"
               value={name}
@@ -93,7 +97,7 @@ export function NewClientDialog() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="c-slug">Subdomain</Label>
+            <Label htmlFor="c-slug">{t('subdomain')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="c-slug"
@@ -108,27 +112,27 @@ export function NewClientDialog() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Status</Label>
+            <Label>{t('status')}</Label>
             <Select value={status} onValueChange={(v) => setStatus(v as ClientStatus)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(CLIENT_STATUS_LABELS) as ClientStatus[]).map((s) => (
+                {CLIENT_STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {CLIENT_STATUS_LABELS[s]}
+                    {ts(s)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="c-notes">Notes</Label>
+            <Label htmlFor="c-notes">{t('notes')}</Label>
             <Textarea id="c-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating…' : 'Create client'}
+              {loading ? t('creating') : t('createClient')}
             </Button>
           </DialogFooter>
         </form>

@@ -1,5 +1,9 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import { getLocale } from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
+import { getLandingContent } from '@/lib/db/landing'
+import type { Locale } from '@/i18n/config'
 import Navbar from '@/components/Navbar'
 import ScrollProgress from '@/components/ui/ScrollProgress'
 import HeroSection from '@/components/HeroSection'
@@ -36,18 +40,22 @@ export const metadata: Metadata = {
   },
 }
 
-export default function Home() {
+export default async function Home() {
+  const locale = (await getLocale()) as Locale
+  const t = await getTranslations('marketing.trust')
+  const content = await getLandingContent(locale)
+
   return (
     <main>
       <ScrollProgress />
       <Navbar />
-      <HeroSection />
+      <HeroSection content={content.hero} />
 
       {/* Trust strip */}
       <section className="bg-flow-bg border-y border-flow-border py-10">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <p className="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-flow-text-muted mb-7">
-            Trusted for marketplaces sellers rely on
+            {t('title')}
           </p>
           <LogoMarquee />
         </div>
@@ -55,13 +63,13 @@ export default function Home() {
 
       <ProblemSection />
       <SolutionSection />
-      <ServicesSection />
+      <ServicesSection content={content.services} />
       <PortfolioGridSection />
       <WorkflowSection />
-      <PricingSection />
+      <PricingSection content={content.pricing} />
       {/* <TeamSection /> hidden until the full team photo is ready */}
-      <FAQSection />
-      <ContactSection />
+      <FAQSection content={content.faq} />
+      <ContactSection content={content.contact} />
       <Footer />
     </main>
   )

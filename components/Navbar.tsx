@@ -1,11 +1,13 @@
 'use client'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 import { useScrolled } from '@/hooks/useScrolled'
 import MagneticButton from './ui/MagneticButton'
+import LanguageSwitcher from './LanguageSwitcher'
 
 interface DropdownItem {
   label: string
@@ -13,41 +15,45 @@ interface DropdownItem {
   desc?: string
 }
 interface NavItem {
+  key: string
   label: string
   href: string
   children?: DropdownItem[]
 }
 
-const nav: NavItem[] = [
-  {
-    label: 'Services',
-    href: '/#services',
-    children: [
-      { label: 'Product Content Creation', href: '/#services', desc: 'Studio photography + copy' },
-      { label: 'Listing Optimization', href: '/#services', desc: 'Rank higher, convert better' },
-      { label: 'Marketplace Management', href: '/#services', desc: 'Catalog & uploads handled' },
-      { label: 'Account Management', href: '/#services', desc: 'Full seller-account ownership' },
-    ],
-  },
-  {
-    label: 'Work',
-    href: '/#work',
-    children: [
-      { label: 'Fashion & Apparel', href: '/portfolio#fashion' },
-      { label: 'Electronics', href: '/portfolio#electronics' },
-      { label: 'Cosmetics & Beauty', href: '/portfolio#cosmetics' },
-      { label: 'View full portfolio →', href: '/portfolio' },
-    ],
-  },
-  { label: 'Pricing', href: '/#pricing' },
-  { label: 'Team', href: '/#team' },
-  { label: 'FAQ', href: '/#faq' },
-]
-
 export default function Navbar() {
+  const t = useTranslations('marketing.nav')
   const scrolled = useScrolled(20)
   const [menuOpen, setMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+
+  const nav: NavItem[] = [
+    {
+      key: 'services',
+      label: t('services'),
+      href: '/#services',
+      children: [
+        { label: t('services_dd.content'), href: '/#services', desc: t('services_dd.contentDesc') },
+        { label: t('services_dd.listing'), href: '/#services', desc: t('services_dd.listingDesc') },
+        { label: t('services_dd.management'), href: '/#services', desc: t('services_dd.managementDesc') },
+        { label: t('services_dd.account'), href: '/#services', desc: t('services_dd.accountDesc') },
+      ],
+    },
+    {
+      key: 'work',
+      label: t('work'),
+      href: '/#work',
+      children: [
+        { label: t('work_dd.fashion'), href: '/portfolio#fashion' },
+        { label: t('work_dd.electronics'), href: '/portfolio#electronics' },
+        { label: t('work_dd.cosmetics'), href: '/portfolio#cosmetics' },
+        { label: t('work_dd.viewAll'), href: '/portfolio' },
+      ],
+    },
+    { key: 'pricing', label: t('pricing'), href: '/#pricing' },
+    { key: 'team', label: t('team'), href: '/#team' },
+    { key: 'faq', label: t('faq'), href: '/#faq' },
+  ]
 
   return (
     <nav
@@ -79,9 +85,9 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-1">
             {nav.map((item) => (
               <div
-                key={item.label}
+                key={item.key}
                 className="relative"
-                onMouseEnter={() => setOpenDropdown(item.children ? item.label : null)}
+                onMouseEnter={() => setOpenDropdown(item.children ? item.key : null)}
               >
                 <Link
                   href={item.href}
@@ -92,7 +98,7 @@ export default function Navbar() {
                     <ChevronDown
                       size={14}
                       className={`transition-transform duration-200 ${
-                        openDropdown === item.label ? 'rotate-180' : ''
+                        openDropdown === item.key ? 'rotate-180' : ''
                       }`}
                     />
                   )}
@@ -100,7 +106,7 @@ export default function Navbar() {
 
                 {item.children && (
                   <AnimatePresence>
-                    {openDropdown === item.label && (
+                    {openDropdown === item.key && (
                       <motion.div
                         initial={{ opacity: 0, y: 8, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -141,14 +147,15 @@ export default function Navbar() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-flow-lime opacity-75 animate-ping" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-flow-lime" />
               </span>
-              2 spots left
+              {t('spotsLeft')}
             </span>
+            <LanguageSwitcher tone="light" />
             <MagneticButton strength={0.2}>
               <Link
                 href="/#contact"
                 className="block bg-flow-lime text-flow-green text-sm font-semibold px-5 py-2 rounded-full hover:bg-flow-lime-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-glow-lime)]"
               >
-                Start Your Flow
+                {t('cta')}
               </Link>
             </MagneticButton>
           </div>
@@ -157,7 +164,7 @@ export default function Navbar() {
           <button
             className="md:hidden flex flex-col justify-center gap-1.5 p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime rounded"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
+            aria-label={t('toggleMenu')}
             aria-expanded={menuOpen}
           >
             <span className="block w-6 h-0.5 bg-white" />
@@ -179,7 +186,7 @@ export default function Navbar() {
               <div className="px-6 py-4 flex flex-col gap-1">
                 {nav.map((item) => (
                   <Link
-                    key={item.label}
+                    key={item.key}
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
                     className="text-sm font-medium text-white/85 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime rounded"
@@ -187,12 +194,13 @@ export default function Navbar() {
                     {item.label}
                   </Link>
                 ))}
+                <div className="pt-1"><LanguageSwitcher tone="light" /></div>
                 <Link
                   href="/#contact"
                   onClick={() => setMenuOpen(false)}
                   className="mt-2 bg-flow-lime text-flow-green text-sm font-semibold px-5 py-2.5 rounded-full text-center hover:bg-flow-lime-hover transition-colors"
                 >
-                  Start Your Flow
+                  {t('cta')}
                 </Link>
               </div>
             </motion.div>

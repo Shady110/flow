@@ -1,10 +1,11 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { getClients, getTasks, getTeam } from '@/lib/db/queries'
 import { getCurrentUser } from '@/lib/auth/session'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { TaskDialog } from '@/components/dashboard/TaskDialog'
 import { TaskStatusSelect } from '@/components/dashboard/TaskStatusSelect'
-import { DeadlineIndicator, PriorityLabel } from '@/components/dashboard/indicators'
+import { DeadlineIndicator, PriorityLabel, TaskStatusBadge } from '@/components/dashboard/indicators'
 import { Card } from '@/components/ds/card'
 import {
   Table,
@@ -16,11 +17,13 @@ import {
 } from '@/components/ds/table'
 
 export default async function TasksPage() {
-  const [clients, tasks, team, user] = await Promise.all([
+  const [clients, tasks, team, user, tr, tc] = await Promise.all([
     getClients(),
     getTasks(),
     getTeam(),
     getCurrentUser(),
+    getTranslations('internal.tasks'),
+    getTranslations('internal.common'),
   ])
 
   const clientOptions = clients.map((c) => ({ id: c.id, label: c.name }))
@@ -33,8 +36,8 @@ export default async function TasksPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Tasks"
-        description="Every action across all clients."
+        title={tr('title')}
+        description={tr('description')}
         actions={
           canCreate && clients.length > 0 ? (
             <TaskDialog clients={clientOptions} team={teamOptions} />
@@ -46,19 +49,19 @@ export default async function TasksPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Task</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Due</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{tr('task')}</TableHead>
+              <TableHead>{tr('client')}</TableHead>
+              <TableHead>{tr('owner')}</TableHead>
+              <TableHead>{tr('priority')}</TableHead>
+              <TableHead>{tr('due')}</TableHead>
+              <TableHead>{tr('status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {tasks.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  No tasks yet.
+                  {tr('noTasks')}
                 </TableCell>
               </TableRow>
             )}
@@ -71,7 +74,7 @@ export default async function TasksPage() {
                   </Link>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {memberName.get(t.assignee_id ?? '') ?? 'Unassigned'}
+                  {memberName.get(t.assignee_id ?? '') ?? tc('unassigned')}
                 </TableCell>
                 <TableCell>
                   <PriorityLabel priority={t.priority} />
@@ -83,7 +86,7 @@ export default async function TasksPage() {
                   {canEdit ? (
                     <TaskStatusSelect taskId={t.id} clientId={t.client_id} status={t.status} />
                   ) : (
-                    t.status
+                    <TaskStatusBadge status={t.status} />
                   )}
                 </TableCell>
               </TableRow>

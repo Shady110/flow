@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { requireClientContext } from '@/lib/auth/client-session'
 import { getInvoices } from '@/lib/db/finance-queries'
 import { formatMoney } from '@/lib/money'
@@ -15,6 +16,7 @@ import {
 
 export default async function PortalInvoices() {
   const { client } = await requireClientContext()
+  const t = await getTranslations('portal.invoices')
   const invoices = (await getInvoices(client.id)).filter((i) => i.status !== 'draft')
 
   const outstanding = invoices.reduce((s, i) => s + i.balance, 0)
@@ -22,11 +24,11 @@ export default async function PortalInvoices() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Invoices</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">{t('title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {outstanding > 0
-            ? `You have ${formatMoney(outstanding)} outstanding.`
-            : 'You’re all paid up. Thank you!'}
+            ? t('outstanding', { amount: formatMoney(outstanding) })
+            : t('paidUp')}
         </p>
       </div>
 
@@ -34,18 +36,18 @@ export default async function PortalInvoices() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Invoice</TableHead>
-              <TableHead>Issued</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead className="text-right">Balance</TableHead>
+              <TableHead>{t('invoice')}</TableHead>
+              <TableHead>{t('issued')}</TableHead>
+              <TableHead>{t('status')}</TableHead>
+              <TableHead className="text-end">{t('total')}</TableHead>
+              <TableHead className="text-end">{t('balance')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {invoices.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                  No invoices yet.
+                  {t('noInvoices')}
                 </TableCell>
               </TableRow>
             )}
@@ -62,8 +64,8 @@ export default async function PortalInvoices() {
                 <TableCell>
                   <InvoiceStatusBadge status={i.status} />
                 </TableCell>
-                <TableCell className="text-right">{formatMoney(i.total, i.currency)}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-end">{formatMoney(i.total, i.currency)}</TableCell>
+                <TableCell className="text-end">
                   {i.balance > 0 ? (
                     <span className="font-medium text-warning">{formatMoney(i.balance, i.currency)}</span>
                   ) : (

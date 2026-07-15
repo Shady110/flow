@@ -1,21 +1,21 @@
 'use client'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { fadeUp, staggerContainer, scaleFadeIn } from '@/lib/animations'
 import PipelineFlow from './ui/PipelineFlow'
 import RevealHeading from './ui/RevealHeading'
 
-const pipelineSteps = [
-  'Product',
-  'Content Creation',
-  'Listing Optimization',
-  'Marketplace Publishing',
-  'Account Management',
-  'Sales Growth',
-]
-
-const chips = ['AI-Assisted Workflows', 'Human Expertise', 'End-to-End Service']
-
 export default function SolutionSection() {
+  const t = useTranslations('marketing.solution')
+  const pipelineSteps = [
+    t('pipeline.product'),
+    t('pipeline.content'),
+    t('pipeline.listing'),
+    t('pipeline.publishing'),
+    t('pipeline.account'),
+    t('pipeline.growth'),
+  ]
+  const chips = [t('chips.ai'), t('chips.human'), t('chips.endToEnd')]
   return (
     <section
       className="section-padding bg-flow-bg relative"
@@ -32,12 +32,12 @@ export default function SolutionSection() {
             viewport={{ once: true, amount: 0.15 }}
             custom={0}
           >
-            <span className="eyebrow-index mb-6" data-index="02">The Solution</span>
+            <span className="eyebrow-index mb-6" data-index="02">{t('eyebrow')}</span>
           </motion.div>
 
           <RevealHeading
-            text="One partner. The entire pipeline."
-            accent={['pipeline.']}
+            text={t('heading')}
+            accent={[]}
             className="section-title mt-6 mb-6"
           />
 
@@ -49,9 +49,7 @@ export default function SolutionSection() {
             custom={2}
             className="text-flow-text-muted text-base leading-relaxed mb-8"
           >
-            FLOW combines AI-assisted workflows with human expertise to manage
-            everything from product photography to marketplace publishing. You
-            hand us the product — we handle the rest.
+            {t('intro')}
           </motion.p>
 
           <motion.div

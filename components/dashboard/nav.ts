@@ -7,11 +7,14 @@ import {
   Sparkles,
   Shield,
   MessageSquare,
+  FileText,
   type LucideIcon,
 } from 'lucide-react'
 import type { PermissionKey } from '@/lib/types'
 
 export interface NavItem {
+  /** Stable i18n key under the `internal.nav` namespace. */
+  key: string
   label: string
   href: string
   icon: LucideIcon
@@ -22,12 +25,13 @@ export interface NavItem {
 }
 
 export const INTERNAL_NAV: NavItem[] = [
-  { label: 'Overview', href: '/', icon: LayoutDashboard },
-  { label: 'Clients', href: '/clients', icon: Users, permission: 'clients.view' },
-  { label: 'Tasks', href: '/tasks', icon: ListChecks, permission: 'tasks.view' },
-  { label: 'Inbox', href: '/inbox', icon: MessageSquare, permission: 'chat.access' },
-  { label: 'Team', href: '/team', icon: BarChart3, permission: 'team.view' },
-  { label: 'Finance', href: '/finance', icon: Wallet, permission: 'finance.view' },
-  { label: 'Automations', href: '/automations', icon: Sparkles, permission: 'automation.run' },
-  { label: 'Roles & access', href: '/settings/roles', icon: Shield, permission: 'roles.manage' },
+  { key: 'overview', label: 'Overview', href: '/', icon: LayoutDashboard },
+  { key: 'clients', label: 'Clients', href: '/clients', icon: Users, permission: 'clients.view' },
+  { key: 'tasks', label: 'Tasks', href: '/tasks', icon: ListChecks, permission: 'tasks.view' },
+  { key: 'inbox', label: 'Inbox', href: '/inbox', icon: MessageSquare, permission: 'chat.access' },
+  { key: 'team', label: 'Team', href: '/team', icon: BarChart3, permission: 'team.view' },
+  { key: 'finance', label: 'Finance', href: '/finance', icon: Wallet, permission: 'finance.view' },
+  { key: 'automations', label: 'Automations', href: '/automations', icon: Sparkles, permission: 'automation.run' },
+  { key: 'landing', label: 'Landing content', href: '/settings/landing', icon: FileText, permission: 'content.manage' },
+  { key: 'roles', label: 'Roles & access', href: '/settings/roles', icon: Shield, permission: 'roles.manage' },
 ]

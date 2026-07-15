@@ -31,6 +31,17 @@
   --color-flow-black: #08150E;
 }
 
+/* Arabic locale — swap the display & body faces to Cairo, which carries a
+   full Arabic glyph set. Cascades to every `font-display` / `font-body`
+   utility because those resolve to these custom properties. */
+html[lang="ar"] {
+  --font-display: var(--font-cairo);
+  --font-body: var(--font-cairo);
+}
+html[lang="ar"] body {
+  font-family: var(--font-cairo), sans-serif;
+}
+
 :root {
   --color-bg: #FBFBF7;
   --color-bg-soft: #F4F7EC;

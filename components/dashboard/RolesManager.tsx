@@ -82,7 +82,7 @@ export function RolesManager({
               key={r.id}
               onClick={() => setSelectedId(r.id)}
               className={cn(
-                'flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors',
+                'flex w-full items-center justify-between rounded-lg px-3 py-2 text-start text-sm transition-colors',
                 r.id === selectedId
                   ? 'bg-secondary text-secondary-foreground'
                   : 'hover:bg-muted',
