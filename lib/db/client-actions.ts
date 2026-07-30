@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 
-const slugRe = /^[a-z0-9](?:[a-z0-9-]{0,48}[a-z0-9])?$/
+/** Subdomain-safe slug (also reused when converting a lead into a client). */
+export const slugRe = /^[a-z0-9](?:[a-z0-9-]{0,48}[a-z0-9])?$/
 
 const clientSchema = z.object({
   name: z.string().min(2, 'Name is required'),

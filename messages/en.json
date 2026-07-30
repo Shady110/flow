@@ -141,6 +141,7 @@
   "internal": {
     "nav": {
       "overview": "Overview",
+      "leads": "Leads",
       "clients": "Clients",
       "tasks": "Tasks",
       "inbox": "Inbox",

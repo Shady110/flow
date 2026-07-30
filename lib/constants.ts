@@ -6,6 +6,7 @@ import type {
   PermissionKey,
   ProductStatus,
   ClientStatus,
+  LeadStatus,
   TaskStatus,
   TaskPriority,
   InvoiceStatus,
@@ -27,6 +28,7 @@ export const PAYMENT_METHODS = ['Cash', 'Bank transfer', 'InstaPay', 'Card', 'Ot
 export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'clients.view', 'clients.create', 'clients.edit', 'clients.delete',
   'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete', 'tasks.assign',
+  'leads.view', 'leads.create', 'leads.edit', 'leads.delete', 'leads.convert',
   'team.view', 'finance.view', 'finance.manage', 'invoices.issue',
   'chat.access', 'automation.run', 'roles.manage', 'users.invite',
   'users.manage', 'settings.manage', 'content.manage', 'products.view', 'products.manage',
@@ -62,3 +64,22 @@ export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
   high: 'High',
   urgent: 'Urgent',
 }
+
+export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
+  new: 'New',
+  contacted: 'Contacted',
+  qualified: 'Qualified',
+  proposal: 'Proposal sent',
+  won: 'Won',
+  lost: 'Lost',
+}
+
+/** Pipeline order for pickers and board-style displays. */
+export const LEAD_STATUSES: LeadStatus[] = [
+  'new',
+  'contacted',
+  'qualified',
+  'proposal',
+  'won',
+  'lost',
+]

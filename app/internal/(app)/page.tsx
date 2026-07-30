@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import { Users, ListChecks, AlertTriangle, Clock } from 'lucide-react'
+import { Users, UserPlus, ListChecks, AlertTriangle, Clock } from 'lucide-react'
 import { getClients, getTasks, getTeam } from '@/lib/db/queries'
+import { getLeads } from '@/lib/db/lead-queries'
+import { getCurrentUser } from '@/lib/auth/session'
 import { deadlineState } from '@/lib/deadlines'
 import type { TaskStatus } from '@/lib/types'
 import { PageHeader } from '@/components/dashboard/PageHeader'
@@ -11,14 +13,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
 import { ClientStatusBadge, DeadlineIndicator } from '@/components/dashboard/indicators'
 
 export default async function OverviewPage() {
-  const [clients, tasks, team, t, ts, tc] = await Promise.all([
+  const [clients, tasks, team, user, t, ts, tc] = await Promise.all([
     getClients(),
     getTasks(),
     getTeam(),
+    getCurrentUser(),
     getTranslations('internal.overview'),
     getTranslations('internal.status'),
     getTranslations('internal.common'),
   ])
+
+  // Null when the viewer can't see leads — the card is then hidden entirely.
+  const newLeads = user?.permissions.has('leads.view')
+    ? (await getLeads()).filter((l) => l.status === 'new').length
+    : null
 
   const clientName = new Map(clients.map((c) => [c.id, c.name]))
   const memberName = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
@@ -44,10 +52,13 @@ export default async function OverviewPage() {
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label={t('activeClients')} value={activeClients} icon={Users} hint={tc('total', { count: clients.length })} />
-        <StatCard label={t('openTasks')} value={openTasks.length} icon={ListChecks} />
-        <StatCard label={t('overdue')} value={overdue.length} icon={AlertTriangle} tone={overdue.length ? 'danger' : 'default'} />
-        <StatCard label={t('dueSoon')} value={dueSoon.length} icon={Clock} tone={dueSoon.length ? 'warning' : 'default'} />
+        <StatCard label={t('activeClients')} value={activeClients} icon={Users} hint={tc('total', { count: clients.length })} href="/clients" />
+        {newLeads !== null && (
+          <StatCard label="New leads" value={newLeads} icon={UserPlus} href="/leads" />
+        )}
+        <StatCard label={t('openTasks')} value={openTasks.length} icon={ListChecks} href="/tasks" />
+        <StatCard label={t('overdue')} value={overdue.length} icon={AlertTriangle} tone={overdue.length ? 'danger' : 'default'} href="/tasks" />
+        <StatCard label={t('dueSoon')} value={dueSoon.length} icon={Clock} tone={dueSoon.length ? 'warning' : 'default'} href="/tasks" />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

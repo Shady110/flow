@@ -10,6 +10,11 @@ export type PermissionKey =
   | 'tasks.edit'
   | 'tasks.delete'
   | 'tasks.assign'
+  | 'leads.view'
+  | 'leads.create'
+  | 'leads.edit'
+  | 'leads.delete'
+  | 'leads.convert'
   | 'team.view'
   | 'finance.view'
   | 'finance.manage'
@@ -109,6 +114,30 @@ export interface TaskActivity {
   action: string
   detail: Record<string, unknown> | null
   created_at: string
+}
+
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'proposal' | 'won' | 'lost'
+
+export interface Lead {
+  id: string
+  name: string
+  company: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  /** Geography — Nasr City, Alexandria, … */
+  area: string | null
+  /** Industry / product category. */
+  field: string | null
+  status: LeadStatus
+  source: string | null
+  plan_interest: string | null
+  notes: string | null
+  owner_id: string | null
+  converted_client_id: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
 }
 
 export type ProductStatus = 'draft' | 'in_progress' | 'review' | 'live' | 'rejected' | 'paused'

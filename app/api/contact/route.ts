@@ -1,5 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
+import { createAdminClient } from '@/lib/supabase/admin'
+
+/**
+ * Record the enquiry as a lead so nothing lives only in an inbox. Uses the
+ * service-role client because this route is unauthenticated and leads_insert
+ * RLS requires the leads.create permission. Best-effort: a DB failure must not
+ * break the email or the visitor's form.
+ */
+async function recordLead(fields: Record<string, string | undefined>) {
+  const { name, email, phone, platform, products, service, message } = fields
+  try {
+    const admin = createAdminClient()
+    const notes = [
+      platform ? `Platform: ${platform}` : null,
+      products ? `Products: ${products}` : null,
+      message ? `\n${message}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    await admin.from('leads').insert({
+      name,
+      email: email?.toLowerCase(),
+      phone: phone || null,
+      field: platform || null,
+      plan_interest: service || null,
+      source: 'website',
+      notes: notes || null,
+    })
+  } catch (err) {
+    console.error('[contact] could not record lead:', err)
+  }
+}
 
 export async function POST(req: NextRequest) {
   const { name, email, phone, platform, products, service, message } =
@@ -8,6 +41,8 @@ export async function POST(req: NextRequest) {
   if (!name || !email) {
     return NextResponse.json({ error: 'Name and email are required.' }, { status: 400 })
   }
+
+  await recordLead({ name, email, phone, platform, products, service, message })
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',
