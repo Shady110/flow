@@ -61,6 +61,8 @@ export interface PricingPlan {
    * `lib/service-options.ts`). Omit and the CTA just jumps to the form.
    */
   serviceKey?: string
+  /** Highlighted "you save X" strip. Figures are editorial, not computed. */
+  savings?: { label: string; amount: string; percent: string }
   bulk?: { title: string; rows: { label: string; value: string }[] }
 }
 
@@ -318,14 +320,14 @@ const en: LandingContent = {
         label: 'Full Growth',
         badge: 'Best value',
         tagline:
-          'Everything we do — listing, photography and full account management — in one monthly plan. Your sales share starts low and only grows as we hit your KPIs, capped at 5% forever.',
+          'Everything we do — listing, photography and full account management — in one monthly plan, with a flat 1% of sales on every plan. Go over your product count and extra items are billed at the plan\'s rate, never full price.',
         plans: [
           {
             kicker: 'Testing the waters',
             priceValue: 3500,
             priceSuffix: ' EGP',
             unit: '/ per month',
-            extraNote: '+ 1% of sales',
+            extraNote: '+ 1% of sales (fixed)',
             name: 'Starter',
             serviceKey: 'growth-starter',
             features: [
@@ -339,11 +341,17 @@ const en: LandingContent = {
               title: "What's included",
               rows: [
                 { label: 'Products', value: 'up to 50' },
-                { label: 'Sales share', value: '1% → max 5%' },
+                { label: 'Sales share', value: '1% (fixed)' },
+                { label: 'Extra items', value: '35 EGP / item' },
                 { label: 'Photography', value: 'Included' },
                 { label: 'Listings', value: 'Included' },
                 { label: 'Account management', value: 'Basic' },
               ],
+            },
+            savings: {
+              label: 'You save',
+              amount: '750 EGP / month',
+              percent: '18% less than buying the same volume separately',
             },
             cta: 'Start Your Flow',
           },
@@ -352,7 +360,7 @@ const en: LandingContent = {
             priceValue: 8000,
             priceSuffix: ' EGP',
             unit: '/ per month',
-            extraNote: '+ 1.5% of sales',
+            extraNote: '+ 1% of sales (fixed)',
             name: 'Growth',
             serviceKey: 'growth',
             badge: 'Most Popular',
@@ -369,13 +377,18 @@ const en: LandingContent = {
               title: "What's included",
               rows: [
                 { label: 'Products', value: 'up to 150' },
-                { label: 'Sales share', value: '1.5% → max 5%' },
+                { label: 'Sales share', value: '1% (fixed)' },
+                { label: 'Extra items', value: '25 EGP / item' },
                 { label: 'Photography', value: 'Included' },
                 { label: 'Listings', value: 'Included' },
                 { label: 'Account management', value: 'Premium' },
               ],
             },
-            note: '53 EGP per product — 24% less than buying content on its own.',
+            savings: {
+              label: 'You save',
+              amount: '2,250 EGP / month',
+              percent: '22% less than buying the same volume separately',
+            },
             cta: 'Start Your Flow',
           },
           {
@@ -383,7 +396,7 @@ const en: LandingContent = {
             priceValue: 18000,
             priceSuffix: ' EGP',
             unit: '/ per month',
-            extraNote: '+ 2% of sales',
+            extraNote: '+ 1% of sales (fixed)',
             name: 'Scale',
             serviceKey: 'growth-scale',
             features: [
@@ -399,13 +412,18 @@ const en: LandingContent = {
               title: "What's included",
               rows: [
                 { label: 'Products', value: 'up to 400' },
-                { label: 'Sales share', value: '2% → max 5%' },
+                { label: 'Sales share', value: '1% (fixed)' },
+                { label: 'Extra items', value: '20 EGP / item' },
                 { label: 'Photography', value: 'Included' },
                 { label: 'Listings', value: 'Included' },
                 { label: 'Account management', value: 'Premium' },
               ],
             },
-            note: '45 EGP per product — the lowest per-item rate we offer.',
+            savings: {
+              label: 'You save',
+              amount: '1,000 EGP / month',
+              percent: '5% less than buying the same volume separately',
+            },
             cta: 'Start Your Flow',
           },
         ],
@@ -650,14 +668,14 @@ const ar: LandingContent = {
         label: 'النمو الكامل',
         badge: 'الأفضل قيمة',
         tagline:
-          'كل ما نقدّمه — القوائم والتصوير وإدارة الحساب الكاملة — في خطة شهرية واحدة. تبدأ نسبة المبيعات منخفضة وترتفع فقط عند تحقيق مؤشرات الأداء، وبحد أقصى 5% دائمًا.',
+          'كل ما نقدّمه — القوائم والتصوير وإدارة الحساب الكاملة — في خطة شهرية واحدة، مع نسبة ثابتة 1% من المبيعات في كل الخطط. وإذا تجاوزت عدد منتجات خطتك، تُحسب المنتجات الإضافية بسعر الخطة لا بالسعر الكامل.',
         plans: [
           {
             kicker: 'بداية محسوبة',
             priceValue: 3500,
             priceSuffix: ' ج.م',
             unit: '/ شهريًا',
-            extraNote: '+ 1% من المبيعات',
+            extraNote: '+ 1% من المبيعات (ثابتة)',
             name: 'ستارتر',
             serviceKey: 'growth-starter',
             features: [
@@ -671,11 +689,17 @@ const ar: LandingContent = {
               title: 'ما تشمله الخطة',
               rows: [
                 { label: 'عدد المنتجات', value: 'حتى 50' },
-                { label: 'نسبة المبيعات', value: '1% ← بحد أقصى 5%' },
+                { label: 'نسبة المبيعات', value: '1% ثابتة' },
+                { label: 'المنتجات الإضافية', value: '35 ج.م / منتج' },
                 { label: 'التصوير', value: 'مشمول' },
                 { label: 'القوائم', value: 'مشمولة' },
                 { label: 'إدارة الحساب', value: 'الأساسية' },
               ],
+            },
+            savings: {
+              label: 'توفّر',
+              amount: '750 ج.م / شهريًا',
+              percent: 'أقل بنسبة 18% من شراء نفس الكمية بشكل منفصل',
             },
             cta: 'ابدأ تدفّقك',
           },
@@ -684,7 +708,7 @@ const ar: LandingContent = {
             priceValue: 8000,
             priceSuffix: ' ج.م',
             unit: '/ شهريًا',
-            extraNote: '+ 1.5% من المبيعات',
+            extraNote: '+ 1% من المبيعات (ثابتة)',
             name: 'جروث',
             serviceKey: 'growth',
             badge: 'الأكثر طلبًا',
@@ -701,13 +725,18 @@ const ar: LandingContent = {
               title: 'ما تشمله الخطة',
               rows: [
                 { label: 'عدد المنتجات', value: 'حتى 150' },
-                { label: 'نسبة المبيعات', value: '1.5% ← بحد أقصى 5%' },
+                { label: 'نسبة المبيعات', value: '1% ثابتة' },
+                { label: 'المنتجات الإضافية', value: '25 ج.م / منتج' },
                 { label: 'التصوير', value: 'مشمول' },
                 { label: 'القوائم', value: 'مشمولة' },
                 { label: 'إدارة الحساب', value: 'المتقدّمة' },
               ],
             },
-            note: '53 ج.م لكل منتج — أقل بنسبة 24% من شراء المحتوى بالقطعة.',
+            savings: {
+              label: 'توفّر',
+              amount: '2,250 ج.م / شهريًا',
+              percent: 'أقل بنسبة 22% من شراء نفس الكمية بشكل منفصل',
+            },
             cta: 'ابدأ تدفّقك',
           },
           {
@@ -715,7 +744,7 @@ const ar: LandingContent = {
             priceValue: 18000,
             priceSuffix: ' ج.م',
             unit: '/ شهريًا',
-            extraNote: '+ 2% من المبيعات',
+            extraNote: '+ 1% من المبيعات (ثابتة)',
             name: 'سكيل',
             serviceKey: 'growth-scale',
             features: [
@@ -731,13 +760,18 @@ const ar: LandingContent = {
               title: 'ما تشمله الخطة',
               rows: [
                 { label: 'عدد المنتجات', value: 'حتى 400' },
-                { label: 'نسبة المبيعات', value: '2% ← بحد أقصى 5%' },
+                { label: 'نسبة المبيعات', value: '1% ثابتة' },
+                { label: 'المنتجات الإضافية', value: '20 ج.م / منتج' },
                 { label: 'التصوير', value: 'مشمول' },
                 { label: 'القوائم', value: 'مشمولة' },
                 { label: 'إدارة الحساب', value: 'المتقدّمة' },
               ],
             },
-            note: '45 ج.م لكل منتج — أقل سعر للمنتج نقدّمه.',
+            savings: {
+              label: 'توفّر',
+              amount: '1,000 ج.م / شهريًا',
+              percent: 'أقل بنسبة 5% من شراء نفس الكمية بشكل منفصل',
+            },
             cta: 'ابدأ تدفّقك',
           },
         ],

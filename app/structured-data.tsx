@@ -100,7 +100,7 @@ export default function StructuredData() {
                 name: 'Growth Plan — Growth',
                 description:
                   'Listing, studio photography and full account management ' +
-                  'for up to 150 products — 8,000 EGP per month + 1.5% of sales',
+                  'for up to 150 products — 8,000 EGP per month + a flat 1% of sales',
               },
             },
             {
@@ -110,7 +110,7 @@ export default function StructuredData() {
                 name: 'Growth Plan — Starter',
                 description:
                   'Listing, studio photography and full account management ' +
-                  'for up to 50 products — 3,500 EGP per month + 1% of sales',
+                  'for up to 50 products — 3,500 EGP per month + a flat 1% of sales',
               },
             },
             {
@@ -120,7 +120,7 @@ export default function StructuredData() {
                 name: 'Growth Plan — Scale',
                 description:
                   'Listing, studio photography and full account management ' +
-                  'for up to 400 products — 18,000 EGP per month + 2% of sales',
+                  'for up to 400 products — 18,000 EGP per month + a flat 1% of sales',
               },
             },
             {
@@ -236,8 +236,9 @@ export default function StructuredData() {
                 'FLOW’s monthly growth plans bundle listing content, studio ' +
                 'photography and full account management: Starter at 3,500 EGP ' +
                 'per month for up to 50 products, Growth at 8,000 EGP for up ' +
-                'to 150, and Scale at 18,000 EGP for up to 400. Each plan adds ' +
-                'a small share of sales that starts at 1–2% and never exceeds 5%.',
+                'to 150, and Scale at 18,000 EGP for up to 400. Every plan adds ' +
+                'a flat 1% of sales, and products beyond the plan count are ' +
+                'billed at 35, 25 or 20 EGP per item depending on the plan.',
             },
           },
           {

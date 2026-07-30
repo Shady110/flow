@@ -211,7 +211,7 @@ function SectionEditor({
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <TextField label="Unit" value={plan.unit} onChange={(v) => upd({ unit: v })} />
-                          <TextField label="Extra note (e.g. + 1.5% of sales)" value={plan.extraNote ?? ''} onChange={(v) => upd({ extraNote: v || undefined })} />
+                          <TextField label="Extra note (e.g. + 1% of sales)" value={plan.extraNote ?? ''} onChange={(v) => upd({ extraNote: v || undefined })} />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <TextField label="Badge" value={plan.badge ?? ''} onChange={(v) => upd({ badge: v || undefined })} />
@@ -248,6 +248,31 @@ function SectionEditor({
                         </label>
                         <TextField label="Note" value={plan.note ?? ''} onChange={(v) => upd({ note: v || undefined })} />
                         <LinesField label="Features" value={plan.features ?? []} onChange={(v) => upd({ features: v })} />
+
+                        {/* "You save X" strip — editorial figures, not computed */}
+                        <div className="grid grid-cols-3 gap-3">
+                          <TextField
+                            label="Savings label"
+                            value={plan.savings?.label ?? ''}
+                            onChange={(v) =>
+                              upd({ savings: v || plan.savings?.amount || plan.savings?.percent ? { ...plan.savings, label: v } : undefined })
+                            }
+                          />
+                          <TextField
+                            label="Amount saved"
+                            value={plan.savings?.amount ?? ''}
+                            onChange={(v) =>
+                              upd({ savings: v || plan.savings?.label || plan.savings?.percent ? { ...plan.savings, amount: v } : undefined })
+                            }
+                          />
+                          <TextField
+                            label="Percent saved"
+                            value={plan.savings?.percent ?? ''}
+                            onChange={(v) =>
+                              upd({ savings: v || plan.savings?.label || plan.savings?.amount ? { ...plan.savings, percent: v } : undefined })
+                            }
+                          />
+                        </div>
 
                         {/* Spec table — product caps, sales share, what's included */}
                         <div className="space-y-2">

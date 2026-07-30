@@ -44,7 +44,7 @@ export default function PortfolioGridSection() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-10">
           <div className="max-w-2xl">
-            <span className="eyebrow-index mb-6" data-index="04">{t('eyebrow')}</span>
+            <span className="eyebrow-index mb-6" data-index="05">{t('eyebrow')}</span>
             <RevealHeading
               text={t('heading')}
               accent={[]}

@@ -64,9 +64,11 @@ export default async function Home() {
       <ProblemSection />
       <SolutionSection />
       <ServicesSection content={content.services} />
+      {/* Pricing sits straight after Services: once someone understands what we
+          do, the plans are the next thing they want — not 3 sections later. */}
+      <PricingSection content={content.pricing} />
       <PortfolioGridSection />
       <WorkflowSection />
-      <PricingSection content={content.pricing} />
       {/* <TeamSection /> hidden until the full team photo is ready */}
       <FAQSection content={content.faq} />
       <ContactSection content={content.contact} />

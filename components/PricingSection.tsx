@@ -46,16 +46,27 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
       )}
       style={featured ? { backgroundImage: 'var(--gradient-dark-panel)' } : undefined}
     >
-      {/* Header: kicker + optional badge — inline so it never overlaps */}
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <p
-          className={cn(
-            'text-xs font-semibold uppercase tracking-widest',
-            featured ? 'text-white/60' : 'text-flow-text-muted',
-          )}
-        >
-          {plan.kicker}
-        </p>
+      {/* Header: plan name leads, kicker supports it, badge sits inline so it
+          never overlaps. The name is what people compare — it goes first. */}
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p
+            className={cn(
+              'font-display text-2xl font-bold leading-tight',
+              featured ? 'text-flow-lime' : 'text-flow-green',
+            )}
+          >
+            {plan.name}
+          </p>
+          <p
+            className={cn(
+              'mt-1 text-xs font-semibold uppercase tracking-widest',
+              featured ? 'text-white/60' : 'text-flow-text-muted',
+            )}
+          >
+            {plan.kicker}
+          </p>
+        </div>
         {plan.badge && (
           <span
             className={cn(
@@ -73,18 +84,14 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
       <div className="mb-1">
         <Price plan={plan} featured={featured} />
       </div>
-      <p className={cn('mb-6 text-sm', featured ? 'text-white/60' : 'text-flow-text-muted')}>{plan.unit}</p>
+      <p className={cn('text-sm', featured ? 'text-white/60' : 'text-flow-text-muted')}>{plan.unit}</p>
       {plan.extraNote && (
-        <p className={cn('-mt-4 mb-6 text-sm font-semibold', featured ? 'text-flow-lime' : 'text-flow-green')}>
+        <p className={cn('mt-1 text-sm font-semibold', featured ? 'text-flow-lime' : 'text-flow-green')}>
           {plan.extraNote}
         </p>
       )}
 
-      <p className={cn('mb-4 text-base font-semibold', featured ? 'text-flow-lime' : 'text-flow-green')}>
-        {plan.name}
-      </p>
-
-      <ul className="mb-6 space-y-3">
+      <ul className="mb-6 mt-6 space-y-3">
         {plan.features.map((f) => (
           <Feature key={f} label={f} featured={featured} />
         ))}
@@ -108,6 +115,26 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* What this plan saves against buying the same volume à la carte. */}
+      {plan.savings && (
+        <div
+          className={cn(
+            'mb-6 rounded-2xl px-4 py-3',
+            featured ? 'bg-flow-lime text-flow-green' : 'border border-flow-green/20 bg-flow-lime/25',
+          )}
+        >
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-flow-green">
+              {plan.savings.label}
+            </span>
+            <span className="font-display text-lg font-bold text-flow-green">
+              {plan.savings.amount}
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs font-medium text-flow-green/80">{plan.savings.percent}</p>
         </div>
       )}
 
@@ -160,7 +187,7 @@ export default function PricingSection({ content }: { content: PricingContent })
           custom={0}
           className="flex flex-col items-center text-center mb-10"
         >
-          <span className="eyebrow-index mb-6" data-index="06">{content.eyebrow}</span>
+          <span className="eyebrow-index mb-6" data-index="04">{content.eyebrow}</span>
           <RevealHeading text={content.heading} accent={content.accent} className="section-title mt-6 mb-4" />
           <p className="text-flow-text-muted text-base leading-relaxed max-w-2xl mx-auto">{content.subheading}</p>
         </motion.div>
