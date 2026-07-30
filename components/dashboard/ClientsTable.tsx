@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { ChevronRight } from 'lucide-react'
 import {
@@ -12,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ds/table'
 import { ClientStatusBadge } from '@/components/dashboard/indicators'
+import { LinkedTableRow } from '@/components/dashboard/LinkedTableRow'
 import type { ClientStatus } from '@/lib/types'
 
 export interface ClientRow {
@@ -24,7 +24,6 @@ export interface ClientRow {
 }
 
 export function ClientsTable({ rows }: { rows: ClientRow[] }) {
-  const router = useRouter()
   const t = useTranslations('internal.clients')
 
   return (
@@ -48,15 +47,7 @@ export function ClientsTable({ rows }: { rows: ClientRow[] }) {
           </TableRow>
         )}
         {rows.map((c) => (
-          <TableRow
-            key={c.id}
-            onClick={() => router.push(`/clients/${c.id}`)}
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') router.push(`/clients/${c.id}`)
-            }}
-            className="cursor-pointer focus:bg-muted/50 focus:outline-none"
-          >
+          <LinkedTableRow key={c.id} href={`/clients/${c.id}`}>
             <TableCell className="font-medium">{c.name}</TableCell>
             <TableCell className="text-muted-foreground">{c.slug}.flow…</TableCell>
             <TableCell>
@@ -71,9 +62,9 @@ export function ClientsTable({ rows }: { rows: ClientRow[] }) {
               )}
             </TableCell>
             <TableCell className="text-end text-muted-foreground">
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </TableCell>
-          </TableRow>
+          </LinkedTableRow>
         ))}
       </TableBody>
     </Table>

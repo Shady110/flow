@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Wallet } from 'lucide-react'
 import { toast } from 'sonner'
-import { recordPaymentAction } from '@/lib/db/finance-actions'
+import { recordPaymentAction, updatePaymentAction } from '@/lib/db/finance-actions'
 import { PAYMENT_METHODS } from '@/lib/constants'
 import { Button } from '@/components/ds/button'
 import { Input } from '@/components/ds/input'
@@ -37,27 +37,41 @@ interface InvoiceOption {
 
 const NO_INVOICE = '__none__'
 
+/** The subset of a payment this dialog can edit. */
+interface EditablePayment {
+  id: string
+  client_id: string
+  invoice_id: string | null
+  amount: number
+  method: string | null
+  paid_at: string
+}
+
 export function RecordPaymentDialog({
   clients,
   invoices = [],
   fixedClientId,
   fixedInvoiceId,
+  payment,
   trigger,
 }: {
   clients: Option[]
   invoices?: InvoiceOption[]
   fixedClientId?: string
   fixedInvoiceId?: string
+  /** Pass a payment to correct it instead of recording a new one. */
+  payment?: EditablePayment
   trigger?: React.ReactNode
 }) {
   const router = useRouter()
+  const editing = !!payment
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [clientId, setClientId] = useState(fixedClientId ?? clients[0]?.id ?? '')
-  const [invoiceId, setInvoiceId] = useState(fixedInvoiceId ?? NO_INVOICE)
-  const [amount, setAmount] = useState('')
-  const [method, setMethod] = useState<string>(PAYMENT_METHODS[0])
-  const [paidAt, setPaidAt] = useState('')
+  const [clientId, setClientId] = useState(payment?.client_id ?? fixedClientId ?? clients[0]?.id ?? '')
+  const [invoiceId, setInvoiceId] = useState(payment?.invoice_id ?? fixedInvoiceId ?? NO_INVOICE)
+  const [amount, setAmount] = useState(payment ? String(payment.amount) : '')
+  const [method, setMethod] = useState<string>(payment?.method ?? PAYMENT_METHODS[0])
+  const [paidAt, setPaidAt] = useState(payment?.paid_at?.slice(0, 10) ?? '')
 
   const clientInvoices = useMemo(
     () => invoices.filter((inv) => inv.client_id === clientId),
@@ -67,21 +81,24 @@ export function RecordPaymentDialog({
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const res = await recordPaymentAction({
+    const payload = {
       client_id: clientId,
       invoice_id: invoiceId === NO_INVOICE ? null : invoiceId,
       amount,
       method,
       paid_at: paidAt || null,
-    })
+    }
+    const res = editing
+      ? await updatePaymentAction(payment!.id, payload)
+      : await recordPaymentAction(payload)
     setLoading(false)
     if (!res.ok) {
       toast.error(res.error)
       return
     }
-    toast.success('Payment recorded')
+    toast.success(editing ? 'Payment updated' : 'Payment recorded')
     setOpen(false)
-    setAmount('')
+    if (!editing) setAmount('')
     router.refresh()
   }
 
@@ -96,7 +113,7 @@ export function RecordPaymentDialog({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Record payment</DialogTitle>
+          <DialogTitle>{editing ? 'Edit payment' : 'Record payment'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           {!fixedClientId && (
@@ -179,7 +196,7 @@ export function RecordPaymentDialog({
 
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Saving…' : 'Record payment'}
+              {loading ? 'Saving…' : editing ? 'Save changes' : 'Record payment'}
             </Button>
           </DialogFooter>
         </form>

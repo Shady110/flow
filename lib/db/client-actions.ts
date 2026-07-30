@@ -3,9 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { slugRe } from '@/lib/slug'
 
-/** Subdomain-safe slug (also reused when converting a lead into a client). */
-export const slugRe = /^[a-z0-9](?:[a-z0-9-]{0,48}[a-z0-9])?$/
 
 const clientSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -53,5 +53,34 @@ export async function updateClientAction(id: string, input: unknown): Promise<Ac
   if (error) return { ok: false, error: error.message }
   revalidatePath(`/clients/${id}`)
   revalidatePath('/clients')
+  return { ok: true }
+}
+
+/**
+ * Delete a client. Tasks, products, conversations and invoices cascade with it,
+ * so this is the one delete worth a loud confirmation in the UI. Any auth users
+ * behind their portal logins are removed too — the client_users rows cascade,
+ * which would otherwise leave orphaned accounts able to sign in.
+ */
+export async function deleteClientAction(id: string): Promise<ActionResult> {
+  const supabase = await createClient()
+
+  const { data: portalUsers } = await supabase
+    .from('client_users')
+    .select('user_id')
+    .eq('client_id', id)
+
+  const { error } = await supabase.from('clients').delete().eq('id', id)
+  if (error) return { ok: false, error: error.message }
+
+  const authIds = (portalUsers ?? []).map((u) => u.user_id).filter(Boolean) as string[]
+  if (authIds.length > 0) {
+    const admin = createAdminClient()
+    // Best-effort: the client row is already gone either way.
+    await Promise.all(authIds.map((uid) => admin.auth.admin.deleteUser(uid)))
+  }
+
+  revalidatePath('/clients')
+  revalidatePath('/')
   return { ok: true }
 }

@@ -114,6 +114,20 @@ export async function retryFailedItemsAction(jobId: string): Promise<ActionResul
   }
 }
 
+/** Delete a job and its items. Files in storage are left to bucket lifecycle. */
+export async function deleteJobAction(jobId: string): Promise<ActionResult> {
+  try {
+    await requireAutomation()
+    const supabase = await createClient()
+    const { error } = await supabase.from('automation_jobs').delete().eq('id', jobId)
+    if (error) return { ok: false, error: error.message }
+    revalidatePath('/automations')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Delete failed' }
+  }
+}
+
 /** Signed download URL for a finished job's output file. */
 export async function getJobDownloadUrlAction(
   jobId: string,

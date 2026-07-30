@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowRightLeft, Copy } from 'lucide-react'
 import { toast } from 'sonner'
 import { convertLeadAction } from '@/lib/db/lead-actions'
+import { slugify } from '@/lib/slug'
 import { Button } from '@/components/ds/button'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
@@ -18,16 +19,6 @@ import {
   DialogTrigger,
 } from '@/components/ds/dialog'
 import type { Lead } from '@/lib/types'
-
-function slugify(v: string) {
-  return v
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(0, 50)
-}
 
 export function ConvertLeadDialog({ lead }: { lead: Lead }) {
   const router = useRouter()

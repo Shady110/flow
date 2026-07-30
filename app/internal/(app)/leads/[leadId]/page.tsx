@@ -7,7 +7,8 @@ import { getClient, getTeam } from '@/lib/db/queries'
 import { LeadDialog } from '@/components/dashboard/LeadDialog'
 import { LeadStatusSelect } from '@/components/dashboard/LeadStatusSelect'
 import { ConvertLeadDialog } from '@/components/dashboard/ConvertLeadDialog'
-import { DeleteLeadButton } from '@/components/dashboard/DeleteLeadButton'
+import { ConfirmDelete } from '@/components/dashboard/ConfirmDelete'
+import { deleteLeadAction } from '@/lib/db/lead-actions'
 import { LeadStatusBadge } from '@/components/dashboard/indicators'
 import { Button } from '@/components/ds/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
@@ -59,7 +60,16 @@ export default async function LeadDetailPage({
             />
           )}
           {canConvert && !client && <ConvertLeadDialog lead={lead} />}
-          {canDelete && <DeleteLeadButton id={lead.id} name={lead.name} />}
+          {canDelete && (
+            <ConfirmDelete
+              action={deleteLeadAction}
+              args={[lead.id]}
+              title={`Delete “${lead.name}”?`}
+              description="The lead and its notes are removed. Any client already created from it is kept."
+              successMessage="Lead deleted"
+              redirectTo="/leads"
+            />
+          )}
         </div>
       </div>
 

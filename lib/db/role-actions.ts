@@ -64,6 +64,31 @@ export async function setRolePermissionsAction(
   return { ok: true }
 }
 
+const profileSchema = z.object({
+  full_name: z.string().min(2, 'Name is required'),
+  status: z.enum(['invited', 'active', 'disabled']),
+})
+
+/**
+ * Edit a team member: name and status. Disabling is the delete — the session
+ * loader already rejects a `disabled` profile, and removing the auth user would
+ * orphan everything they created.
+ */
+export async function updateProfileAction(
+  profileId: string,
+  input: unknown,
+): Promise<ActionResult> {
+  const parsed = profileSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('profiles').update(parsed.data).eq('id', profileId)
+  if (error) return { ok: false, error: error.message }
+  revalidatePath(REVALIDATE)
+  revalidatePath('/team')
+  return { ok: true }
+}
+
 export async function assignRoleAction(profileId: string, roleId: string): Promise<ActionResult> {
   const supabase = await createClient()
   const { error } = await supabase.from('profiles').update({ role_id: roleId }).eq('id', profileId)

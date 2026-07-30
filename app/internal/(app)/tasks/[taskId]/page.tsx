@@ -5,7 +5,8 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { getTask, getClients, getTeam } from '@/lib/db/queries'
 import { TaskDialog } from '@/components/dashboard/TaskDialog'
 import { TaskStatusSelect } from '@/components/dashboard/TaskStatusSelect'
-import { DeleteTaskButton } from '@/components/dashboard/DeleteTaskButton'
+import { ConfirmDelete } from '@/components/dashboard/ConfirmDelete'
+import { deleteTaskAction } from '@/lib/db/task-actions'
 import { SubtaskProgress } from '@/components/dashboard/SubtaskProgress'
 import { TaskActivityTrail } from '@/components/dashboard/TaskActivityTrail'
 import {
@@ -71,11 +72,16 @@ export default async function TaskDetailPage({
             />
           )}
           {canDelete && (
-            <DeleteTaskButton
-              id={task.id}
-              clientId={task.client_id}
-              title={task.title}
-              subtaskCount={task.subtask_total}
+            <ConfirmDelete
+              action={deleteTaskAction}
+              args={[task.id, task.client_id]}
+              title={`Delete “${task.title}”?`}
+              description={
+                task.subtask_total > 0
+                  ? `This also deletes ${task.subtask_total} subtask${task.subtask_total === 1 ? '' : 's'}. This cannot be undone.`
+                  : undefined
+              }
+              successMessage="Task deleted"
               redirectTo={task.parent ? `/tasks/${task.parent.id}` : '/tasks'}
             />
           )}
@@ -187,10 +193,11 @@ export default async function TaskDetailPage({
                       <TaskStatusBadge status={s.status} />
                     )}
                     {canDelete && (
-                      <DeleteTaskButton
-                        id={s.id}
-                        clientId={s.client_id}
-                        title={s.title}
+                      <ConfirmDelete
+                        action={deleteTaskAction}
+                        args={[s.id, s.client_id]}
+                        title={`Delete “${s.title}”?`}
+                        successMessage="Subtask deleted"
                         compact
                       />
                     )}

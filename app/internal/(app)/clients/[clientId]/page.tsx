@@ -8,11 +8,17 @@ import { createClient } from '@/lib/supabase/server'
 import { deadlineState } from '@/lib/deadlines'
 import { formatMoney } from '@/lib/money'
 import type { Product, ClientUser } from '@/lib/types'
+import { deleteClientAction } from '@/lib/db/client-actions'
+import { deleteTaskAction } from '@/lib/db/task-actions'
+import { deleteProductAction } from '@/lib/db/product-actions'
 import { PageHeader } from '@/components/dashboard/PageHeader'
+import { ConfirmDelete } from '@/components/dashboard/ConfirmDelete'
 import { TaskDialog } from '@/components/dashboard/TaskDialog'
 import { TaskStatusSelect } from '@/components/dashboard/TaskStatusSelect'
 import { ProductDialog } from '@/components/dashboard/ProductDialog'
 import { AddClientUserDialog } from '@/components/dashboard/AddClientUserDialog'
+import { EditClientUserDialog } from '@/components/dashboard/EditClientUserDialog'
+import { deleteClientUserAction } from '@/lib/db/client-user-actions'
 import { MessageClientUserButton } from '@/components/dashboard/MessageClientUserButton'
 import { NewInvoiceDialog } from '@/components/dashboard/NewInvoiceDialog'
 import { RecordPaymentDialog } from '@/components/dashboard/RecordPaymentDialog'
@@ -52,6 +58,8 @@ export default async function ClientDetailPage({
   const canEditTask = !!user?.permissions.has('tasks.edit')
   const canManageProducts = !!user?.permissions.has('products.manage')
   const canEditClient = !!user?.permissions.has('clients.edit')
+  const canDeleteClient = !!user?.permissions.has('clients.delete')
+  const canDeleteTask = !!user?.permissions.has('tasks.delete')
   const canChat = !!user?.permissions.has('chat.access')
   const canViewFinance = !!user?.permissions.has('finance.view')
   const canIssueInvoice = !!user?.permissions.has('invoices.issue')
@@ -93,6 +101,18 @@ export default async function ClientDetailPage({
             )}
             {canCreateTask && (
               <TaskDialog clients={clientOptions} team={teamOptions} fixedClientId={client.id} />
+            )}
+            {canDeleteClient && (
+              <ConfirmDelete
+                action={deleteClientAction}
+                args={[client.id]}
+                title={`Delete ${client.name}?`}
+                description="This removes the client and everything attached to it — tasks, products, invoices, payments, chat history, and their portal logins. This cannot be undone."
+                label="Delete client"
+                confirmLabel="Delete everything"
+                successMessage="Client deleted"
+                redirectTo="/clients"
+              />
             )}
           </div>
         }
@@ -185,6 +205,20 @@ export default async function ClientDetailPage({
                     }
                   />
                 )}
+                {canDeleteTask && (
+                  <ConfirmDelete
+                    action={deleteTaskAction}
+                    args={[t.id, client.id]}
+                    title={`Delete “${t.title}”?`}
+                    description={
+                      t.subtask_total > 0
+                        ? `This also deletes ${t.subtask_total} subtask${t.subtask_total === 1 ? '' : 's'}. This cannot be undone.`
+                        : undefined
+                    }
+                    successMessage="Task deleted"
+                    compact
+                  />
+                )}
               </div>
             </div>
           ))}
@@ -223,6 +257,15 @@ export default async function ClientDetailPage({
                         Edit
                       </Button>
                     }
+                  />
+                )}
+                {canManageProducts && (
+                  <ConfirmDelete
+                    action={deleteProductAction}
+                    args={[p.id, client.id]}
+                    title={`Delete “${p.name}”?`}
+                    successMessage="Product deleted"
+                    compact
                   />
                 )}
               </div>
@@ -323,13 +366,31 @@ export default async function ClientDetailPage({
                   {initials}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{cu.full_name}</p>
+                  <p className="truncate text-sm font-medium">
+                    {cu.full_name}
+                    {cu.status === 'disabled' && (
+                      <span className="ms-2 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                        disabled
+                      </span>
+                    )}
+                  </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {cu.email}
                     {cu.role_at_company ? ` · ${cu.role_at_company}` : ''}
                   </p>
                 </div>
                 {canChat && <MessageClientUserButton clientUserId={cu.id} clientId={client.id} />}
+                {canEditClient && <EditClientUserDialog user={cu} />}
+                {canEditClient && (
+                  <ConfirmDelete
+                    action={deleteClientUserAction}
+                    args={[cu.id, client.id, cu.user_id]}
+                    title={`Remove ${cu.full_name}?`}
+                    description="Their portal login is deleted and they lose access immediately."
+                    successMessage="Portal user removed"
+                    compact
+                  />
+                )}
               </div>
             )
           })}

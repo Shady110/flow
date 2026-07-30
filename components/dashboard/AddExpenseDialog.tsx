@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Receipt } from 'lucide-react'
 import { toast } from 'sonner'
-import { addExpenseAction } from '@/lib/db/finance-actions'
+import { addExpenseAction, updateExpenseAction } from '@/lib/db/finance-actions'
 import { Button } from '@/components/ds/button'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
@@ -31,49 +31,76 @@ interface Option {
 
 const NO_CLIENT = '__none__'
 
-export function AddExpenseDialog({ clients }: { clients: Option[] }) {
+/** The subset of an expense this dialog can edit. */
+interface EditableExpense {
+  id: string
+  client_id: string | null
+  category: string | null
+  description: string | null
+  amount: number
+  incurred_on: string
+}
+
+export function AddExpenseDialog({
+  clients,
+  expense,
+  trigger,
+}: {
+  clients: Option[]
+  /** Pass an expense to edit it instead of adding a new one. */
+  expense?: EditableExpense
+  trigger?: React.ReactNode
+}) {
   const router = useRouter()
+  const editing = !!expense
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [clientId, setClientId] = useState(NO_CLIENT)
-  const [category, setCategory] = useState('')
-  const [description, setDescription] = useState('')
-  const [amount, setAmount] = useState('')
-  const [incurredOn, setIncurredOn] = useState('')
+  const [clientId, setClientId] = useState(expense?.client_id ?? NO_CLIENT)
+  const [category, setCategory] = useState(expense?.category ?? '')
+  const [description, setDescription] = useState(expense?.description ?? '')
+  const [amount, setAmount] = useState(expense ? String(expense.amount) : '')
+  const [incurredOn, setIncurredOn] = useState(expense?.incurred_on?.slice(0, 10) ?? '')
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const res = await addExpenseAction({
+    const payload = {
       client_id: clientId === NO_CLIENT ? null : clientId,
       category,
       description,
       amount,
       incurred_on: incurredOn || null,
-    })
+    }
+    const res = editing
+      ? await updateExpenseAction(expense!.id, payload)
+      : await addExpenseAction(payload)
     setLoading(false)
     if (!res.ok) {
       toast.error(res.error)
       return
     }
-    toast.success('Expense added')
+    toast.success(editing ? 'Expense updated' : 'Expense added')
     setOpen(false)
-    setAmount('')
-    setDescription('')
-    setCategory('')
+    if (!editing) {
+      setAmount('')
+      setDescription('')
+      setCategory('')
+    }
     router.refresh()
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <Receipt className="h-4 w-4" /> Add expense
-        </Button>
+        {trigger ?? (
+          <Button variant="outline">
+            <Receipt className="h-4 w-4" /> Add expense
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add expense</DialogTitle>
+          <DialogTitle>{editing ? 'Edit expense' : 'Add expense'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -122,7 +149,7 @@ export function AddExpenseDialog({ clients }: { clients: Option[] }) {
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Saving…' : 'Add expense'}
+              {loading ? 'Saving…' : editing ? 'Save changes' : 'Add expense'}
             </Button>
           </DialogFooter>
         </form>

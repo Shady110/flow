@@ -4,7 +4,6 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
-import { deleteTaskAction } from '@/lib/db/task-actions'
 import { Button } from '@/components/ds/button'
 import {
   Dialog,
@@ -15,21 +14,37 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ds/dialog'
+import type { ActionResult } from '@/lib/db/client-actions'
 
-export function DeleteTaskButton({
-  id,
-  clientId,
+/**
+ * One confirm-then-delete button for every entity. Takes the server action by
+ * reference plus its plain arguments, so a server component can wire any
+ * `delete*Action` without a bespoke component per table.
+ *
+ * Stops click propagation so it can live inside a LinkedTableRow.
+ */
+export function ConfirmDelete<A extends unknown[]>({
+  action,
+  args,
   title,
-  subtaskCount = 0,
+  description,
+  label = 'Delete',
+  confirmLabel,
+  successMessage = 'Deleted',
   redirectTo,
   compact,
 }: {
-  id: string
-  clientId: string
+  action: (...a: A) => Promise<ActionResult>
+  args: A
+  /** Heading of the confirm dialog, e.g. 'Delete "Acme Co"?' */
   title: string
-  subtaskCount?: number
-  /** Where to go after deleting. Omit to stay put and just refresh. */
+  description?: string
+  label?: string
+  confirmLabel?: string
+  successMessage?: string
+  /** Navigate here after a successful delete; omit to stay and refresh. */
   redirectTo?: string
+  /** Icon-only ghost button, for dense rows. */
   compact?: boolean
 }) {
   const router = useRouter()
@@ -38,12 +53,12 @@ export function DeleteTaskButton({
 
   function onDelete() {
     startTransition(async () => {
-      const res = await deleteTaskAction(id, clientId)
+      const res = await action(...args)
       if (!res.ok) {
         toast.error(res.error)
         return
       }
-      toast.success('Task deleted')
+      toast.success(successMessage)
       setOpen(false)
       if (redirectTo) router.push(redirectTo)
       router.refresh()
@@ -53,32 +68,28 @@ export function DeleteTaskButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {/* Stop the click bubbling to a clickable parent row (LinkedTableRow). */}
         <Button
           variant={compact ? 'ghost' : 'outline'}
           size={compact ? 'sm' : 'default'}
           className="text-destructive hover:text-destructive"
           onClick={(e) => e.stopPropagation()}
+          aria-label={compact ? label : undefined}
         >
           <Trash2 className="h-4 w-4" />
-          {!compact && ' Delete'}
+          {!compact && label}
         </Button>
       </DialogTrigger>
       <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
-          <DialogTitle>Delete “{title}”?</DialogTitle>
-          <DialogDescription>
-            {subtaskCount > 0
-              ? `This also deletes ${subtaskCount} subtask${subtaskCount === 1 ? '' : 's'}. This cannot be undone.`
-              : 'This cannot be undone.'}
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description ?? 'This cannot be undone.'}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={onDelete} disabled={pending}>
-            {pending ? 'Deleting…' : 'Delete task'}
+            {pending ? 'Deleting…' : (confirmLabel ?? label)}
           </Button>
         </DialogFooter>
       </DialogContent>
