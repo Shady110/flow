@@ -79,19 +79,27 @@ export interface Client {
 export interface Task {
   id: string
   client_id: string
+  /** Set on subtasks; a "big task" is simply a task with children. */
+  parent_task_id: string | null
   title: string
   description: string | null
   status: TaskStatus
   stage: string | null
   next_step: string | null
   priority: TaskPriority
-  assignee_id: string | null
   created_by: string | null
   start_date: string | null
   due_date: string | null
   completed_at: string | null
   created_at: string
   updated_at: string
+}
+
+/** A task joined with its assignees and subtask roll-up (computed in queries). */
+export interface TaskRow extends Task {
+  assignee_ids: string[]
+  subtask_total: number
+  subtask_done: number
 }
 
 export interface TaskActivity {

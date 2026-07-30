@@ -28,7 +28,7 @@ export default async function TeamPage() {
   ])
 
   const rows = team.map((m) => {
-    const mine = tasks.filter((t) => t.assignee_id === m.id)
+    const mine = tasks.filter((t) => t.assignee_ids.includes(m.id))
     const done = mine.filter((t) => t.status === 'done')
     const open = mine.filter((t) => t.status !== 'done')
     const overdue = open.filter((t) => deadlineState(t) === 'overdue')

@@ -9,10 +9,12 @@ export default async function PortalTasks() {
   const { client } = await requireClientContext()
   const t = await getTranslations('portal.tasks')
   const supabase = await createClient()
+  // Top-level tasks only — subtasks are internal breakdown, not client-facing.
   const { data } = await supabase
     .from('tasks')
     .select('*')
     .eq('client_id', client.id)
+    .is('parent_task_id', null)
     .order('due_date', { ascending: true, nullsFirst: false })
   const tasks = (data as Task[]) ?? []
 

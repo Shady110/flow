@@ -35,7 +35,7 @@ export default async function ClientDetailPage({
   const supabase = await createClient()
   const [client, tasks, team, user, { data: products }, { data: clientUsers }] = await Promise.all([
     getClient(clientId),
-    getTasks(clientId),
+    getTasks(clientId, { parentOnly: true }),
     getTeam(),
     getCurrentUser(),
     supabase.from('products').select('*').eq('client_id', clientId).order('updated_at', { ascending: false }),
@@ -149,13 +149,22 @@ export default async function ClientDetailPage({
             >
               <div className="min-w-0 space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-foreground">{t.title}</span>
+                  <Link href={`/tasks/${t.id}`} className="font-medium text-foreground hover:underline">
+                    {t.title}
+                  </Link>
                   <PriorityLabel priority={t.priority} />
+                  {t.subtask_total > 0 && (
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                      {t.subtask_done}/{t.subtask_total}
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {t.next_step ? `Next: ${t.next_step}` : t.stage ?? 'No next step set'}
                   {' · '}
-                  {memberName.get(t.assignee_id ?? '') ?? 'Unassigned'}
+                  {t.assignee_ids.length === 0
+                    ? 'Unassigned'
+                    : t.assignee_ids.map((id) => memberName.get(id) ?? '—').join(', ')}
                 </p>
               </div>
               <div className="flex items-center gap-3">

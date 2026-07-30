@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import { ListTree } from 'lucide-react'
 import { getClients, getTasks, getTeam } from '@/lib/db/queries'
 import { getCurrentUser } from '@/lib/auth/session'
 import { PageHeader } from '@/components/dashboard/PageHeader'
@@ -19,7 +20,8 @@ import {
 export default async function TasksPage() {
   const [clients, tasks, team, user, tr, tc] = await Promise.all([
     getClients(),
-    getTasks(),
+    // Subtasks are rolled up onto their parent rather than listed separately.
+    getTasks(undefined, { parentOnly: true }),
     getTeam(),
     getCurrentUser(),
     getTranslations('internal.tasks'),
@@ -66,13 +68,23 @@ export default async function TasksPage() {
               </TableRow>
             )}
             {tasks.map((t) => (
-              <LinkedTableRow key={t.id} href={`/clients/${t.client_id}`}>
-                <TableCell className="font-medium">{t.title}</TableCell>
+              <LinkedTableRow key={t.id} href={`/tasks/${t.id}`}>
+                <TableCell className="font-medium">
+                  {t.title}
+                  {t.subtask_total > 0 && (
+                    <span className="ms-2 inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                      <ListTree className="h-3 w-3" />
+                      {t.subtask_done}/{t.subtask_total}
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {clientName.get(t.client_id)}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {memberName.get(t.assignee_id ?? '') ?? tc('unassigned')}
+                  {t.assignee_ids.length === 0
+                    ? tc('unassigned')
+                    : t.assignee_ids.map((id) => memberName.get(id) ?? '—').join(', ')}
                 </TableCell>
                 <TableCell>
                   <PriorityLabel priority={t.priority} />

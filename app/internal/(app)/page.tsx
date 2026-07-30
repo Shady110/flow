@@ -74,11 +74,14 @@ export default async function OverviewPage() {
                 {atRisk.map((t) => (
                   <li key={t.id} className="flex items-center justify-between gap-4 px-6 py-3">
                     <div className="min-w-0">
-                      <Link href={`/clients/${t.client_id}`} className="truncate text-sm font-medium hover:underline">
+                      <Link href={`/tasks/${t.id}`} className="truncate text-sm font-medium hover:underline">
                         {t.title}
                       </Link>
                       <p className="truncate text-xs text-muted-foreground">
-                        {clientName.get(t.client_id)} · {memberName.get(t.assignee_id ?? '') ?? tc('unassigned')}
+                        {clientName.get(t.client_id)} ·{' '}
+                        {t.assignee_ids.length === 0
+                          ? tc('unassigned')
+                          : t.assignee_ids.map((id) => memberName.get(id) ?? '—').join(', ')}
                       </p>
                     </div>
                     <DeadlineIndicator dueDate={t.due_date} status={t.status} />
