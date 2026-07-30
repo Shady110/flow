@@ -448,7 +448,10 @@
       "actFrom": "from {from}",
       "actOther": "{who} — {action}",
       "system": "System",
-      "someone": "Someone"
+      "someone": "Someone",
+      "actAssignees": "{who} changed the assignees",
+      "actEdited": "{who} updated {fields}",
+      "actAuto": "automatically"
     },
     "clientDetail": {
       "actionsAndTasks": "Actions & tasks",
@@ -531,6 +534,14 @@
       "total": "Total",
       "balance": "Balance",
       "noInvoices": "No invoices yet."
+    },
+    "taskDetail": {
+      "backToTasks": "Back to tasks",
+      "subtasks": "Steps",
+      "progress": "{done} of {total} done",
+      "due": "Due",
+      "status": "Status",
+      "noSubtasks": "No steps broken out for this task."
     }
   }
 }

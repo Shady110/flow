@@ -45,6 +45,39 @@ async function setAssignees(
   return error?.message ?? null
 }
 
+/**
+ * Roll a parent's status up from its children: done when every subtask is done,
+ * back to in_progress when one reopens. Without the reverse case a parent would
+ * stay "done" while a subtask sits open again.
+ */
+async function syncParentStatus(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  parentId: string,
+  actorId: string | null,
+) {
+  const [{ data: children }, { data: parent }] = await Promise.all([
+    supabase.from('tasks').select('status').eq('parent_task_id', parentId),
+    supabase.from('tasks').select('status').eq('id', parentId).maybeSingle(),
+  ])
+  if (!parent || !children?.length) return
+
+  const allDone = children.every((c) => c.status === 'done')
+  const next = allDone ? 'done' : parent.status === 'done' ? 'in_progress' : null
+  if (!next || next === parent.status) return
+
+  await supabase
+    .from('tasks')
+    .update({ status: next, completed_at: allDone ? new Date().toISOString() : null })
+    .eq('id', parentId)
+
+  await supabase.from('task_activity').insert({
+    task_id: parentId,
+    actor_id: actorId,
+    action: 'status_changed',
+    detail: { from: parent.status, to: next, auto: true },
+  })
+}
+
 function revalidateTask(clientId: string | null | undefined, taskId?: string) {
   if (clientId) revalidatePath(`/clients/${clientId}`)
   if (taskId) revalidatePath(`/tasks/${taskId}`)
@@ -102,12 +135,15 @@ export async function updateTaskAction(id: string, input: unknown): Promise<Acti
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Fetch prior state to log meaningful status transitions.
-  const { data: before } = await supabase
-    .from('tasks')
-    .select('status, client_id, parent_task_id')
-    .eq('id', id)
-    .maybeSingle()
+  // Prior state, so status / assignment / field edits can all be logged.
+  const [{ data: before }, { data: beforeAssignees }] = await Promise.all([
+    supabase
+      .from('tasks')
+      .select('status, client_id, parent_task_id')
+      .eq('id', id)
+      .maybeSingle(),
+    supabase.from('task_assignees').select('profile_id').eq('task_id', id),
+  ])
 
   // subtask_titles is create-only; strip both virtual fields off the patch.
   const fields = { ...parsed.data }
@@ -127,13 +163,44 @@ export async function updateTaskAction(id: string, input: unknown): Promise<Acti
     if (assignError) return { ok: false, error: assignError }
   }
 
+  const actor = user?.id ?? null
+  const trail: { task_id: string; actor_id: string | null; action: string; detail: object }[] = []
+
   if (parsed.data.status && before && parsed.data.status !== before.status) {
-    await supabase.from('task_activity').insert({
+    trail.push({
       task_id: id,
-      actor_id: user?.id ?? null,
+      actor_id: actor,
       action: 'status_changed',
       detail: { from: before.status, to: parsed.data.status },
     })
+  }
+
+  if (assignee_ids) {
+    const was = new Set((beforeAssignees ?? []).map((a) => a.profile_id))
+    const now = new Set(assignee_ids)
+    const added = assignee_ids.filter((x) => !was.has(x))
+    const removed = [...was].filter((x) => !now.has(x))
+    if (added.length || removed.length) {
+      trail.push({
+        task_id: id,
+        actor_id: actor,
+        action: 'assignees_changed',
+        detail: { added: added.length, removed: removed.length },
+      })
+    }
+  }
+
+  // Everything else the editor can change, named so the trail is readable.
+  const edited = Object.keys(fields).filter((k) => k !== 'status' && k !== 'client_id')
+  if (edited.length) {
+    trail.push({ task_id: id, actor_id: actor, action: 'edited', detail: { fields: edited } })
+  }
+
+  if (trail.length) await supabase.from('task_activity').insert(trail)
+
+  // A finished subtask can finish its parent — and reopening one reopens it.
+  if (before?.parent_task_id && parsed.data.status) {
+    await syncParentStatus(supabase, before.parent_task_id, actor)
   }
 
   revalidateTask(parsed.data.client_id ?? before?.client_id, id)
@@ -152,8 +219,17 @@ export async function deleteTaskAction(id: string, clientId: string): Promise<Ac
     .eq('id', id)
     .maybeSingle()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   const { error } = await supabase.from('tasks').delete().eq('id', id)
   if (error) return { ok: false, error: error.message }
+
+  // Removing the last unfinished subtask can complete the parent.
+  if (before?.parent_task_id) {
+    await syncParentStatus(supabase, before.parent_task_id, user?.id ?? null)
+  }
 
   revalidateTask(clientId)
   if (before?.parent_task_id) revalidatePath(`/tasks/${before.parent_task_id}`)

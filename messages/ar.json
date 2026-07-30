@@ -448,7 +448,10 @@
       "actFrom": "من {from}",
       "actOther": "{who} — {action}",
       "system": "النظام",
-      "someone": "أحد الأعضاء"
+      "someone": "أحد الأعضاء",
+      "actAssignees": "{who} غيّر المسؤولين",
+      "actEdited": "{who} حدّث {fields}",
+      "actAuto": "تلقائيًا"
     },
     "clientDetail": {
       "actionsAndTasks": "الإجراءات والمهام",
@@ -531,6 +534,14 @@
       "total": "الإجمالي",
       "balance": "الرصيد",
       "noInvoices": "لا توجد فواتير بعد."
+    },
+    "taskDetail": {
+      "backToTasks": "رجوع إلى المهام",
+      "subtasks": "الخطوات",
+      "progress": "تم {done} من {total}",
+      "due": "الاستحقاق",
+      "status": "الحالة",
+      "noSubtasks": "لم تُقسَّم هذه المهمة إلى خطوات."
     }
   }
 }

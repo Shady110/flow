@@ -35,11 +35,21 @@ export async function TaskActivityTrail({
               <p className="text-sm">
                 {a.action === 'status_changed' ? (
                   <>
-                    {t('actStatusChanged', { who, to: label(detail.to) })}{' '}
+                    {t('actStatusChanged', {
+                      who: detail.auto ? t('actAuto') : who,
+                      to: label(detail.to),
+                    })}{' '}
                     <span className="text-muted-foreground">
                       {t('actFrom', { from: label(detail.from) })}
                     </span>
                   </>
+                ) : a.action === 'assignees_changed' ? (
+                  t('actAssignees', { who })
+                ) : a.action === 'edited' ? (
+                  t('actEdited', {
+                    who,
+                    fields: Array.isArray(detail.fields) ? detail.fields.join(', ') : '—',
+                  })
                 ) : a.action === 'created' ? (
                   subtasks > 0
                     ? t('actCreatedWithSubtasks', { who, count: subtasks })
