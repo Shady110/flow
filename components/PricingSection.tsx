@@ -81,23 +81,26 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
         )}
       </div>
 
-      {/* Discount framing: what the same volume costs à la carte, struck out. */}
+      {/* Discount framing: what the same volume costs à la carte, struck out.
+          The strike is an inline style, not the `line-through` utility — a
+          missing utility silently renders the old price as if it were current,
+          which misprices the plan. Too important to depend on CSS delivery. */}
       {plan.compareAt && (
-        <div className="mb-1 flex flex-wrap items-center gap-2">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
           <span
+            style={{
+              textDecorationLine: 'line-through',
+              textDecorationThickness: '2px',
+              textDecorationColor: featured ? 'rgba(255,255,255,0.55)' : 'var(--color-flow-text-muted)',
+            }}
             className={cn(
-              'text-base font-semibold line-through decoration-2',
-              featured ? 'text-white/45 decoration-white/45' : 'text-flow-text-muted/70 decoration-flow-text-muted/60',
+              'text-base font-semibold',
+              featured ? 'text-white/50' : 'text-flow-text-muted',
             )}
           >
             {plan.compareAt.price}
           </span>
-          <span
-            className={cn(
-              'rounded-full px-2.5 py-0.5 text-xs font-bold',
-              featured ? 'bg-flow-lime text-flow-green' : 'bg-flow-lime text-flow-green',
-            )}
-          >
+          <span className="rounded-full bg-flow-lime px-3 py-1 text-xs font-bold leading-none text-flow-green">
             {plan.compareAt.discount}
           </span>
         </div>

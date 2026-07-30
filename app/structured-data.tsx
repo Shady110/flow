@@ -100,7 +100,7 @@ export default function StructuredData() {
                 name: 'Growth Plan — Growth',
                 description:
                   'Listing, studio photography and full account management ' +
-                  'for up to 150 products — 8,000 EGP per month + a flat 1% of sales',
+                  'for up to 150 products — 8,000 EGP per month + 1.5% of sales, capped at 5%',
               },
             },
             {
@@ -120,7 +120,7 @@ export default function StructuredData() {
                 name: 'Growth Plan — Scale',
                 description:
                   'Listing, studio photography and full account management ' +
-                  'for up to 400 products — 16,000 EGP per month + a flat 1% of sales',
+                  'for up to 400 products — 16,000 EGP per month + 2% of sales, capped at 5%',
               },
             },
             {
@@ -236,8 +236,9 @@ export default function StructuredData() {
                 'FLOW’s monthly growth plans bundle listing content, studio ' +
                 'photography and full account management: Starter at 3,500 EGP ' +
                 'per month for up to 50 products, Growth at 8,000 EGP for up ' +
-                'to 150, and Scale at 16,000 EGP for up to 400. Every plan adds ' +
-                'a flat 1% of sales, and products beyond the plan count are ' +
+                'to 150, and Scale at 16,000 EGP for up to 400. Starter adds a ' +
+                'flat 1% of sales; Growth and Scale start at 1.5% and 2% and rise ' +
+                'with performance to a 5% cap. Products beyond the plan count are ' +
                 'billed at 35, 25 or 20 EGP per item depending on the plan.',
             },
           },
