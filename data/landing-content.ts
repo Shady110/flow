@@ -360,7 +360,7 @@ const en: LandingContent = {
             priceValue: 8000,
             priceSuffix: ' EGP',
             unit: '/ per month',
-            extraNote: '+ 1.5% of sales (up to 5%)',
+            extraNote: '+ 2% of sales (up to 5%)',
             name: 'Growth',
             serviceKey: 'growth',
             badge: 'Most Popular',
@@ -377,7 +377,7 @@ const en: LandingContent = {
               title: "What's included",
               rows: [
                 { label: 'Products', value: 'up to 150' },
-                { label: 'Sales share', value: '1.5% → up to 5%' },
+                { label: 'Sales share', value: '2% → up to 5%' },
                 { label: 'Extra items', value: '25 EGP / item' },
                 { label: 'Photography', value: 'Included' },
                 { label: 'Listings', value: 'Included' },
@@ -392,7 +392,7 @@ const en: LandingContent = {
             priceValue: 16000,
             priceSuffix: ' EGP',
             unit: '/ per month',
-            extraNote: '+ 2% of sales (up to 5%)',
+            extraNote: '+ 2.5% of sales (up to 5%)',
             name: 'Scale',
             serviceKey: 'growth-scale',
             features: [
@@ -408,7 +408,7 @@ const en: LandingContent = {
               title: "What's included",
               rows: [
                 { label: 'Products', value: 'up to 400' },
-                { label: 'Sales share', value: '2% → up to 5%' },
+                { label: 'Sales share', value: '2.5% → up to 5%' },
                 { label: 'Extra items', value: '20 EGP / item' },
                 { label: 'Photography', value: 'Included' },
                 { label: 'Listings', value: 'Included' },
@@ -696,7 +696,7 @@ const ar: LandingContent = {
             priceValue: 8000,
             priceSuffix: ' ج.م',
             unit: '/ شهريًا',
-            extraNote: '+ 1.5% من المبيعات (حتى 5%)',
+            extraNote: '+ 2% من المبيعات (حتى 5%)',
             name: 'جروث',
             serviceKey: 'growth',
             badge: 'الأكثر طلبًا',
@@ -713,7 +713,7 @@ const ar: LandingContent = {
               title: 'ما تشمله الخطة',
               rows: [
                 { label: 'عدد المنتجات', value: 'حتى 150' },
-                { label: 'نسبة المبيعات', value: '1.5% ← حتى 5%' },
+                { label: 'نسبة المبيعات', value: '2% ← حتى 5%' },
                 { label: 'المنتجات الإضافية', value: '25 ج.م / منتج' },
                 { label: 'التصوير', value: 'مشمول' },
                 { label: 'القوائم', value: 'مشمولة' },
@@ -728,7 +728,7 @@ const ar: LandingContent = {
             priceValue: 16000,
             priceSuffix: ' ج.م',
             unit: '/ شهريًا',
-            extraNote: '+ 2% من المبيعات (حتى 5%)',
+            extraNote: '+ 2.5% من المبيعات (حتى 5%)',
             name: 'سكيل',
             serviceKey: 'growth-scale',
             features: [
@@ -744,7 +744,7 @@ const ar: LandingContent = {
               title: 'ما تشمله الخطة',
               rows: [
                 { label: 'عدد المنتجات', value: 'حتى 400' },
-                { label: 'نسبة المبيعات', value: '2% ← حتى 5%' },
+                { label: 'نسبة المبيعات', value: '2.5% ← حتى 5%' },
                 { label: 'المنتجات الإضافية', value: '20 ج.م / منتج' },
                 { label: 'التصوير', value: 'مشمول' },
                 { label: 'القوائم', value: 'مشمولة' },
