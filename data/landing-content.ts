@@ -56,6 +56,11 @@ export interface PricingPlan {
   /** Highlight this plan as the primary/featured card (dark styling). */
   featured?: boolean
   cta: string
+  /**
+   * Which contact-form service option this plan's CTA preselects (see
+   * `lib/service-options.ts`). Omit and the CTA just jumps to the form.
+   */
+  serviceKey?: string
   bulk?: { title: string; rows: { label: string; value: string }[] }
 }
 
@@ -138,7 +143,7 @@ const en: LandingContent = {
     stats: [
       { value: 210, suffix: '+', label: 'Products shot' },
       { value: 4, suffix: '', label: 'Marketplaces' },
-      { value: 15, suffix: ' EGP', label: 'Starting price' },
+      { value: 10, suffix: ' EGP', label: 'Starting price' },
     ],
   },
   services: {
@@ -219,6 +224,7 @@ const en: LandingContent = {
             priceSuffix: ' EGP',
             unit: '/ per item',
             name: 'Listing',
+            serviceKey: 'listing',
             features: [
               'Compelling, value-focused professional title',
               'Bilingual description (Arabic + English)',
@@ -234,6 +240,7 @@ const en: LandingContent = {
             priceSuffix: ' EGP',
             unit: '/ per item',
             name: 'Photography',
+            serviceKey: 'photography',
             features: [
               'Professional studio photography',
               'White background shots',
@@ -250,6 +257,7 @@ const en: LandingContent = {
             unit: '/ per item',
             extraNote: 'Save 5 EGP per item',
             name: 'Full Content',
+            serviceKey: 'full-content',
             badge: 'Best of this tab',
             featured: true,
             features: [
@@ -275,6 +283,7 @@ const en: LandingContent = {
             unit: '/ per month',
             extraNote: '+ 1% of sales',
             name: 'Basic',
+            serviceKey: 'account-basic',
             features: [
               'Account creation & setup',
               'Uploading items',
@@ -290,6 +299,7 @@ const en: LandingContent = {
             unit: '/ per month',
             extraNote: '+ 2% of sales',
             name: 'Premium',
+            serviceKey: 'account-premium',
             badge: 'Best of this tab',
             featured: true,
             features: [
@@ -317,6 +327,7 @@ const en: LandingContent = {
             unit: '/ per month',
             extraNote: '+ 1% of sales',
             name: 'Starter',
+            serviceKey: 'growth-starter',
             features: [
               'Listing optimization included',
               'Studio photography included',
@@ -343,6 +354,7 @@ const en: LandingContent = {
             unit: '/ per month',
             extraNote: '+ 1.5% of sales',
             name: 'Growth',
+            serviceKey: 'growth',
             badge: 'Most Popular',
             featured: true,
             features: [
@@ -373,6 +385,7 @@ const en: LandingContent = {
             unit: '/ per month',
             extraNote: '+ 2% of sales',
             name: 'Scale',
+            serviceKey: 'growth-scale',
             features: [
               'Listing optimization included',
               'Studio photography included',
@@ -462,7 +475,7 @@ const ar: LandingContent = {
     stats: [
       { value: 210, suffix: '+', label: 'منتج تم تصويره' },
       { value: 4, suffix: '', label: 'منصات بيع' },
-      { value: 15, suffix: ' ج.م', label: 'يبدأ السعر من' },
+      { value: 10, suffix: ' ج.م', label: 'يبدأ السعر من' },
     ],
   },
   services: {
@@ -543,6 +556,7 @@ const ar: LandingContent = {
             priceSuffix: ' ج.م',
             unit: '/ لكل منتج',
             name: 'القوائم',
+            serviceKey: 'listing',
             features: [
               'عنوان احترافي جذّاب يركّز على القيمة',
               'وصف بلغتين (عربي + إنجليزي)',
@@ -558,6 +572,7 @@ const ar: LandingContent = {
             priceSuffix: ' ج.م',
             unit: '/ لكل منتج',
             name: 'التصوير',
+            serviceKey: 'photography',
             features: [
               'تصوير استوديو احترافي',
               'لقطات على خلفية بيضاء',
@@ -574,6 +589,7 @@ const ar: LandingContent = {
             unit: '/ لكل منتج',
             extraNote: 'وفّر 5 ج.م لكل منتج',
             name: 'المحتوى الكامل',
+            serviceKey: 'full-content',
             badge: 'الأفضل في هذا القسم',
             featured: true,
             features: [
@@ -599,6 +615,7 @@ const ar: LandingContent = {
             unit: '/ شهريًا',
             extraNote: '+ 1% من المبيعات',
             name: 'الأساسية',
+            serviceKey: 'account-basic',
             features: [
               'إنشاء الحساب وإعداده',
               'رفع المنتجات',
@@ -614,6 +631,7 @@ const ar: LandingContent = {
             unit: '/ شهريًا',
             extraNote: '+ 2% من المبيعات',
             name: 'المتقدّمة',
+            serviceKey: 'account-premium',
             badge: 'الأفضل في هذا القسم',
             featured: true,
             features: [
@@ -641,6 +659,7 @@ const ar: LandingContent = {
             unit: '/ شهريًا',
             extraNote: '+ 1% من المبيعات',
             name: 'ستارتر',
+            serviceKey: 'growth-starter',
             features: [
               'تحسين القوائم مشمول',
               'تصوير استوديو مشمول',
@@ -667,6 +686,7 @@ const ar: LandingContent = {
             unit: '/ شهريًا',
             extraNote: '+ 1.5% من المبيعات',
             name: 'جروث',
+            serviceKey: 'growth',
             badge: 'الأكثر طلبًا',
             featured: true,
             features: [
@@ -697,6 +717,7 @@ const ar: LandingContent = {
             unit: '/ شهريًا',
             extraNote: '+ 2% من المبيعات',
             name: 'سكيل',
+            serviceKey: 'growth-scale',
             features: [
               'تحسين القوائم مشمول',
               'تصوير استوديو مشمول',

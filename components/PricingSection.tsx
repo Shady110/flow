@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Check } from 'lucide-react'
 import { fadeUp, staggerContainer, revealUp } from '@/lib/animations'
@@ -114,11 +115,13 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
         <p className={cn('mb-6 text-xs italic', featured ? 'text-white/60' : 'text-flow-text-muted')}>{plan.note}</p>
       )}
 
-      {/* CTA pinned to the bottom so every card lines up */}
+      {/* CTA pinned to the bottom so every card lines up. The plan travels to the
+          contact form as ?plan=… so the form preselects it and the lead lands
+          tagged with the plan the visitor actually clicked. */}
       <div className="mt-auto pt-2">
         <MagneticButton strength={featured ? 0.25 : 0.15} className="block w-full">
-          <a
-            href="#contact"
+          <Link
+            href={plan.serviceKey ? `?plan=${plan.serviceKey}#contact` : '#contact'}
             className={cn(
               'block rounded-xl py-3.5 text-center text-sm font-semibold transition-colors',
               featured
@@ -127,7 +130,7 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
             )}
           >
             {plan.cta}
-          </a>
+          </Link>
         </MagneticButton>
       </div>
     </motion.div>

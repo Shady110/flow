@@ -5,7 +5,9 @@
  * cover the rest.)
  */
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { pricingTabs, defaultLandingContent } from '../data/landing-content.ts'
+import { SERVICE_OPTIONS, SERVICE_VALUES } from '../lib/service-options.ts'
 
 // The shipped content is tabbed, and the tab we push people to must exist.
 for (const locale of ['en', 'ar'] as const) {
@@ -24,6 +26,24 @@ for (const locale of ['en', 'ar'] as const) {
       1,
       `${locale}/${tab.id}: expected exactly one featured plan`,
     )
+    // A CTA that preselects a service the form doesn't offer would silently
+    // send a lead with an unusable plan_interest.
+    for (const plan of tab.plans) {
+      assert.ok(
+        plan.serviceKey && SERVICE_VALUES.includes(plan.serviceKey),
+        `${locale}/${tab.id}/${plan.name}: serviceKey ${plan.serviceKey ?? '(missing)'} is not a contact-form option`,
+      )
+    }
+  }
+}
+
+// Every service option needs its label in BOTH catalogs, or the form throws on
+// a missing next-intl key.
+for (const file of ['messages/en.json', 'messages/ar.json']) {
+  const opts = JSON.parse(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8'))
+    .marketing.contactForm.serviceOptions
+  for (const { key } of SERVICE_OPTIONS) {
+    assert.ok(opts[key], `${file}: missing serviceOptions.${key}`)
   }
 }
 

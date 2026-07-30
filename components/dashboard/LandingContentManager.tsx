@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ds/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
 import { updateLandingSectionAction, resetLandingSectionAction } from '@/lib/db/landing-actions'
 import { LANDING_SECTIONS, pricingTabs, type LandingSection } from '@/data/landing-content'
+import { SERVICE_OPTIONS } from '@/lib/service-options'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Blob = Record<string, any>
@@ -215,6 +216,26 @@ function SectionEditor({
                         <div className="grid grid-cols-2 gap-3">
                           <TextField label="Badge" value={plan.badge ?? ''} onChange={(v) => upd({ badge: v || undefined })} />
                           <TextField label="CTA" value={plan.cta} onChange={(v) => upd({ cta: v })} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>
+                            CTA preselects{' '}
+                            <span className="text-xs text-muted-foreground">
+                              (which contact-form service this plan tags the lead with)
+                            </span>
+                          </Label>
+                          <select
+                            value={plan.serviceKey ?? ''}
+                            onChange={(e) => upd({ serviceKey: e.target.value || undefined })}
+                            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                          >
+                            <option value="">Nothing — just jump to the form</option>
+                            {SERVICE_OPTIONS.map((o) => (
+                              <option key={o.value} value={o.value}>
+                                {o.value}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <label className="flex items-center gap-2 text-sm">
                           <input
