@@ -6,7 +6,10 @@ import { PageHeader } from '@/components/dashboard/PageHeader'
 import { LeadDialog } from '@/components/dashboard/LeadDialog'
 import { LinkedTableRow } from '@/components/dashboard/LinkedTableRow'
 import { LeadStatusBadge } from '@/components/dashboard/indicators'
+import { LeadsBoard } from '@/components/dashboard/LeadsBoard'
+import { LeadsFilters } from '@/components/dashboard/LeadsFilters'
 import { LEAD_STATUSES } from '@/lib/constants'
+import type { LeadStatus } from '@/lib/types'
 import { Card } from '@/components/ds/card'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { UserPlus, PhoneCall, Trophy } from 'lucide-react'
@@ -19,9 +22,22 @@ import {
   TableRow,
 } from '@/components/ds/table'
 
-export default async function LeadsPage() {
+export default async function LeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; owner?: string; status?: string; q?: string }>
+}) {
   await requirePermission('leads.view')
-  const [leads, team, user, t, tc] = await Promise.all([
+  const sp = await searchParams
+  const view = sp.view === 'board' ? 'board' : 'table'
+  const status = LEAD_STATUSES.includes(sp.status as LeadStatus)
+    ? (sp.status as LeadStatus)
+    : undefined
+
+  const [leads, allLeads, team, user, t, tc] = await Promise.all([
+    // Filtered rows for the list/board…
+    getLeads({ ownerId: sp.owner, status, q: sp.q }),
+    // …and the unfiltered set, so the stat cards keep showing the whole pipeline.
     getLeads(),
     getTeam(),
     getCurrentUser(),
@@ -32,11 +48,13 @@ export default async function LeadsPage() {
   const teamOptions = team.map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
   const ownerName = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
   const canCreate = !!user?.permissions.has('leads.create')
+  const canEdit = !!user?.permissions.has('leads.edit')
+  const filtered = leads.length !== allLeads.length
 
   const counts = Object.fromEntries(
-    LEAD_STATUSES.map((s) => [s, leads.filter((l) => l.status === s).length]),
+    LEAD_STATUSES.map((s) => [s, allLeads.filter((l) => l.status === s).length]),
   ) as Record<(typeof LEAD_STATUSES)[number], number>
-  const inPlay = leads.filter((l) => !['won', 'lost'].includes(l.status)).length
+  const inPlay = allLeads.filter((l) => !['won', 'lost'].includes(l.status)).length
 
   return (
     <div className="space-y-6">
@@ -53,6 +71,15 @@ export default async function LeadsPage() {
         <StatCard label={t('statLost')} value={counts.lost} icon={Trophy} tone={counts.lost ? 'danger' : 'default'} />
       </div>
 
+      <LeadsFilters team={teamOptions} view={view} />
+
+      {view === 'board' ? (
+        <LeadsBoard
+          leads={leads}
+          ownerNames={Object.fromEntries(ownerName)}
+          canEdit={canEdit}
+        />
+      ) : (
       <Card className="p-0">
         <Table>
           <TableHeader>
@@ -69,7 +96,7 @@ export default async function LeadsPage() {
             {leads.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  {t('noLeads')}
+                  {filtered ? t('noMatches') : t('noLeads')}
                 </TableCell>
               </TableRow>
             )}
@@ -100,6 +127,7 @@ export default async function LeadsPage() {
           </TableBody>
         </Table>
       </Card>
+      )}
     </div>
   )
 }

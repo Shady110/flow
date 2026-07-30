@@ -410,7 +410,10 @@
       "deleted": "Lead deleted",
       "created": "Lead added",
       "updated": "Lead updated",
-      "converted": "Lead converted to a client"
+      "converted": "Lead converted to a client",
+      "viewTable": "Table",
+      "viewBoard": "Board",
+      "noMatches": "No leads match these filters."
     },
     "taskDetail": {
       "backToTasks": "Back to tasks",

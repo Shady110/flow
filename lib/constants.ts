@@ -57,6 +57,9 @@ export const TASK_PRIORITIES: TaskPriority[] = ['low', 'medium', 'high', 'urgent
 
 
 
+/** Sentinel for the leads "owner: unassigned" filter — can't collide with a uuid. */
+export const UNASSIGNED_OWNER = 'unassigned'
+
 /** Pipeline order for pickers and board-style displays. */
 export const LEAD_STATUSES: LeadStatus[] = [
   'new',
