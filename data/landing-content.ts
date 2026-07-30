@@ -61,8 +61,12 @@ export interface PricingPlan {
    * `lib/service-options.ts`). Omit and the CTA just jumps to the form.
    */
   serviceKey?: string
-  /** Highlighted "you save X" strip. Figures are editorial, not computed. */
-  savings?: { label: string; amount: string; percent: string }
+  /**
+   * Discount framing: `price` is struck through above the plan price (what the
+   * same volume costs à la carte) and `discount` is the pill beside it.
+   * Editorial figures — nothing is computed at render time.
+   */
+  compareAt?: { price: string; discount: string }
   bulk?: { title: string; rows: { label: string; value: string }[] }
 }
 
@@ -348,11 +352,7 @@ const en: LandingContent = {
                 { label: 'Account management', value: 'Basic' },
               ],
             },
-            savings: {
-              label: 'You save',
-              amount: '750 EGP / month',
-              percent: '18% less than buying the same volume separately',
-            },
+            compareAt: { price: '4,250 EGP', discount: 'Save 18%' },
             cta: 'Start Your Flow',
           },
           {
@@ -384,16 +384,12 @@ const en: LandingContent = {
                 { label: 'Account management', value: 'Premium' },
               ],
             },
-            savings: {
-              label: 'You save',
-              amount: '2,250 EGP / month',
-              percent: '22% less than buying the same volume separately',
-            },
+            compareAt: { price: '10,250 EGP', discount: 'Save 22%' },
             cta: 'Start Your Flow',
           },
           {
             kicker: 'Serious catalogue',
-            priceValue: 18000,
+            priceValue: 16000,
             priceSuffix: ' EGP',
             unit: '/ per month',
             extraNote: '+ 1% of sales (fixed)',
@@ -419,11 +415,7 @@ const en: LandingContent = {
                 { label: 'Account management', value: 'Premium' },
               ],
             },
-            savings: {
-              label: 'You save',
-              amount: '1,000 EGP / month',
-              percent: '5% less than buying the same volume separately',
-            },
+            compareAt: { price: '19,000 EGP', discount: 'Save 16%' },
             cta: 'Start Your Flow',
           },
         ],
@@ -696,11 +688,7 @@ const ar: LandingContent = {
                 { label: 'إدارة الحساب', value: 'الأساسية' },
               ],
             },
-            savings: {
-              label: 'توفّر',
-              amount: '750 ج.م / شهريًا',
-              percent: 'أقل بنسبة 18% من شراء نفس الكمية بشكل منفصل',
-            },
+            compareAt: { price: '4,250 ج.م', discount: 'وفّر 18%' },
             cta: 'ابدأ تدفّقك',
           },
           {
@@ -732,16 +720,12 @@ const ar: LandingContent = {
                 { label: 'إدارة الحساب', value: 'المتقدّمة' },
               ],
             },
-            savings: {
-              label: 'توفّر',
-              amount: '2,250 ج.م / شهريًا',
-              percent: 'أقل بنسبة 22% من شراء نفس الكمية بشكل منفصل',
-            },
+            compareAt: { price: '10,250 ج.م', discount: 'وفّر 22%' },
             cta: 'ابدأ تدفّقك',
           },
           {
             kicker: 'كتالوج كبير',
-            priceValue: 18000,
+            priceValue: 16000,
             priceSuffix: ' ج.م',
             unit: '/ شهريًا',
             extraNote: '+ 1% من المبيعات (ثابتة)',
@@ -767,11 +751,7 @@ const ar: LandingContent = {
                 { label: 'إدارة الحساب', value: 'المتقدّمة' },
               ],
             },
-            savings: {
-              label: 'توفّر',
-              amount: '1,000 ج.م / شهريًا',
-              percent: 'أقل بنسبة 5% من شراء نفس الكمية بشكل منفصل',
-            },
+            compareAt: { price: '19,000 ج.م', discount: 'وفّر 16%' },
             cta: 'ابدأ تدفّقك',
           },
         ],

@@ -249,27 +249,30 @@ function SectionEditor({
                         <TextField label="Note" value={plan.note ?? ''} onChange={(v) => upd({ note: v || undefined })} />
                         <LinesField label="Features" value={plan.features ?? []} onChange={(v) => upd({ features: v })} />
 
-                        {/* "You save X" strip — editorial figures, not computed */}
-                        <div className="grid grid-cols-3 gap-3">
+                        {/* Discount framing: struck-through à-la-carte price + pill */}
+                        <div className="grid grid-cols-2 gap-3">
                           <TextField
-                            label="Savings label"
-                            value={plan.savings?.label ?? ''}
+                            label="Compare-at price (struck through)"
+                            value={plan.compareAt?.price ?? ''}
                             onChange={(v) =>
-                              upd({ savings: v || plan.savings?.amount || plan.savings?.percent ? { ...plan.savings, label: v } : undefined })
+                              upd({
+                                compareAt:
+                                  v || plan.compareAt?.discount
+                                    ? { discount: plan.compareAt?.discount ?? '', price: v }
+                                    : undefined,
+                              })
                             }
                           />
                           <TextField
-                            label="Amount saved"
-                            value={plan.savings?.amount ?? ''}
+                            label="Discount pill (e.g. Save 22%)"
+                            value={plan.compareAt?.discount ?? ''}
                             onChange={(v) =>
-                              upd({ savings: v || plan.savings?.label || plan.savings?.percent ? { ...plan.savings, amount: v } : undefined })
-                            }
-                          />
-                          <TextField
-                            label="Percent saved"
-                            value={plan.savings?.percent ?? ''}
-                            onChange={(v) =>
-                              upd({ savings: v || plan.savings?.label || plan.savings?.amount ? { ...plan.savings, percent: v } : undefined })
+                              upd({
+                                compareAt:
+                                  v || plan.compareAt?.price
+                                    ? { price: plan.compareAt?.price ?? '', discount: v }
+                                    : undefined,
+                              })
                             }
                           />
                         </div>

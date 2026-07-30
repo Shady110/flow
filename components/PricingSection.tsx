@@ -81,6 +81,28 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
         )}
       </div>
 
+      {/* Discount framing: what the same volume costs à la carte, struck out. */}
+      {plan.compareAt && (
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          <span
+            className={cn(
+              'text-base font-semibold line-through decoration-2',
+              featured ? 'text-white/45 decoration-white/45' : 'text-flow-text-muted/70 decoration-flow-text-muted/60',
+            )}
+          >
+            {plan.compareAt.price}
+          </span>
+          <span
+            className={cn(
+              'rounded-full px-2.5 py-0.5 text-xs font-bold',
+              featured ? 'bg-flow-lime text-flow-green' : 'bg-flow-lime text-flow-green',
+            )}
+          >
+            {plan.compareAt.discount}
+          </span>
+        </div>
+      )}
+
       <div className="mb-1">
         <Price plan={plan} featured={featured} />
       </div>
@@ -115,26 +137,6 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* What this plan saves against buying the same volume à la carte. */}
-      {plan.savings && (
-        <div
-          className={cn(
-            'mb-6 rounded-2xl px-4 py-3',
-            featured ? 'bg-flow-lime text-flow-green' : 'border border-flow-green/20 bg-flow-lime/25',
-          )}
-        >
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-flow-green">
-              {plan.savings.label}
-            </span>
-            <span className="font-display text-lg font-bold text-flow-green">
-              {plan.savings.amount}
-            </span>
-          </div>
-          <p className="mt-0.5 text-xs font-medium text-flow-green/80">{plan.savings.percent}</p>
         </div>
       )}
 
