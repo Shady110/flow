@@ -33,7 +33,7 @@ const tilts = [
 ]
 
 export default function HeroSection({ content }: { content: HeroContent }) {
-  const { badge, heading, accent, subheading, ctaPrimary, ctaSecondary, stats } = content
+  const { heading, accent, subheading, ctaPrimary, ctaSecondary, stats } = content
   return (
     <section className="relative min-h-screen flex flex-col items-center overflow-hidden bg-flow-bg grain-overlay">
       {/* Layered background */}
@@ -55,20 +55,7 @@ export default function HeroSection({ content }: { content: HeroContent }) {
 
       {/* Text block */}
       <div className="relative z-10 w-full max-w-4xl mx-auto px-5 sm:px-6 text-center pt-32 md:pt-36">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-flex items-center gap-2.5 rounded-full border border-flow-border bg-white/70 backdrop-blur px-3 py-1.5 mb-8 shadow-[var(--shadow-xs)]"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-flow-green opacity-60 animate-ping" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-flow-green" />
-          </span>
-          <span className="text-xs font-semibold text-flow-green">
-            {badge}
-          </span>
-        </motion.div>
+
 
         <RevealHeading
           as="h1"

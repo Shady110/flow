@@ -18,7 +18,6 @@ export interface HeroStat {
   label: string
 }
 export interface HeroContent {
-  badge: string
   heading: string
   /** Words within `heading` to render in the accent color. */
   accent: string[]
@@ -54,16 +53,43 @@ export interface PricingPlan {
   features: string[]
   note?: string
   badge?: string
+  /** Highlight this plan as the primary/featured card (dark styling). */
+  featured?: boolean
   cta: string
   bulk?: { title: string; rows: { label: string; value: string }[] }
 }
+
+export interface PricingTab {
+  /** Stable key used by the tab trigger + `defaultTab`. */
+  id: string
+  label: string
+  /** One line under the tab bar. */
+  tagline?: string
+  /** Pill on the trigger itself, e.g. "Best value". */
+  badge?: string
+  /** Line under the grid — used to nudge one-time tabs toward the monthly plans. */
+  footnote?: string
+  plans: PricingPlan[]
+}
+
 export interface PricingContent {
   eyebrow: string
   heading: string
   accent: string[]
   subheading: string
-  bulkTitle: string
-  plans: PricingPlan[]
+  /** Which tab opens first. */
+  defaultTab: string
+  tabs: PricingTab[]
+}
+
+/**
+ * Tabs for a pricing blob. Tolerates a `landing_content` row still saved in the
+ * old flat `{ plans: [...] }` shape so a stale DB override never blanks the section.
+ */
+export function pricingTabs(content: PricingContent): PricingTab[] {
+  if (content?.tabs?.length) return content.tabs
+  const legacy = (content as unknown as { plans?: PricingPlan[] })?.plans
+  return legacy?.length ? [{ id: 'plans', label: 'Plans', plans: legacy }] : []
 }
 
 export interface FaqItem {
@@ -103,7 +129,6 @@ export type LandingSection = (typeof LANDING_SECTIONS)[number]
 
 const en: LandingContent = {
   hero: {
-    badge: '2 onboarding spots open this month',
     heading: 'From product to marketplace — in one flow.',
     accent: ['one', 'flow.'],
     subheading:
@@ -176,124 +201,201 @@ const en: LandingContent = {
   },
   pricing: {
     eyebrow: 'Pricing',
-    heading: 'Simple, transparent pricing.',
-    accent: ['transparent'],
+    heading: 'Pick a plan, not a price list.',
+    accent: ['plan,'],
     subheading:
-      'All prices in Egyptian Pounds (EGP). Volume discounts available for large batches.',
-    bulkTitle: 'Bulk Discounts',
-    plans: [
+      'All prices in Egyptian Pounds (EGP). Monthly growth plans bundle everything we do — content, photography and full account management — for less than buying each piece on its own.',
+    defaultTab: 'growth',
+    tabs: [
       {
-        kicker: 'Premium Content Only',
-        priceValue: 15,
-        priceSuffix: ' EGP',
-        unit: '/ per product',
-        name: 'Listing Optimization Only',
-        features: [
-          'Compelling, value-focused professional title',
-          'Bilingual description (Arabic + English)',
-          'Targeted keywords & SEO best practices',
-          'Marketing-oriented conversion copy',
-          'Platform-compliant formatting',
+        id: 'content',
+        label: 'Content',
+        tagline: 'Per-item content work. Send us products, get listing-ready assets back.',
+        footnote: 'One-time, per item — no ongoing account support included.',
+        plans: [
+          {
+            kicker: 'Copy only',
+            priceValue: 10,
+            priceSuffix: ' EGP',
+            unit: '/ per item',
+            name: 'Listing',
+            features: [
+              'Compelling, value-focused professional title',
+              'Bilingual description (Arabic + English)',
+              'Targeted keywords & SEO best practices',
+              'Marketing-oriented conversion copy',
+              'Platform-compliant formatting',
+            ],
+            cta: 'Get Started',
+          },
+          {
+            kicker: 'Studio only',
+            priceValue: 30,
+            priceSuffix: ' EGP',
+            unit: '/ per item',
+            name: 'Photography',
+            features: [
+              'Professional studio photography',
+              'White background shots',
+              'Full editing & optimization',
+              '3–5 high-resolution photos',
+            ],
+            note: 'On-location shoots incur additional transportation fees.',
+            cta: 'Get Started',
+          },
+          {
+            kicker: 'Photography + listing',
+            priceValue: 35,
+            priceSuffix: ' EGP',
+            unit: '/ per item',
+            extraNote: 'Save 5 EGP per item',
+            name: 'Full Content',
+            badge: 'Best of this tab',
+            featured: true,
+            features: [
+              'Everything in Listing',
+              'Everything in Photography',
+              'Shot and written as one brief',
+              'One delivery, listing-ready',
+            ],
+            cta: 'Get Started',
+          },
         ],
-        cta: 'Get Started',
       },
       {
-        kicker: 'Studio Photography Package',
-        priceValue: 30,
-        priceSuffix: ' EGP',
-        unit: '/ per product',
-        name: 'Photography Only',
-        features: [
-          'Professional studio photography',
-          'White background shots',
-          'Full editing & optimization',
-          '3–5 high-resolution photos',
-          'Large items (furniture, appliances): 150 EGP → up to 10 photos',
+        id: 'account',
+        label: 'Account Management',
+        tagline: 'We run your seller account. Fixed monthly fee plus a share of sales.',
+        footnote: 'Content is billed separately per item — or bundled free in a growth plan.',
+        plans: [
+          {
+            kicker: 'Keep the store running',
+            priceValue: 2500,
+            priceSuffix: ' EGP',
+            unit: '/ per month',
+            extraNote: '+ 1% of sales',
+            name: 'Basic',
+            features: [
+              'Account creation & setup',
+              'Uploading items',
+              'Manage returns',
+              'Generate reports',
+            ],
+            cta: 'Get Started',
+          },
+          {
+            kicker: 'Run it and grow it',
+            priceValue: 5000,
+            priceSuffix: ' EGP',
+            unit: '/ per month',
+            extraNote: '+ 2% of sales',
+            name: 'Premium',
+            badge: 'Best of this tab',
+            featured: true,
+            features: [
+              'Everything in Basic',
+              'FBA inventory management',
+              "Create PO's",
+              'Brand Registry',
+              'Price analysis',
+            ],
+            cta: 'Get Started',
+          },
         ],
-        note: 'On-location shoots incur additional transportation fees.',
-        cta: 'Get Started',
       },
       {
-        kicker: 'Photography + Professional Listing',
-        priceValue: 40,
-        priceSuffix: ' EGP',
-        unit: '/ per product',
-        name: 'Complete Package',
-        badge: 'Most Popular',
-        features: [
-          'Studio photography on white background',
-          'Professional retouching & editing',
-          '3–5 high-resolution photos',
-          'Bilingual description (Arabic + English)',
-          'SEO-optimized title & strategic keywords',
+        id: 'growth',
+        label: 'Full Growth',
+        badge: 'Best value',
+        tagline:
+          'Everything we do — listing, photography and full account management — in one monthly plan. Your sales share starts low and only grows as we hit your KPIs, capped at 5% forever.',
+        plans: [
+          {
+            kicker: 'Testing the waters',
+            priceValue: 3500,
+            priceSuffix: ' EGP',
+            unit: '/ per month',
+            extraNote: '+ 1% of sales',
+            name: 'Starter',
+            features: [
+              'Listing optimization included',
+              'Studio photography included',
+              'Full account management included',
+              'Your own client dashboard',
+              'Monthly performance report',
+            ],
+            bulk: {
+              title: "What's included",
+              rows: [
+                { label: 'Products', value: 'up to 50' },
+                { label: 'Sales share', value: '1% → max 5%' },
+                { label: 'Photography', value: 'Included' },
+                { label: 'Listings', value: 'Included' },
+                { label: 'Account management', value: 'Basic' },
+              ],
+            },
+            cta: 'Start Your Flow',
+          },
+          {
+            kicker: 'Our most-picked plan',
+            priceValue: 8000,
+            priceSuffix: ' EGP',
+            unit: '/ per month',
+            extraNote: '+ 1.5% of sales',
+            name: 'Growth',
+            badge: 'Most Popular',
+            featured: true,
+            features: [
+              'Listing optimization included',
+              'Studio photography included',
+              'Full account management included',
+              'Your own client dashboard',
+              'Dedicated account manager',
+              'Bi-weekly performance review',
+            ],
+            bulk: {
+              title: "What's included",
+              rows: [
+                { label: 'Products', value: 'up to 150' },
+                { label: 'Sales share', value: '1.5% → max 5%' },
+                { label: 'Photography', value: 'Included' },
+                { label: 'Listings', value: 'Included' },
+                { label: 'Account management', value: 'Premium' },
+              ],
+            },
+            note: '53 EGP per product — 24% less than buying content on its own.',
+            cta: 'Start Your Flow',
+          },
+          {
+            kicker: 'Serious catalogue',
+            priceValue: 18000,
+            priceSuffix: ' EGP',
+            unit: '/ per month',
+            extraNote: '+ 2% of sales',
+            name: 'Scale',
+            features: [
+              'Listing optimization included',
+              'Studio photography included',
+              'Full account management included',
+              'Your own client dashboard',
+              'Dedicated account manager',
+              'Weekly performance review',
+              'Priority production queue',
+            ],
+            bulk: {
+              title: "What's included",
+              rows: [
+                { label: 'Products', value: 'up to 400' },
+                { label: 'Sales share', value: '2% → max 5%' },
+                { label: 'Photography', value: 'Included' },
+                { label: 'Listings', value: 'Included' },
+                { label: 'Account management', value: 'Premium' },
+              ],
+            },
+            note: '45 EGP per product — the lowest per-item rate we offer.',
+            cta: 'Start Your Flow',
+          },
         ],
-        bulk: {
-          title: 'Bulk Discounts',
-          rows: [
-            { label: '500+ items', value: '30 EGP / product' },
-            { label: '1,000+ items', value: '20 EGP / product' },
-          ],
-        },
-        cta: 'Start Your Flow',
-      },
-      {
-        kicker: 'Professional Video Production',
-        priceValue: 500,
-        priceSuffix: ' EGP',
-        unit: '/ per video',
-        name: 'Product Video',
-        features: [
-          'Professional filming (unboxing, UGC, sponsored ad)',
-          'Creative editing & music',
-          'Text overlays & final polish',
-          'Ready for social media, listings & ads',
-        ],
-        cta: 'Get Started',
-      },
-      {
-        kicker: 'Website Creation Service',
-        priceText: 'Custom Pricing',
-        unit: 'Tailored to your project scope',
-        name: 'E-commerce Website',
-        features: [
-          'Custom e-commerce website design',
-          'Product catalog integration',
-          'Marketplace-ready storefront',
-        ],
-        cta: 'Request a Quote',
-      },
-      {
-        kicker: 'Photography + Social Media Package',
-        priceText: 'Custom Pricing',
-        unit: '/ per session',
-        name: 'Social Media Content',
-        badge: 'Custom',
-        features: [
-          'Full creative session: still + lifestyle shots',
-          'High-quality professional photography',
-          'Ready-to-post social media designs',
-          'Instagram, Facebook & TikTok formats',
-          'Pricing based on scope & complexity',
-        ],
-        cta: 'Request a Quote',
-      },
-      {
-        kicker: 'Full Marketplace Account Management',
-        priceValue: 10000,
-        priceSuffix: ' EGP',
-        unit: '/ per month',
-        extraNote: '+ 5% of sales',
-        name: 'Account Management',
-        features: [
-          'Complete seller account management',
-          'Listing uploads & catalog management',
-          'Product updates & maintenance',
-          'Marketplace compliance monitoring',
-          'Performance tracking & reporting',
-          'Multi-platform support (Amazon, Noon, TikTok Shop, Shopify)',
-          'Dedicated account manager',
-        ],
-        cta: 'Get Started',
       },
     ],
   },
@@ -351,7 +453,6 @@ const en: LandingContent = {
 
 const ar: LandingContent = {
   hero: {
-    badge: 'مكانان متاحان للانضمام هذا الشهر',
     heading: 'من المنتج إلى المتجر — في تدفّق واحد.',
     accent: [],
     subheading:
@@ -424,124 +525,201 @@ const ar: LandingContent = {
   },
   pricing: {
     eyebrow: 'الأسعار',
-    heading: 'أسعار بسيطة وشفّافة.',
+    heading: 'اختر خطة، لا قائمة أسعار.',
     accent: [],
     subheading:
-      'جميع الأسعار بالجنيه المصري (ج.م). تتوفّر خصومات للكميات الكبيرة.',
-    bulkTitle: 'خصومات الكميات',
-    plans: [
+      'جميع الأسعار بالجنيه المصري (ج.م). الخطط الشهرية تجمع كل ما نقدّمه — المحتوى والتصوير وإدارة الحساب الكاملة — بأقل من شراء كل خدمة على حدة.',
+    defaultTab: 'growth',
+    tabs: [
       {
-        kicker: 'المحتوى المتميّز فقط',
-        priceValue: 15,
-        priceSuffix: ' ج.م',
-        unit: '/ لكل منتج',
-        name: 'تحسين القائمة فقط',
-        features: [
-          'عنوان احترافي جذّاب يركّز على القيمة',
-          'وصف بلغتين (عربي + إنجليزي)',
-          'كلمات مفتاحية مستهدفة وأفضل ممارسات SEO',
-          'نصوص تسويقية تركّز على التحويل',
-          'تنسيق متوافق مع كل منصة',
+        id: 'content',
+        label: 'المحتوى',
+        tagline: 'محتوى بالقطعة. أرسل لنا منتجاتك واستلم أصولًا جاهزة للنشر.',
+        footnote: 'دفعة واحدة لكل منتج — لا تشمل إدارة مستمرة للحساب.',
+        plans: [
+          {
+            kicker: 'النصوص فقط',
+            priceValue: 10,
+            priceSuffix: ' ج.م',
+            unit: '/ لكل منتج',
+            name: 'القوائم',
+            features: [
+              'عنوان احترافي جذّاب يركّز على القيمة',
+              'وصف بلغتين (عربي + إنجليزي)',
+              'كلمات مفتاحية مستهدفة وأفضل ممارسات SEO',
+              'نصوص تسويقية تركّز على التحويل',
+              'تنسيق متوافق مع كل منصة',
+            ],
+            cta: 'ابدأ الآن',
+          },
+          {
+            kicker: 'الاستوديو فقط',
+            priceValue: 30,
+            priceSuffix: ' ج.م',
+            unit: '/ لكل منتج',
+            name: 'التصوير',
+            features: [
+              'تصوير استوديو احترافي',
+              'لقطات على خلفية بيضاء',
+              'تحرير وتحسين كامل',
+              '3–5 صور عالية الدقة',
+            ],
+            note: 'تُضاف رسوم انتقال إضافية لجلسات التصوير خارج الاستوديو.',
+            cta: 'ابدأ الآن',
+          },
+          {
+            kicker: 'التصوير + القوائم',
+            priceValue: 35,
+            priceSuffix: ' ج.م',
+            unit: '/ لكل منتج',
+            extraNote: 'وفّر 5 ج.م لكل منتج',
+            name: 'المحتوى الكامل',
+            badge: 'الأفضل في هذا القسم',
+            featured: true,
+            features: [
+              'كل ما في باقة القوائم',
+              'كل ما في باقة التصوير',
+              'تصوير وكتابة ببريف واحد',
+              'تسليم واحد جاهز للنشر',
+            ],
+            cta: 'ابدأ الآن',
+          },
         ],
-        cta: 'ابدأ الآن',
       },
       {
-        kicker: 'باقة تصوير الاستوديو',
-        priceValue: 30,
-        priceSuffix: ' ج.م',
-        unit: '/ لكل منتج',
-        name: 'التصوير فقط',
-        features: [
-          'تصوير استوديو احترافي',
-          'لقطات على خلفية بيضاء',
-          'تحرير وتحسين كامل',
-          '3–5 صور عالية الدقة',
-          'المنتجات الكبيرة (أثاث، أجهزة): 150 ج.م → حتى 10 صور',
+        id: 'account',
+        label: 'إدارة الحسابات',
+        tagline: 'نحن ندير حساب البائع الخاص بك. رسوم شهرية ثابتة + نسبة من المبيعات.',
+        footnote: 'يُحسب المحتوى بالقطعة بشكل منفصل — أو مجانًا داخل خطة النمو.',
+        plans: [
+          {
+            kicker: 'تشغيل المتجر',
+            priceValue: 2500,
+            priceSuffix: ' ج.م',
+            unit: '/ شهريًا',
+            extraNote: '+ 1% من المبيعات',
+            name: 'الأساسية',
+            features: [
+              'إنشاء الحساب وإعداده',
+              'رفع المنتجات',
+              'إدارة المرتجعات',
+              'إعداد التقارير',
+            ],
+            cta: 'ابدأ الآن',
+          },
+          {
+            kicker: 'تشغيل ونمو',
+            priceValue: 5000,
+            priceSuffix: ' ج.م',
+            unit: '/ شهريًا',
+            extraNote: '+ 2% من المبيعات',
+            name: 'المتقدّمة',
+            badge: 'الأفضل في هذا القسم',
+            featured: true,
+            features: [
+              'كل ما في الخطة الأساسية',
+              'إدارة مخزون FBA',
+              'إنشاء أوامر الشراء',
+              'تسجيل العلامة التجارية (Brand Registry)',
+              'تحليل الأسعار',
+            ],
+            cta: 'ابدأ الآن',
+          },
         ],
-        note: 'تُضاف رسوم انتقال إضافية لجلسات التصوير خارج الاستوديو.',
-        cta: 'ابدأ الآن',
       },
       {
-        kicker: 'التصوير + قائمة احترافية',
-        priceValue: 40,
-        priceSuffix: ' ج.م',
-        unit: '/ لكل منتج',
-        name: 'الباقة المتكاملة',
-        badge: 'الأكثر طلبًا',
-        features: [
-          'تصوير استوديو على خلفية بيضاء',
-          'تنقيح وتحرير احترافي',
-          '3–5 صور عالية الدقة',
-          'وصف بلغتين (عربي + إنجليزي)',
-          'عنوان محسّن لمحركات البحث وكلمات مفتاحية استراتيجية',
+        id: 'growth',
+        label: 'النمو الكامل',
+        badge: 'الأفضل قيمة',
+        tagline:
+          'كل ما نقدّمه — القوائم والتصوير وإدارة الحساب الكاملة — في خطة شهرية واحدة. تبدأ نسبة المبيعات منخفضة وترتفع فقط عند تحقيق مؤشرات الأداء، وبحد أقصى 5% دائمًا.',
+        plans: [
+          {
+            kicker: 'بداية محسوبة',
+            priceValue: 3500,
+            priceSuffix: ' ج.م',
+            unit: '/ شهريًا',
+            extraNote: '+ 1% من المبيعات',
+            name: 'ستارتر',
+            features: [
+              'تحسين القوائم مشمول',
+              'تصوير استوديو مشمول',
+              'إدارة كاملة للحساب مشمولة',
+              'لوحة تحكم خاصة بك',
+              'تقرير أداء شهري',
+            ],
+            bulk: {
+              title: 'ما تشمله الخطة',
+              rows: [
+                { label: 'عدد المنتجات', value: 'حتى 50' },
+                { label: 'نسبة المبيعات', value: '1% ← بحد أقصى 5%' },
+                { label: 'التصوير', value: 'مشمول' },
+                { label: 'القوائم', value: 'مشمولة' },
+                { label: 'إدارة الحساب', value: 'الأساسية' },
+              ],
+            },
+            cta: 'ابدأ تدفّقك',
+          },
+          {
+            kicker: 'الخطة الأكثر اختيارًا',
+            priceValue: 8000,
+            priceSuffix: ' ج.م',
+            unit: '/ شهريًا',
+            extraNote: '+ 1.5% من المبيعات',
+            name: 'جروث',
+            badge: 'الأكثر طلبًا',
+            featured: true,
+            features: [
+              'تحسين القوائم مشمول',
+              'تصوير استوديو مشمول',
+              'إدارة كاملة للحساب مشمولة',
+              'لوحة تحكم خاصة بك',
+              'مدير حساب مخصّص',
+              'مراجعة أداء كل أسبوعين',
+            ],
+            bulk: {
+              title: 'ما تشمله الخطة',
+              rows: [
+                { label: 'عدد المنتجات', value: 'حتى 150' },
+                { label: 'نسبة المبيعات', value: '1.5% ← بحد أقصى 5%' },
+                { label: 'التصوير', value: 'مشمول' },
+                { label: 'القوائم', value: 'مشمولة' },
+                { label: 'إدارة الحساب', value: 'المتقدّمة' },
+              ],
+            },
+            note: '53 ج.م لكل منتج — أقل بنسبة 24% من شراء المحتوى بالقطعة.',
+            cta: 'ابدأ تدفّقك',
+          },
+          {
+            kicker: 'كتالوج كبير',
+            priceValue: 18000,
+            priceSuffix: ' ج.م',
+            unit: '/ شهريًا',
+            extraNote: '+ 2% من المبيعات',
+            name: 'سكيل',
+            features: [
+              'تحسين القوائم مشمول',
+              'تصوير استوديو مشمول',
+              'إدارة كاملة للحساب مشمولة',
+              'لوحة تحكم خاصة بك',
+              'مدير حساب مخصّص',
+              'مراجعة أداء أسبوعية',
+              'أولوية في طابور الإنتاج',
+            ],
+            bulk: {
+              title: 'ما تشمله الخطة',
+              rows: [
+                { label: 'عدد المنتجات', value: 'حتى 400' },
+                { label: 'نسبة المبيعات', value: '2% ← بحد أقصى 5%' },
+                { label: 'التصوير', value: 'مشمول' },
+                { label: 'القوائم', value: 'مشمولة' },
+                { label: 'إدارة الحساب', value: 'المتقدّمة' },
+              ],
+            },
+            note: '45 ج.م لكل منتج — أقل سعر للمنتج نقدّمه.',
+            cta: 'ابدأ تدفّقك',
+          },
         ],
-        bulk: {
-          title: 'خصومات الكميات',
-          rows: [
-            { label: '500+ منتج', value: '30 ج.م / منتج' },
-            { label: '1,000+ منتج', value: '20 ج.م / منتج' },
-          ],
-        },
-        cta: 'ابدأ تدفّقك',
-      },
-      {
-        kicker: 'إنتاج فيديو احترافي',
-        priceValue: 500,
-        priceSuffix: ' ج.م',
-        unit: '/ لكل فيديو',
-        name: 'فيديو المنتج',
-        features: [
-          'تصوير احترافي (فتح العلبة، UGC، إعلان ممول)',
-          'مونتاج إبداعي وموسيقى',
-          'نصوص على الشاشة ولمسات نهائية',
-          'جاهز لوسائل التواصل والقوائم والإعلانات',
-        ],
-        cta: 'ابدأ الآن',
-      },
-      {
-        kicker: 'خدمة إنشاء المواقع',
-        priceText: 'سعر مخصّص',
-        unit: 'يُحدّد حسب نطاق مشروعك',
-        name: 'متجر إلكتروني',
-        features: [
-          'تصميم متجر إلكتروني مخصّص',
-          'دمج كتالوج المنتجات',
-          'واجهة متجر جاهزة للمتاجر الإلكترونية',
-        ],
-        cta: 'اطلب عرض سعر',
-      },
-      {
-        kicker: 'باقة التصوير + السوشيال ميديا',
-        priceText: 'سعر مخصّص',
-        unit: '/ لكل جلسة',
-        name: 'محتوى السوشيال ميديا',
-        badge: 'مخصّص',
-        features: [
-          'جلسة إبداعية كاملة: لقطات ثابتة + لايف ستايل',
-          'تصوير احترافي عالي الجودة',
-          'تصاميم جاهزة للنشر على السوشيال ميديا',
-          'صيغ إنستجرام وفيسبوك وتيك توك',
-          'السعر حسب النطاق والتعقيد',
-        ],
-        cta: 'اطلب عرض سعر',
-      },
-      {
-        kicker: 'الإدارة الكاملة لحساب المتجر',
-        priceValue: 10000,
-        priceSuffix: ' ج.م',
-        unit: '/ شهريًا',
-        extraNote: '+ 5% من المبيعات',
-        name: 'إدارة الحسابات',
-        features: [
-          'إدارة كاملة لحساب البائع',
-          'رفع القوائم وإدارة الكتالوج',
-          'تحديث المنتجات وصيانتها',
-          'مراقبة الالتزام بمتطلبات المتاجر',
-          'تتبّع الأداء وإعداد التقارير',
-          'دعم متعدد المنصات (أمازون، نون، تيك توك شوب، شوبيفاي)',
-          'مدير حساب مخصّص',
-        ],
-        cta: 'ابدأ الآن',
       },
     ],
   },

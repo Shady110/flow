@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     'FLOW Agency helps Amazon, Noon, TikTok Shop & Shopify sellers ' +
     'in Egypt with professional product photography, bilingual listing ' +
     'content, SEO optimization, and full marketplace account management. ' +
-    'Starting from 15 EGP per product.',
+    'Monthly growth plans from 3,500 EGP, or per-item content from 10 EGP.',
   alternates: {
     canonical: 'https://flow-agency-eg.com',
   },

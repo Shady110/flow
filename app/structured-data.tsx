@@ -97,70 +97,81 @@ export default function StructuredData() {
               '@type': 'Offer',
               itemOffered: {
                 '@type': 'Service',
-                name: 'Complete Package — Photography + Listing',
+                name: 'Growth Plan — Growth',
+                description:
+                  'Listing, studio photography and full account management ' +
+                  'for up to 150 products — 8,000 EGP per month + 1.5% of sales',
+              },
+            },
+            {
+              '@type': 'Offer',
+              itemOffered: {
+                '@type': 'Service',
+                name: 'Growth Plan — Starter',
+                description:
+                  'Listing, studio photography and full account management ' +
+                  'for up to 50 products — 3,500 EGP per month + 1% of sales',
+              },
+            },
+            {
+              '@type': 'Offer',
+              itemOffered: {
+                '@type': 'Service',
+                name: 'Growth Plan — Scale',
+                description:
+                  'Listing, studio photography and full account management ' +
+                  'for up to 400 products — 18,000 EGP per month + 2% of sales',
+              },
+            },
+            {
+              '@type': 'Offer',
+              itemOffered: {
+                '@type': 'Service',
+                name: 'Account Management — Premium',
+                description:
+                  'Full marketplace account management including FBA ' +
+                  "inventory, PO's, Brand Registry and price analysis — " +
+                  '5,000 EGP per month + 2% of sales',
+              },
+            },
+            {
+              '@type': 'Offer',
+              itemOffered: {
+                '@type': 'Service',
+                name: 'Account Management — Basic',
+                description:
+                  'Seller account setup, item uploads, returns and reporting — ' +
+                  '2,500 EGP per month + 1% of sales',
+              },
+            },
+            {
+              '@type': 'Offer',
+              itemOffered: {
+                '@type': 'Service',
+                name: 'Full Content — Photography + Listing',
                 description:
                   'Studio photography + bilingual SEO listing — ' +
-                  '40 EGP per product',
+                  '35 EGP per item',
               },
             },
             {
               '@type': 'Offer',
               itemOffered: {
                 '@type': 'Service',
-                name: 'Photography Only',
+                name: 'Photography',
                 description:
                   'Professional studio product photography — ' +
-                  '30 EGP per product',
+                  '30 EGP per item',
               },
             },
             {
               '@type': 'Offer',
               itemOffered: {
                 '@type': 'Service',
-                name: 'Listing Optimization',
+                name: 'Listing',
                 description:
                   'SEO-optimized bilingual listing content — ' +
-                  '15 EGP per product',
-              },
-            },
-            {
-              '@type': 'Offer',
-              itemOffered: {
-                '@type': 'Service',
-                name: 'Account Management',
-                description:
-                  'Full marketplace account management — ' +
-                  '5,000 EGP per month + 5% of sales',
-              },
-            },
-            {
-              '@type': 'Offer',
-              itemOffered: {
-                '@type': 'Service',
-                name: 'Product Video',
-                description:
-                  'Professional product video production — ' +
-                  '500 EGP per video',
-              },
-            },
-            {
-              '@type': 'Offer',
-              itemOffered: {
-                '@type': 'Service',
-                name: 'Social Media Content',
-                description:
-                  'Full creative session with social media designs — ' +
-                  'custom pricing per session',
-              },
-            },
-            {
-              '@type': 'Offer',
-              itemOffered: {
-                '@type': 'Service',
-                name: 'E-Commerce Website Creation',
-                description:
-                  'Custom e-commerce website design and development — ' +
-                  'custom pricing',
+                  '10 EGP per item',
               },
             },
           ],
@@ -185,9 +196,10 @@ export default function StructuredData() {
             acceptedAnswer: {
               '@type': 'Answer',
               text:
-                'FLOW Agency offers product photography starting from ' +
-                '30 EGP per product, with bulk discounts available ' +
-                'for 500+ and 1,000+ item batches.',
+                'FLOW Agency offers product photography from 30 EGP per ' +
+                'item, or 35 EGP for photography plus a bilingual SEO ' +
+                'listing. Photography is included at no extra cost in the ' +
+                'monthly growth plans, which start at 3,500 EGP per month.',
             },
           },
           {
@@ -210,19 +222,22 @@ export default function StructuredData() {
                 'Yes. FLOW provides full marketplace account management ' +
                 'including listing uploads, catalog management, performance ' +
                 'tracking, and dedicated account support for Amazon, Noon, ' +
-                'TikTok Shop, and Shopify. Pricing starts at 5,000 EGP ' +
-                'per month plus 5% of sales.',
+                'TikTok Shop, and Shopify. Account management starts at ' +
+                '2,500 EGP per month plus 1% of sales, or is bundled with ' +
+                'content in the growth plans from 3,500 EGP per month.',
             },
           },
           {
             '@type': 'Question',
-            name: 'Does FLOW Agency build e-commerce websites in Egypt?',
+            name: 'How much does it cost to have FLOW manage my store monthly?',
             acceptedAnswer: {
               '@type': 'Answer',
               text:
-                'Yes. FLOW Agency offers custom e-commerce website creation ' +
-                'with custom pricing based on project scope. Contact us for ' +
-                'a quote.',
+                'FLOW’s monthly growth plans bundle listing content, studio ' +
+                'photography and full account management: Starter at 3,500 EGP ' +
+                'per month for up to 50 products, Growth at 8,000 EGP for up ' +
+                'to 150, and Scale at 18,000 EGP for up to 400. Each plan adds ' +
+                'a small share of sales that starts at 1–2% and never exceeds 5%.',
             },
           },
           {

@@ -39,3 +39,25 @@ export async function updateLandingSectionAction(input: unknown): Promise<Action
   revalidatePath('/', 'layout')
   return { ok: true }
 }
+
+/**
+ * Drop a section's stored content so the public site falls back to the in-code
+ * default (`getLandingContent` treats an empty blob as "not customized").
+ * The escape hatch when a saved blob is in an outdated shape.
+ */
+export async function resetLandingSectionAction(section: unknown): Promise<ActionResult> {
+  const parsed = z.enum(LANDING_SECTIONS).safeParse(section)
+  if (!parsed.success) return { ok: false, error: 'Unknown section.' }
+
+  const user = await requirePermission('content.manage')
+  const supabase = await createClient()
+
+  const { error } = await supabase.from('landing_content').upsert(
+    { section: parsed.data, content_en: {}, content_ar: {}, updated_by: user.id },
+    { onConflict: 'section' },
+  )
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}

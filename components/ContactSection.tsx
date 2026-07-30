@@ -215,12 +215,14 @@ export default function ContactSection({ content }: { content: ContactContent })
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white/80 focus-visible:ring-2 focus-visible:ring-flow-lime"
                 >
                   <option value="">{t('selectService')}</option>
-                  <option value="complete-package">{t('serviceOptions.complete')}</option>
+                  <option value="growth">{t('serviceOptions.growth')}</option>
+                  <option value="growth-starter">{t('serviceOptions.growthStarter')}</option>
+                  <option value="growth-scale">{t('serviceOptions.growthScale')}</option>
+                  <option value="account-basic">{t('serviceOptions.accountBasic')}</option>
+                  <option value="account-premium">{t('serviceOptions.accountPremium')}</option>
+                  <option value="full-content">{t('serviceOptions.fullContent')}</option>
                   <option value="photography">{t('serviceOptions.photography')}</option>
                   <option value="listing">{t('serviceOptions.listing')}</option>
-                  <option value="video">{t('serviceOptions.video')}</option>
-                  <option value="social-media">{t('serviceOptions.social')}</option>
-                  <option value="website">{t('serviceOptions.website')}</option>
                   <option value="not-sure">{t('serviceOptions.notSure')}</option>
                 </select>
               </div>

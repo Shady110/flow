@@ -16,7 +16,6 @@
       "team": "Team",
       "faq": "FAQ",
       "cta": "Start Your Flow",
-      "spotsLeft": "2 spots left",
       "toggleMenu": "Toggle menu",
       "services_dd": {
         "content": "Product Content Creation",
@@ -124,12 +123,14 @@
       "error": "Something went wrong. Please try again or contact us directly.",
       "whatsapp": "Chat on WhatsApp",
       "serviceOptions": {
-        "complete": "Complete Package",
-        "photography": "Photography Only",
-        "listing": "Listing Optimization",
-        "video": "Video",
-        "social": "Social Media",
-        "website": "Website",
+        "growth": "Growth plan — 150 products / month",
+        "growthStarter": "Starter plan — 50 products / month",
+        "growthScale": "Scale plan — 400 products / month",
+        "accountBasic": "Account management — Basic",
+        "accountPremium": "Account management — Premium",
+        "fullContent": "Full Content (photography + listing)",
+        "photography": "Photography only",
+        "listing": "Listing only",
         "notSure": "Not Sure Yet"
       },
       "platformOptions": {
