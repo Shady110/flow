@@ -50,29 +50,12 @@ export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
   churned: 'Churned',
 }
 
-export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-  todo: 'To do',
-  in_progress: 'In progress',
-  blocked: 'Blocked',
-  review: 'Review',
-  done: 'Done',
-}
 
-export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  urgent: 'Urgent',
-}
+/** Enum order for pickers. Labels come from the `internal.status` catalog. */
+export const TASK_STATUSES: TaskStatus[] = ['todo', 'in_progress', 'blocked', 'review', 'done']
+export const TASK_PRIORITIES: TaskPriority[] = ['low', 'medium', 'high', 'urgent']
 
-export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
-  new: 'New',
-  contacted: 'Contacted',
-  qualified: 'Qualified',
-  proposal: 'Proposal sent',
-  won: 'Won',
-  lost: 'Lost',
-}
+
 
 /** Pipeline order for pickers and board-style displays. */
 export const LEAD_STATUSES: LeadStatus[] = [

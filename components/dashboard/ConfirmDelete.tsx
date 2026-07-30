@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ds/button'
@@ -28,9 +29,9 @@ export function ConfirmDelete<A extends unknown[]>({
   args,
   title,
   description,
-  label = 'Delete',
+  label,
   confirmLabel,
-  successMessage = 'Deleted',
+  successMessage,
   redirectTo,
   compact,
 }: {
@@ -48,6 +49,8 @@ export function ConfirmDelete<A extends unknown[]>({
   compact?: boolean
 }) {
   const router = useRouter()
+  const t = useTranslations('internal.common')
+  const tt = useTranslations('internal.taskDetail')
   const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
 
@@ -58,7 +61,7 @@ export function ConfirmDelete<A extends unknown[]>({
         toast.error(res.error)
         return
       }
-      toast.success(successMessage)
+      toast.success(successMessage ?? t('delete'))
       setOpen(false)
       if (redirectTo) router.push(redirectTo)
       router.refresh()
@@ -73,23 +76,23 @@ export function ConfirmDelete<A extends unknown[]>({
           size={compact ? 'sm' : 'default'}
           className="text-destructive hover:text-destructive"
           onClick={(e) => e.stopPropagation()}
-          aria-label={compact ? label : undefined}
+          aria-label={compact ? (label ?? t('delete')) : undefined}
         >
           <Trash2 className="h-4 w-4" />
-          {!compact && label}
+          {!compact && (label ?? t('delete'))}
         </Button>
       </DialogTrigger>
       <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description ?? 'This cannot be undone.'}</DialogDescription>
+          <DialogDescription>{description ?? tt('cannotUndo')}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
-            Cancel
+            {t('cancel')}
           </Button>
           <Button variant="destructive" onClick={onDelete} disabled={pending}>
-            {pending ? 'Deleting…' : (confirmLabel ?? label)}
+            {pending ? t('saving') : (confirmLabel ?? label ?? t('delete'))}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { createLeadAction, updateLeadAction } from '@/lib/db/lead-actions'
@@ -24,7 +25,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ds/dialog'
-import { LEAD_STATUSES, LEAD_STATUS_LABELS } from '@/lib/constants'
+import { LEAD_STATUSES } from '@/lib/constants'
 import type { Lead, LeadStatus } from '@/lib/types'
 
 const NO_OWNER = '__none__'
@@ -39,6 +40,9 @@ export function LeadDialog({
   trigger?: React.ReactNode
 }) {
   const router = useRouter()
+  const t = useTranslations('internal.leads')
+  const ts = useTranslations('internal.leadStatus')
+  const tc = useTranslations('internal.common')
   const editing = !!lead
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -72,7 +76,7 @@ export function LeadDialog({
       toast.error(res.error)
       return
     }
-    toast.success(editing ? 'Lead updated' : 'Lead added')
+    toast.success(editing ? t('updated') : t('created'))
     setOpen(false)
     router.refresh()
   }
@@ -82,66 +86,66 @@ export function LeadDialog({
       <DialogTrigger asChild>
         {trigger ?? (
           <Button>
-            <Plus className="h-4 w-4" /> New lead
+            <Plus className="h-4 w-4" /> {t('newLead')}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editing ? 'Edit lead' : 'New lead'}</DialogTitle>
+          <DialogTitle>{editing ? t('editLead') : t('newLead')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="l-name">Contact name</Label>
+              <Label htmlFor="l-name">{t('contactName')}</Label>
               <Input id="l-name" value={form.name} onChange={(e) => set('name', e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="l-company">Company</Label>
+              <Label htmlFor="l-company">{t('company')}</Label>
               <Input id="l-company" value={form.company} onChange={(e) => set('company', e.target.value)} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="l-email">Email</Label>
+              <Label htmlFor="l-email">{t('email')}</Label>
               <Input id="l-email" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="l-phone">Phone</Label>
+              <Label htmlFor="l-phone">{t('phone')}</Label>
               <Input id="l-phone" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="l-address">Address</Label>
+            <Label htmlFor="l-address">{t('address')}</Label>
             <Input id="l-address" value={form.address} onChange={(e) => set('address', e.target.value)} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="l-area">Area</Label>
+              <Label htmlFor="l-area">{t('area')}</Label>
               <Input
                 id="l-area"
                 value={form.area}
                 onChange={(e) => set('area', e.target.value)}
-                placeholder="Nasr City, Alexandria…"
+                placeholder={t('areaPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="l-field">Field</Label>
+              <Label htmlFor="l-field">{t('field')}</Label>
               <Input
                 id="l-field"
                 value={form.field}
                 onChange={(e) => set('field', e.target.value)}
-                placeholder="Home appliances, fashion…"
+                placeholder={t('fieldPlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label>{t('status')}</Label>
               <Select value={form.status} onValueChange={(v) => set('status', v as LeadStatus)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -149,20 +153,20 @@ export function LeadDialog({
                 <SelectContent>
                   {LEAD_STATUSES.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {LEAD_STATUS_LABELS[s]}
+                      {ts(s)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Owner</Label>
+              <Label>{t('owner')}</Label>
               <Select value={form.owner_id} onValueChange={(v) => set('owner_id', v)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NO_OWNER}>Unassigned</SelectItem>
+                  <SelectItem value={NO_OWNER}>{tc('unassigned')}</SelectItem>
                   {team.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
                       {m.label}
@@ -175,28 +179,28 @@ export function LeadDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="l-plan">Interested in</Label>
+              <Label htmlFor="l-plan">{t('interestedIn')}</Label>
               <Input
                 id="l-plan"
                 value={form.plan_interest}
                 onChange={(e) => set('plan_interest', e.target.value)}
-                placeholder="Growth plan, photography…"
+                placeholder={t('planPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="l-source">Source</Label>
+              <Label htmlFor="l-source">{t('source')}</Label>
               <Input id="l-source" value={form.source} onChange={(e) => set('source', e.target.value)} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="l-notes">Notes</Label>
+            <Label htmlFor="l-notes">{t('notes')}</Label>
             <Textarea id="l-notes" value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={3} />
           </div>
 
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Saving…' : editing ? 'Save changes' : 'Add lead'}
+              {loading ? tc('saving') : editing ? tc('save') : t('addLead')}
             </Button>
           </DialogFooter>
         </form>

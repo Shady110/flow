@@ -42,10 +42,22 @@
       "heading": "Selling online is harder than it looks.",
       "intro": "Most sellers lose time and revenue because marketplace management is complex, repetitive, and easy to get wrong.",
       "items": {
-        "complexity": { "title": "Technical Complexity", "description": "Every platform has different rules for images, titles, metadata, and SEO." },
-        "time": { "title": "Time-Consuming Workflows", "description": "Photography, descriptions, uploads — it all adds up to hours you don't have." },
-        "performance": { "title": "Poor Listing Performance", "description": "Unoptimized listings miss search traffic and fail to convert browsers into buyers." },
-        "scaling": { "title": "Scaling Challenges", "description": "More products means more chaos — without a system, growth becomes painful." }
+        "complexity": {
+          "title": "Technical Complexity",
+          "description": "Every platform has different rules for images, titles, metadata, and SEO."
+        },
+        "time": {
+          "title": "Time-Consuming Workflows",
+          "description": "Photography, descriptions, uploads — it all adds up to hours you don't have."
+        },
+        "performance": {
+          "title": "Poor Listing Performance",
+          "description": "Unoptimized listings miss search traffic and fail to convert browsers into buyers."
+        },
+        "scaling": {
+          "title": "Scaling Challenges",
+          "description": "More products means more chaos — without a system, growth becomes painful."
+        }
       }
     },
     "solution": {
@@ -71,12 +83,30 @@
       "heading": "Your product. Our process. Marketplace success.",
       "intro": "A structured, repeatable workflow designed to get your products live faster and performing better.",
       "steps": {
-        "s1": { "title": "Submit Your Products", "description": "Share your product details, images, or inventory list with us." },
-        "s2": { "title": "Content Creation", "description": "We photograph, write, and structure your listings professionally." },
-        "s3": { "title": "Listing Optimization", "description": "We optimize titles, keywords, and structure for each platform." },
-        "s4": { "title": "Marketplace Publishing", "description": "We upload and publish listings directly to your seller accounts." },
-        "s5": { "title": "Account Management", "description": "We monitor performance and manage updates on your behalf." },
-        "s6": { "title": "Sales Growth", "description": "Optimized listings drive more visibility, clicks, and conversions." }
+        "s1": {
+          "title": "Submit Your Products",
+          "description": "Share your product details, images, or inventory list with us."
+        },
+        "s2": {
+          "title": "Content Creation",
+          "description": "We photograph, write, and structure your listings professionally."
+        },
+        "s3": {
+          "title": "Listing Optimization",
+          "description": "We optimize titles, keywords, and structure for each platform."
+        },
+        "s4": {
+          "title": "Marketplace Publishing",
+          "description": "We upload and publish listings directly to your seller accounts."
+        },
+        "s5": {
+          "title": "Account Management",
+          "description": "We monitor performance and manage updates on your behalf."
+        },
+        "s6": {
+          "title": "Sales Growth",
+          "description": "Optimized listings drive more visibility, clicks, and conversions."
+        }
       }
     },
     "portfolio": {
@@ -248,7 +278,15 @@
       "priority": "Priority",
       "due": "Due",
       "status": "Status",
-      "noTasks": "No tasks yet."
+      "noTasks": "No tasks yet.",
+      "newTask": "New task",
+      "editTask": "Edit task",
+      "createTask": "Create task",
+      "selectClient": "Select client",
+      "titleField": "Title",
+      "descriptionField": "Description",
+      "startDate": "Start date",
+      "dueDate": "Due date"
     },
     "team": {
       "title": "Team analytics",
@@ -309,6 +347,143 @@
       "recentJobs": "Recent jobs",
       "noJobs": "No automation jobs yet.",
       "doneCount": "{done}/{total} done"
+    },
+    "leadStatus": {
+      "new": "New",
+      "contacted": "Contacted",
+      "qualified": "Qualified",
+      "proposal": "Proposal sent",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "leads": {
+      "title": "Leads",
+      "description": "Every enquiry, from first contact to signed client.",
+      "newLead": "New lead",
+      "editLead": "Edit lead",
+      "addLead": "Add lead",
+      "noLeads": "No leads yet. Add one, or wait for the next website enquiry.",
+      "lead": "Lead",
+      "contact": "Contact",
+      "contactName": "Contact name",
+      "company": "Company",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "area": "Area",
+      "field": "Field",
+      "owner": "Owner",
+      "status": "Status",
+      "interestedIn": "Interested in",
+      "source": "Source",
+      "notes": "Notes",
+      "added": "Added",
+      "areaPlaceholder": "Nasr City, Alexandria…",
+      "fieldPlaceholder": "Home appliances, fashion…",
+      "planPlaceholder": "Growth plan, photography…",
+      "statNew": "New",
+      "statPipeline": "In the pipeline",
+      "statWon": "Won",
+      "statLost": "Lost",
+      "clientCreated": "client created",
+      "backToLeads": "Back to leads",
+      "customer": "Customer",
+      "convertedNote": "This lead became a client.",
+      "notConvertedNote": "Not a client yet. Converting creates the client record, their portal login, and marks this lead won.",
+      "convert": "Convert to client",
+      "convertTitle": "Convert “{name}” to a client",
+      "convertDesc": "Creates the client record and its portal, copies the lead's details into the client notes, and marks the lead won.",
+      "clientName": "Client name",
+      "subdomain": "Subdomain",
+      "portalContact": "Portal contact",
+      "portalEmail": "Portal email",
+      "portalEmailPlaceholder": "Leave empty to skip",
+      "converting": "Converting…",
+      "convertCta": "Convert",
+      "oneTimePassword": "One-time portal password",
+      "shownOnce": "Shown once — send it to {email} now.",
+      "copied": "Copied",
+      "noPortalLogin": "Client created without a portal login. Add users from the client page when you have their email.",
+      "openTheClient": "Open the client",
+      "deleteTitle": "Delete “{name}”?",
+      "deleteDesc": "The lead and its notes are removed. Any client already created from it is kept.",
+      "deleted": "Lead deleted",
+      "created": "Lead added",
+      "updated": "Lead updated",
+      "converted": "Lead converted to a client"
+    },
+    "taskDetail": {
+      "backToTasks": "Back to tasks",
+      "subtasks": "Subtasks",
+      "addSubtask": "Add subtask",
+      "noSubtasks": "No subtasks. Break this down if more than one person needs to touch it.",
+      "activity": "Activity",
+      "noActivity": "No activity yet.",
+      "assignees": "Assignees",
+      "stage": "Stage",
+      "nextStep": "Next step",
+      "start": "Start",
+      "progress": "{done} of {total} done ({pct}%)",
+      "singleTask": "Single task",
+      "bigTask": "Big task (split into subtasks)",
+      "subtaskLines": "Subtasks",
+      "onePerLine": "(one per line)",
+      "subtaskHint": "Each line becomes its own task you can assign and schedule separately.",
+      "subtaskPlaceholder": "Shoot the product\nWrite the listing\nUpload to Amazon",
+      "selectedCount": "({count} selected)",
+      "noTeam": "No team members yet.",
+      "deleteTitle": "Delete “{title}”?",
+      "deleteWithSubtasks": "This also deletes {count, plural, one {# subtask} other {# subtasks}}. This cannot be undone.",
+      "cannotUndo": "This cannot be undone.",
+      "taskDeleted": "Task deleted",
+      "subtaskDeleted": "Subtask deleted",
+      "created": "Task created",
+      "updated": "Task updated",
+      "actCreated": "{who} created this task",
+      "actCreatedWithSubtasks": "{who} created this task with {count, plural, one {# subtask} other {# subtasks}}",
+      "actStatusChanged": "{who} moved this to {to}",
+      "actFrom": "from {from}",
+      "actOther": "{who} — {action}",
+      "system": "System",
+      "someone": "Someone"
+    },
+    "clientDetail": {
+      "actionsAndTasks": "Actions & tasks",
+      "noTasksForClient": "No tasks yet for this client.",
+      "noNextStep": "No next step set",
+      "next": "Next: {step}",
+      "products": "Products",
+      "noProducts": "No products yet.",
+      "newProduct": "New product",
+      "portalUsers": "Portal users",
+      "noPortalUsers": "No portal users yet. Add one to give this client access to their dashboard.",
+      "addUser": "Add user",
+      "disabled": "disabled",
+      "finance": "Finance",
+      "noInvoices": "No invoices yet.",
+      "newInvoice": "New invoice",
+      "recordPayment": "Record payment",
+      "balanceOwed": "Balance owed",
+      "status": "Status",
+      "openTasks": "Open tasks",
+      "overdue": "Overdue",
+      "portal": "Portal",
+      "visit": "Visit",
+      "due": "due",
+      "deleteClient": "Delete client",
+      "deleteClientTitle": "Delete {name}?",
+      "deleteClientDesc": "This removes the client and everything attached to it — tasks, products, invoices, payments, chat history, and their portal logins. This cannot be undone.",
+      "deleteEverything": "Delete everything",
+      "clientDeleted": "Client deleted",
+      "removeUserTitle": "Remove {name}?",
+      "removeUserDesc": "Their portal login is deleted and they lose access immediately.",
+      "userRemoved": "Portal user removed",
+      "editPortalUser": "Edit portal user",
+      "emailImmutable": "{email} — the email is their login and can't be changed here.",
+      "fullName": "Full name",
+      "roleAtCompany": "Role at company",
+      "userUpdated": "Portal user updated",
+      "productDeleted": "Product deleted"
     }
   },
   "portal": {

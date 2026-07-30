@@ -37,6 +37,26 @@ for (const locale of ['en', 'ar'] as const) {
   }
 }
 
+// The two catalogs must carry exactly the same keys — a key present in one and
+// missing in the other throws at render time for that locale only, which is the
+// kind of bug nobody sees until an Arabic-speaking user hits the page.
+{
+  const load = (f: string) =>
+    JSON.parse(readFileSync(new URL(`../${f}`, import.meta.url), 'utf8'))
+  const flatten = (obj: Record<string, unknown>, prefix = ''): string[] =>
+    Object.entries(obj).flatMap(([k, v]) =>
+      v && typeof v === 'object'
+        ? flatten(v as Record<string, unknown>, `${prefix}${k}.`)
+        : [`${prefix}${k}`],
+    )
+  const en = new Set(flatten(load('messages/en.json')))
+  const ar = new Set(flatten(load('messages/ar.json')))
+  const enOnly = [...en].filter((k) => !ar.has(k))
+  const arOnly = [...ar].filter((k) => !en.has(k))
+  assert.deepEqual(enOnly, [], `keys missing from ar.json: ${enOnly.join(', ')}`)
+  assert.deepEqual(arOnly, [], `keys missing from en.json: ${arOnly.join(', ')}`)
+}
+
 // Every service option needs its label in BOTH catalogs, or the form throws on
 // a missing next-intl key.
 for (const file of ['messages/en.json', 'messages/ar.json']) {

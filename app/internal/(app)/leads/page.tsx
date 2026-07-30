@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
 import { getLeads } from '@/lib/db/lead-queries'
 import { getTeam } from '@/lib/db/queries'
@@ -20,7 +21,13 @@ import {
 
 export default async function LeadsPage() {
   await requirePermission('leads.view')
-  const [leads, team, user] = await Promise.all([getLeads(), getTeam(), getCurrentUser()])
+  const [leads, team, user, t, tc] = await Promise.all([
+    getLeads(),
+    getTeam(),
+    getCurrentUser(),
+    getTranslations('internal.leads'),
+    getTranslations('internal.common'),
+  ])
 
   const teamOptions = team.map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
   const ownerName = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
@@ -34,35 +41,35 @@ export default async function LeadsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Leads"
-        description="Every enquiry, from first contact to signed client."
+        title={t('title')}
+        description={t('description')}
         actions={canCreate ? <LeadDialog team={teamOptions} /> : undefined}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="New" value={counts.new} icon={UserPlus} href="/leads" />
-        <StatCard label="In the pipeline" value={inPlay} icon={PhoneCall} />
-        <StatCard label="Won" value={counts.won} icon={Trophy} tone={counts.won ? 'success' : 'default'} />
-        <StatCard label="Lost" value={counts.lost} icon={Trophy} tone={counts.lost ? 'danger' : 'default'} />
+        <StatCard label={t('statNew')} value={counts.new} icon={UserPlus} href="/leads" />
+        <StatCard label={t('statPipeline')} value={inPlay} icon={PhoneCall} />
+        <StatCard label={t('statWon')} value={counts.won} icon={Trophy} tone={counts.won ? 'success' : 'default'} />
+        <StatCard label={t('statLost')} value={counts.lost} icon={Trophy} tone={counts.lost ? 'danger' : 'default'} />
       </div>
 
       <Card className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Lead</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Area</TableHead>
-              <TableHead>Field</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t('lead')}</TableHead>
+              <TableHead>{t('contact')}</TableHead>
+              <TableHead>{t('area')}</TableHead>
+              <TableHead>{t('field')}</TableHead>
+              <TableHead>{t('owner')}</TableHead>
+              <TableHead>{t('status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {leads.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  No leads yet. Add one, or wait for the next website enquiry.
+                  {t('noLeads')}
                 </TableCell>
               </TableRow>
             )}
@@ -80,12 +87,12 @@ export default async function LeadsPage() {
                 <TableCell className="text-muted-foreground">{l.area || '—'}</TableCell>
                 <TableCell className="text-muted-foreground">{l.field || '—'}</TableCell>
                 <TableCell className="text-muted-foreground">
-                  {l.owner_id ? (ownerName.get(l.owner_id) ?? '—') : 'Unassigned'}
+                  {l.owner_id ? (ownerName.get(l.owner_id) ?? '—') : tc('unassigned')}
                 </TableCell>
                 <TableCell>
                   <LeadStatusBadge status={l.status} />
                   {l.converted_client_id && (
-                    <span className="ms-2 text-xs text-muted-foreground">client created</span>
+                    <span className="ms-2 text-xs text-muted-foreground">{t('clientCreated')}</span>
                   )}
                 </TableCell>
               </LinkedTableRow>

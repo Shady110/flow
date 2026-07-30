@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowUpRight } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
 import { getLead } from '@/lib/db/lead-queries'
 import { getClient, getTeam } from '@/lib/db/queries'
@@ -29,14 +30,20 @@ export default async function LeadDetailPage({
 }) {
   await requirePermission('leads.view')
   const { leadId } = await params
-  const [lead, team, user] = await Promise.all([getLead(leadId), getTeam(), getCurrentUser()])
+  const [lead, team, user, t, tc] = await Promise.all([
+    getLead(leadId),
+    getTeam(),
+    getCurrentUser(),
+    getTranslations('internal.leads'),
+    getTranslations('internal.common'),
+  ])
   if (!lead) notFound()
 
   const client = lead.converted_client_id ? await getClient(lead.converted_client_id) : null
   const teamOptions = team.map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
   const ownerName = lead.owner_id
     ? (team.find((m) => m.id === lead.owner_id)?.full_name ?? '—')
-    : 'Unassigned'
+    : tc('unassigned')
   const canEdit = !!user?.permissions.has('leads.edit')
   const canDelete = !!user?.permissions.has('leads.delete')
   const canConvert = !!user?.permissions.has('leads.convert')
@@ -48,7 +55,7 @@ export default async function LeadDetailPage({
           href="/leads"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4 rtl:rotate-180" /> Back to leads
+          <ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('backToLeads')}
         </Link>
         <div className="flex flex-wrap items-center gap-2">
           {canEdit && <LeadStatusSelect leadId={lead.id} status={lead.status} />}
@@ -56,7 +63,7 @@ export default async function LeadDetailPage({
             <LeadDialog
               team={teamOptions}
               lead={lead}
-              trigger={<Button variant="outline">Edit</Button>}
+              trigger={<Button variant="outline">{tc('edit')}</Button>}
             />
           )}
           {canConvert && !client && <ConvertLeadDialog lead={lead} />}
@@ -64,9 +71,9 @@ export default async function LeadDetailPage({
             <ConfirmDelete
               action={deleteLeadAction}
               args={[lead.id]}
-              title={`Delete “${lead.name}”?`}
-              description="The lead and its notes are removed. Any client already created from it is kept."
-              successMessage="Lead deleted"
+              title={t('deleteTitle', { name: lead.name })}
+              description={t('deleteDesc')}
+              successMessage={t('deleted')}
               redirectTo="/leads"
             />
           )}
@@ -88,26 +95,26 @@ export default async function LeadDetailPage({
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
-              <Field label="Email">
+              <Field label={t('email')}>
                 {lead.email ? (
                   <a href={`mailto:${lead.email}`} className="hover:underline">
                     {lead.email}
                   </a>
                 ) : null}
               </Field>
-              <Field label="Phone">
+              <Field label={t('phone')}>
                 {lead.phone ? (
                   <a href={`tel:${lead.phone}`} className="hover:underline">
                     {lead.phone}
                   </a>
                 ) : null}
               </Field>
-              <Field label="Owner">{ownerName}</Field>
-              <Field label="Area">{lead.area}</Field>
-              <Field label="Field">{lead.field}</Field>
-              <Field label="Interested in">{lead.plan_interest}</Field>
-              <Field label="Source">{lead.source}</Field>
-              <Field label="Added">
+              <Field label={t('owner')}>{ownerName}</Field>
+              <Field label={t('area')}>{lead.area}</Field>
+              <Field label={t('field')}>{lead.field}</Field>
+              <Field label={t('interestedIn')}>{lead.plan_interest}</Field>
+              <Field label={t('source')}>{lead.source}</Field>
+              <Field label={t('added')}>
                 {new Date(lead.created_at).toLocaleDateString(undefined, {
                   month: 'short',
                   day: 'numeric',
@@ -115,11 +122,11 @@ export default async function LeadDetailPage({
                 })}
               </Field>
             </div>
-            <Field label="Address">{lead.address}</Field>
+            <Field label={t('address')}>{lead.address}</Field>
             {lead.notes && (
               <div className="space-y-1">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Notes
+                  {t('notes')}
                 </p>
                 <p className="whitespace-pre-line text-sm text-muted-foreground">{lead.notes}</p>
               </div>
@@ -129,12 +136,12 @@ export default async function LeadDetailPage({
 
         <Card className="h-fit">
           <CardHeader>
-            <CardTitle className="text-base">Customer</CardTitle>
+            <CardTitle className="text-base">{t('customer')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {client ? (
               <>
-                <p className="text-muted-foreground">This lead became a client.</p>
+                <p className="text-muted-foreground">{t('convertedNote')}</p>
                 <Link
                   href={`/clients/${client.id}`}
                   className="inline-flex items-center gap-1.5 font-medium hover:underline"
@@ -144,10 +151,7 @@ export default async function LeadDetailPage({
                 <p className="text-xs text-muted-foreground">{client.slug}.flow…</p>
               </>
             ) : (
-              <p className="text-muted-foreground">
-                Not a client yet. Converting creates the client record, their portal login, and marks
-                this lead won.
-              </p>
+              <p className="text-muted-foreground">{t('notConvertedNote')}</p>
             )}
           </CardContent>
         </Card>

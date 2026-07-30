@@ -11,7 +11,6 @@ import type {
   ProductStatus,
   InvoiceStatus,
 } from '@/lib/types'
-import { LEAD_STATUS_LABELS } from '@/lib/constants'
 import { deadlineState } from '@/lib/deadlines'
 
 const CLIENT_STATUS_STYLE: Record<ClientStatus, string> = {
@@ -40,9 +39,10 @@ const LEAD_STATUS_STYLE: Record<LeadStatus, string> = {
 }
 
 export function LeadStatusBadge({ status }: { status: LeadStatus }) {
+  const t = useTranslations('internal.leadStatus')
   return (
     <Badge className={cn('border-transparent font-medium', LEAD_STATUS_STYLE[status])}>
-      {LEAD_STATUS_LABELS[status]}
+      {t(status)}
     </Badge>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { ArrowRightLeft, Copy } from 'lucide-react'
 import { toast } from 'sonner'
 import { convertLeadAction } from '@/lib/db/lead-actions'
@@ -22,6 +23,7 @@ import type { Lead } from '@/lib/types'
 
 export function ConvertLeadDialog({ lead }: { lead: Lead }) {
   const router = useRouter()
+  const t = useTranslations('internal.leads')
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState<{ clientId: string; tempPassword?: string } | null>(null)
@@ -42,7 +44,7 @@ export function ConvertLeadDialog({ lead }: { lead: Lead }) {
       router.refresh()
       return
     }
-    toast.success('Lead converted to a client')
+    toast.success(t('converted'))
     setDone({ clientId: res.clientId!, tempPassword: res.tempPassword })
     router.refresh()
   }
@@ -51,23 +53,20 @@ export function ConvertLeadDialog({ lead }: { lead: Lead }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <ArrowRightLeft className="h-4 w-4" /> Convert to client
+          <ArrowRightLeft className="h-4 w-4" /> {t('convert')}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Convert “{lead.name}” to a client</DialogTitle>
-          <DialogDescription>
-            Creates the client record and its portal, copies the lead&apos;s details into the client
-            notes, and marks the lead won.
-          </DialogDescription>
+          <DialogTitle>{t('convertTitle', { name: lead.name })}</DialogTitle>
+          <DialogDescription>{t('convertDesc')}</DialogDescription>
         </DialogHeader>
 
         {done ? (
           <div className="space-y-4">
             {done.tempPassword ? (
               <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-3">
-                <p className="text-sm font-medium">One-time portal password</p>
+                <p className="text-sm font-medium">{t('oneTimePassword')}</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 truncate rounded bg-background px-2 py-1.5 text-sm">
                     {done.tempPassword}
@@ -78,36 +77,33 @@ export function ConvertLeadDialog({ lead }: { lead: Lead }) {
                     size="sm"
                     onClick={() => {
                       navigator.clipboard.writeText(done.tempPassword!)
-                      toast.success('Copied')
+                      toast.success(t('copied'))
                     }}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Shown once — send it to {contactEmail} now.
+                  {t('shownOnce', { email: contactEmail })}
                 </p>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                Client created without a portal login. Add users from the client page when you have
-                their email.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('noPortalLogin')}</p>
             )}
             <DialogFooter>
               <Button onClick={() => router.push(`/clients/${done.clientId}`)}>
-                Open the client
+                {t('openTheClient')}
               </Button>
             </DialogFooter>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="cv-name">Client name</Label>
+              <Label htmlFor="cv-name">{t('clientName')}</Label>
               <Input id="cv-name" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cv-slug">Subdomain</Label>
+              <Label htmlFor="cv-slug">{t('subdomain')}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   id="cv-slug"
@@ -120,7 +116,7 @@ export function ConvertLeadDialog({ lead }: { lead: Lead }) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="cv-cname">Portal contact</Label>
+                <Label htmlFor="cv-cname">{t('portalContact')}</Label>
                 <Input
                   id="cv-cname"
                   value={contactName}
@@ -128,19 +124,19 @@ export function ConvertLeadDialog({ lead }: { lead: Lead }) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cv-cemail">Portal email</Label>
+                <Label htmlFor="cv-cemail">{t('portalEmail')}</Label>
                 <Input
                   id="cv-cemail"
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  placeholder="Leave empty to skip"
+                  placeholder={t('portalEmailPlaceholder')}
                 />
               </div>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Converting…' : 'Convert'}
+                {loading ? t('converting') : t('convertCta')}
               </Button>
             </DialogFooter>
           </form>

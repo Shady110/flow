@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ListTree } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { getTask, getClients, getTeam } from '@/lib/db/queries'
 import { TaskDialog } from '@/components/dashboard/TaskDialog'
@@ -32,11 +33,14 @@ export default async function TaskDetailPage({
   params: Promise<{ taskId: string }>
 }) {
   const { taskId } = await params
-  const [task, clients, team, user] = await Promise.all([
+  const [task, clients, team, user, t, tt, tc] = await Promise.all([
     getTask(taskId),
     getClients(),
     getTeam(),
     getCurrentUser(),
+    getTranslations('internal.taskDetail'),
+    getTranslations('internal.tasks'),
+    getTranslations('internal.common'),
   ])
   if (!task) notFound()
 
@@ -56,7 +60,7 @@ export default async function TaskDetailPage({
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
-          {task.parent ? task.parent.title : 'Back to tasks'}
+          {task.parent ? task.parent.title : t('backToTasks')}
         </Link>
         <div className="flex flex-wrap items-center gap-2">
           {canEdit && (
@@ -68,20 +72,20 @@ export default async function TaskDetailPage({
               team={teamOptions}
               fixedClientId={task.client_id}
               task={task}
-              trigger={<Button variant="outline">Edit</Button>}
+              trigger={<Button variant="outline">{tc('edit')}</Button>}
             />
           )}
           {canDelete && (
             <ConfirmDelete
               action={deleteTaskAction}
               args={[task.id, task.client_id]}
-              title={`Delete “${task.title}”?`}
+              title={t('deleteTitle', { title: task.title })}
               description={
                 task.subtask_total > 0
-                  ? `This also deletes ${task.subtask_total} subtask${task.subtask_total === 1 ? '' : 's'}. This cannot be undone.`
+                  ? t('deleteWithSubtasks', { count: task.subtask_total })
                   : undefined
               }
-              successMessage="Task deleted"
+              successMessage={t('taskDeleted')}
               redirectTo={task.parent ? `/tasks/${task.parent.id}` : '/tasks'}
             />
           )}
@@ -112,13 +116,13 @@ export default async function TaskDetailPage({
                 </p>
               )}
               <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
-                <Field label="Priority">
+                <Field label={tt('priority')}>
                   <PriorityLabel priority={task.priority} />
                 </Field>
-                <Field label="Due">
+                <Field label={tt('due')}>
                   <DeadlineIndicator dueDate={task.due_date} status={task.status} />
                 </Field>
-                <Field label="Start">
+                <Field label={t('start')}>
                   {task.start_date
                     ? new Date(task.start_date).toLocaleDateString(undefined, {
                         month: 'short',
@@ -126,11 +130,11 @@ export default async function TaskDetailPage({
                       })
                     : '—'}
                 </Field>
-                <Field label="Stage">{task.stage || '—'}</Field>
-                <Field label="Next step">{task.next_step || '—'}</Field>
-                <Field label="Assignees">
+                <Field label={t('stage')}>{task.stage || '—'}</Field>
+                <Field label={t('nextStep')}>{task.next_step || '—'}</Field>
+                <Field label={t('assignees')}>
                   {task.assignee_ids.length === 0
-                    ? 'Unassigned'
+                    ? tc('unassigned')
                     : task.assignee_ids.map((id) => memberName.get(id) ?? '—').join(', ')}
                 </Field>
               </div>
@@ -140,7 +144,7 @@ export default async function TaskDetailPage({
           <Card>
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
-                <ListTree className="h-4 w-4" /> Subtasks
+                <ListTree className="h-4 w-4" /> {t('subtasks')}
                 {task.subtask_total > 0 && (
                   <span className="text-sm font-normal text-muted-foreground">
                     {task.subtask_done}/{task.subtask_total}
@@ -155,7 +159,7 @@ export default async function TaskDetailPage({
                   parentTaskId={task.id}
                   trigger={
                     <Button variant="outline" size="sm">
-                      Add subtask
+                      {t('addSubtask')}
                     </Button>
                   }
                 />
@@ -166,9 +170,7 @@ export default async function TaskDetailPage({
                 <SubtaskProgress done={task.subtask_done} total={task.subtask_total} />
               )}
               {task.subtasks.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  No subtasks. Break this down if more than one person needs to touch it.
-                </p>
+                <p className="text-sm text-muted-foreground">{t('noSubtasks')}</p>
               )}
               {task.subtasks.map((s) => (
                 <div
@@ -181,7 +183,7 @@ export default async function TaskDetailPage({
                     </Link>
                     <p className="text-xs text-muted-foreground">
                       {s.assignee_ids.length === 0
-                        ? 'Unassigned'
+                        ? tc('unassigned')
                         : s.assignee_ids.map((id) => memberName.get(id) ?? '—').join(', ')}
                     </p>
                   </div>
@@ -196,8 +198,8 @@ export default async function TaskDetailPage({
                       <ConfirmDelete
                         action={deleteTaskAction}
                         args={[s.id, s.client_id]}
-                        title={`Delete “${s.title}”?`}
-                        successMessage="Subtask deleted"
+                        title={t('deleteTitle', { title: s.title })}
+                        successMessage={t('subtaskDeleted')}
                         compact
                       />
                     )}
@@ -210,7 +212,7 @@ export default async function TaskDetailPage({
 
         <Card className="h-fit">
           <CardHeader>
-            <CardTitle className="text-base">Activity</CardTitle>
+            <CardTitle className="text-base">{t('activity')}</CardTitle>
           </CardHeader>
           <CardContent>
             <TaskActivityTrail activity={task.activity} names={Object.fromEntries(memberName)} />

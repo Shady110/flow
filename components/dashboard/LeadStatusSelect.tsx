@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { updateLeadAction } from '@/lib/db/lead-actions'
 import {
@@ -11,11 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ds/select'
-import { LEAD_STATUSES, LEAD_STATUS_LABELS } from '@/lib/constants'
+import { LEAD_STATUSES } from '@/lib/constants'
 import type { LeadStatus } from '@/lib/types'
 
 export function LeadStatusSelect({ leadId, status }: { leadId: string; status: LeadStatus }) {
   const router = useRouter()
+  const t = useTranslations('internal.leadStatus')
   const [pending, startTransition] = useTransition()
 
   function onChange(next: string) {
@@ -39,7 +41,7 @@ export function LeadStatusSelect({ leadId, status }: { leadId: string; status: L
         <SelectContent>
           {LEAD_STATUSES.map((s) => (
             <SelectItem key={s} value={s} className="text-sm">
-              {LEAD_STATUS_LABELS[s]}
+              {t(s)}
             </SelectItem>
           ))}
         </SelectContent>
