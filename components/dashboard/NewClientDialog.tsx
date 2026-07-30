@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClientAction } from '@/lib/db/client-actions'
+import { slugify } from '@/lib/slug'
 import { Button } from '@/components/ds/button'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
@@ -29,16 +30,6 @@ import {
 import type { ClientStatus } from '@/lib/types'
 
 const CLIENT_STATUSES: ClientStatus[] = ['lead', 'active', 'paused', 'churned']
-
-function slugify(v: string) {
-  return v
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(0, 50)
-}
 
 export function NewClientDialog() {
   const router = useRouter()

@@ -47,7 +47,7 @@ export default function WorkflowSection() {
         <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <div className="mb-16 max-w-xl">
-              <span className="eyebrow-index text-white/50 mb-6" data-index="05">{t('eyebrow')}</span>
+              <span className="eyebrow-index text-white/50 mb-6" data-index="06">{t('eyebrow')}</span>
               <RevealHeading
                 text={t('heading')}
                 accent={[]}
@@ -110,7 +110,7 @@ export default function WorkflowSection() {
       <section className="md:hidden py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16 flex flex-col items-center">
-            <span className="eyebrow-index text-white/50 mb-6" data-index="05">{t('eyebrow')}</span>
+            <span className="eyebrow-index text-white/50 mb-6" data-index="06">{t('eyebrow')}</span>
             <h2 className="font-display text-3xl font-bold text-white leading-tight tracking-tight mt-6 mb-4">
               {t('heading')}
             </h2>

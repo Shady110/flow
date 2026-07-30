@@ -3,16 +3,23 @@ import { notFound } from 'next/navigation'
 import { ArrowUpRight, FileText } from 'lucide-react'
 import { getClient, getTasks, getTeam } from '@/lib/db/queries'
 import { getInvoices } from '@/lib/db/finance-queries'
+import { getTranslations } from 'next-intl/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { deadlineState } from '@/lib/deadlines'
 import { formatMoney } from '@/lib/money'
 import type { Product, ClientUser } from '@/lib/types'
+import { deleteClientAction } from '@/lib/db/client-actions'
+import { deleteTaskAction } from '@/lib/db/task-actions'
+import { deleteProductAction } from '@/lib/db/product-actions'
 import { PageHeader } from '@/components/dashboard/PageHeader'
+import { ConfirmDelete } from '@/components/dashboard/ConfirmDelete'
 import { TaskDialog } from '@/components/dashboard/TaskDialog'
 import { TaskStatusSelect } from '@/components/dashboard/TaskStatusSelect'
 import { ProductDialog } from '@/components/dashboard/ProductDialog'
 import { AddClientUserDialog } from '@/components/dashboard/AddClientUserDialog'
+import { EditClientUserDialog } from '@/components/dashboard/EditClientUserDialog'
+import { deleteClientUserAction } from '@/lib/db/client-user-actions'
 import { MessageClientUserButton } from '@/components/dashboard/MessageClientUserButton'
 import { NewInvoiceDialog } from '@/components/dashboard/NewInvoiceDialog'
 import { RecordPaymentDialog } from '@/components/dashboard/RecordPaymentDialog'
@@ -33,11 +40,14 @@ export default async function ClientDetailPage({
 }) {
   const { clientId } = await params
   const supabase = await createClient()
-  const [client, tasks, team, user, { data: products }, { data: clientUsers }] = await Promise.all([
+  const [client, tasks, team, user, t, tt, tc, { data: products }, { data: clientUsers }] = await Promise.all([
     getClient(clientId),
-    getTasks(clientId),
+    getTasks(clientId, { parentOnly: true }),
     getTeam(),
     getCurrentUser(),
+    getTranslations('internal.clientDetail'),
+    getTranslations('internal.taskDetail'),
+    getTranslations('internal.common'),
     supabase.from('products').select('*').eq('client_id', clientId).order('updated_at', { ascending: false }),
     supabase.from('client_users').select('*').eq('client_id', clientId).order('created_at'),
   ])
@@ -52,6 +62,8 @@ export default async function ClientDetailPage({
   const canEditTask = !!user?.permissions.has('tasks.edit')
   const canManageProducts = !!user?.permissions.has('products.manage')
   const canEditClient = !!user?.permissions.has('clients.edit')
+  const canDeleteClient = !!user?.permissions.has('clients.delete')
+  const canDeleteTask = !!user?.permissions.has('tasks.delete')
   const canChat = !!user?.permissions.has('chat.access')
   const canViewFinance = !!user?.permissions.has('finance.view')
   const canIssueInvoice = !!user?.permissions.has('invoices.issue')
@@ -68,8 +80,8 @@ export default async function ClientDetailPage({
   const portalProtocol = rootDomain.includes('localhost') ? 'http' : 'https'
   const portalUrl = `${portalProtocol}://${client.slug}.${rootDomain}`
 
-  const open = tasks.filter((t) => t.status !== 'done')
-  const overdue = open.filter((t) => deadlineState(t) === 'overdue').length
+  const open = tasks.filter((task) => task.status !== 'done')
+  const overdue = open.filter((task) => deadlineState(task) === 'overdue').length
   const clientOptions = [{ id: client.id, label: client.name }]
   const teamOptions = team.map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
 
@@ -86,13 +98,25 @@ export default async function ClientDetailPage({
                 fixedClientId={client.id}
                 trigger={
                   <Button variant="outline">
-                    <FileText className="h-4 w-4" /> New invoice
+                    <FileText className="h-4 w-4" /> {t('newInvoice')}
                   </Button>
                 }
               />
             )}
             {canCreateTask && (
               <TaskDialog clients={clientOptions} team={teamOptions} fixedClientId={client.id} />
+            )}
+            {canDeleteClient && (
+              <ConfirmDelete
+                action={deleteClientAction}
+                args={[client.id]}
+                title={t('deleteClientTitle', { name: client.name })}
+                description={t('deleteClientDesc')}
+                label={t('deleteClient')}
+                confirmLabel={t('deleteEverything')}
+                successMessage={t('clientDeleted')}
+                redirectTo="/clients"
+              />
             )}
           </div>
         }
@@ -101,7 +125,7 @@ export default async function ClientDetailPage({
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Status</p>
+            <p className="text-xs text-muted-foreground">{t('status')}</p>
             <div className="mt-1">
               <ClientStatusBadge status={client.status} />
             </div>
@@ -109,26 +133,26 @@ export default async function ClientDetailPage({
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Open tasks</p>
+            <p className="text-xs text-muted-foreground">{t('openTasks')}</p>
             <p className="mt-1 font-display text-xl font-bold">{open.length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Overdue</p>
+            <p className="text-xs text-muted-foreground">{t('overdue')}</p>
             <p className={`mt-1 font-display text-xl font-bold ${overdue ? 'text-destructive' : ''}`}>{overdue}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Portal</p>
+            <p className="text-xs text-muted-foreground">{t('portal')}</p>
             <a
               href={portalUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-flow-green"
             >
-              Visit <ArrowUpRight className="h-3 w-3" />
+              {t('visit')} <ArrowUpRight className="h-3 w-3" />
             </a>
           </CardContent>
         </Card>
@@ -136,44 +160,67 @@ export default async function ClientDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Actions &amp; tasks</CardTitle>
+          <CardTitle className="text-base">{t('actionsAndTasks')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {tasks.length === 0 && (
-            <p className="text-sm text-muted-foreground">No tasks yet for this client.</p>
+            <p className="text-sm text-muted-foreground">{t('noTasksForClient')}</p>
           )}
-          {tasks.map((t) => (
+          {tasks.map((task) => (
             <div
-              key={t.id}
+              key={task.id}
               className="flex flex-col gap-3 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0 space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-foreground">{t.title}</span>
-                  <PriorityLabel priority={t.priority} />
+                  <Link href={`/tasks/${task.id}`} className="font-medium text-foreground hover:underline">
+                    {task.title}
+                  </Link>
+                  <PriorityLabel priority={task.priority} />
+                  {task.subtask_total > 0 && (
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                      {task.subtask_done}/{task.subtask_total}
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t.next_step ? `Next: ${t.next_step}` : t.stage ?? 'No next step set'}
+                  {task.next_step ? t('next', { step: task.next_step }) : (task.stage ?? t('noNextStep'))}
                   {' · '}
-                  {memberName.get(t.assignee_id ?? '') ?? 'Unassigned'}
+                  {task.assignee_ids.length === 0
+                    ? tc('unassigned')
+                    : task.assignee_ids.map((id) => memberName.get(id) ?? '—').join(', ')}
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <DeadlineIndicator dueDate={t.due_date} status={t.status} />
+                <DeadlineIndicator dueDate={task.due_date} status={task.status} />
                 {canEditTask ? (
-                  <TaskStatusSelect taskId={t.id} clientId={client.id} status={t.status} />
+                  <TaskStatusSelect taskId={task.id} clientId={client.id} status={task.status} />
                 ) : null}
                 {canEditTask && (
                   <TaskDialog
                     clients={clientOptions}
                     team={teamOptions}
                     fixedClientId={client.id}
-                    task={t}
+                    task={task}
                     trigger={
                       <Button variant="ghost" size="sm">
-                        Edit
+                        {tc('edit')}
                       </Button>
                     }
+                  />
+                )}
+                {canDeleteTask && (
+                  <ConfirmDelete
+                    action={deleteTaskAction}
+                    args={[task.id, client.id]}
+                    title={tt('deleteTitle', { title: task.title })}
+                    description={
+                      task.subtask_total > 0
+                        ? tt('deleteWithSubtasks', { count: task.subtask_total })
+                        : undefined
+                    }
+                    successMessage={tt('taskDeleted')}
+                    compact
                   />
                 )}
               </div>
@@ -185,12 +232,12 @@ export default async function ClientDetailPage({
       {/* Products */}
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base">Products</CardTitle>
+          <CardTitle className="text-base">{t('products')}</CardTitle>
           {canManageProducts && <ProductDialog clientId={client.id} />}
         </CardHeader>
         <CardContent className="space-y-2">
           {productList.length === 0 && (
-            <p className="text-sm text-muted-foreground">No products yet.</p>
+            <p className="text-sm text-muted-foreground">{t('noProducts')}</p>
           )}
           {productList.map((p) => (
             <div
@@ -211,9 +258,18 @@ export default async function ClientDetailPage({
                     product={p}
                     trigger={
                       <Button variant="ghost" size="sm">
-                        Edit
+                        {tc('edit')}
                       </Button>
                     }
+                  />
+                )}
+                {canManageProducts && (
+                  <ConfirmDelete
+                    action={deleteProductAction}
+                    args={[p.id, client.id]}
+                    title={tt('deleteTitle', { title: p.name })}
+                    successMessage={t('productDeleted')}
+                    compact
                   />
                 )}
               </div>
@@ -254,7 +310,7 @@ export default async function ClientDetailPage({
                   fixedClientId={client.id}
                   trigger={
                     <Button variant="outline" size="sm">
-                      New invoice
+                      {t('newInvoice')}
                     </Button>
                   }
                 />
@@ -263,7 +319,7 @@ export default async function ClientDetailPage({
           </CardHeader>
           <CardContent className="space-y-2">
             {invoices.length === 0 && (
-              <p className="text-sm text-muted-foreground">No invoices yet.</p>
+              <p className="text-sm text-muted-foreground">{t('noInvoices')}</p>
             )}
             {invoices.map((i) => (
               <Link
@@ -278,7 +334,7 @@ export default async function ClientDetailPage({
                 <div className="text-end text-sm">
                   <span className="tabular-nums">{formatMoney(i.total, i.currency)}</span>
                   {i.balance > 0 && (
-                    <span className="ms-2 text-xs text-warning">{formatMoney(i.balance, i.currency)} due</span>
+                    <span className="ms-2 text-xs text-warning">{formatMoney(i.balance, i.currency)} {t('due')}</span>
                   )}
                 </div>
               </Link>
@@ -290,13 +346,13 @@ export default async function ClientDetailPage({
       {/* Portal users */}
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base">Portal users</CardTitle>
+          <CardTitle className="text-base">{t('portalUsers')}</CardTitle>
           {canEditClient && <AddClientUserDialog clientId={client.id} />}
         </CardHeader>
         <CardContent className="space-y-2.5">
           {clientUserList.length === 0 && (
             <p className="py-2 text-sm text-muted-foreground">
-              No portal users yet. Add one to give this client access to their dashboard.
+              {t('noPortalUsers')}
             </p>
           )}
           {clientUserList.map((cu) => {
@@ -314,13 +370,31 @@ export default async function ClientDetailPage({
                   {initials}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{cu.full_name}</p>
+                  <p className="truncate text-sm font-medium">
+                    {cu.full_name}
+                    {cu.status === 'disabled' && (
+                      <span className="ms-2 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                        {t('disabled')}
+                      </span>
+                    )}
+                  </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {cu.email}
                     {cu.role_at_company ? ` · ${cu.role_at_company}` : ''}
                   </p>
                 </div>
                 {canChat && <MessageClientUserButton clientUserId={cu.id} clientId={client.id} />}
+                {canEditClient && <EditClientUserDialog user={cu} />}
+                {canEditClient && (
+                  <ConfirmDelete
+                    action={deleteClientUserAction}
+                    args={[cu.id, client.id, cu.user_id]}
+                    title={t('removeUserTitle', { name: cu.full_name })}
+                    description={t('removeUserDesc')}
+                    successMessage={t('userRemoved')}
+                    compact
+                  />
+                )}
               </div>
             )
           })}

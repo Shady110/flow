@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { LucideIcon } from 'lucide-react'
 import { Card, CardContent } from '@/components/ds/card'
 import { cn } from '@/lib/utils'
@@ -8,12 +9,15 @@ export function StatCard({
   icon: Icon,
   hint,
   tone = 'default',
+  href,
 }: {
   label: string
   value: string | number
   icon?: LucideIcon
   hint?: string
   tone?: 'default' | 'warning' | 'danger' | 'success'
+  /** Makes the whole card a link to the list this number came from. */
+  href?: string
 }) {
   const toneClasses = {
     default: 'text-foreground',
@@ -22,8 +26,8 @@ export function StatCard({
     success: 'text-success',
   }[tone]
 
-  return (
-    <Card>
+  const card = (
+    <Card className={cn(href && 'transition-shadow hover:shadow-md')}>
       <CardContent className="flex items-start justify-between gap-4 p-5">
         <div className="min-w-0">
           <p className="text-sm font-medium text-muted-foreground">{label}</p>
@@ -37,5 +41,13 @@ export function StatCard({
         )}
       </CardContent>
     </Card>
+  )
+
+  return href ? (
+    <Link href={href} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      {card}
+    </Link>
+  ) : (
+    card
   )
 }

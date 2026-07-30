@@ -3,7 +3,9 @@ import { getTranslations } from 'next-intl/server'
 import { FileSpreadsheet, ImageIcon, ArrowRight } from 'lucide-react'
 import { requirePermission } from '@/lib/auth/session'
 import { getJobs } from '@/lib/db/automation-queries'
+import { deleteJobAction } from '@/lib/db/automation-actions'
 import { PageHeader } from '@/components/dashboard/PageHeader'
+import { ConfirmDelete } from '@/components/dashboard/ConfirmDelete'
 import { Card, CardContent } from '@/components/ds/card'
 import { Badge } from '@/components/ds/badge'
 import { cn } from '@/lib/utils'
@@ -80,10 +82,10 @@ export default async function AutomationsPage() {
           <Card className="p-0">
             <ul className="divide-y divide-border">
               {jobs.map((j) => (
-                <li key={j.id}>
+                <li key={j.id} className="flex items-center gap-2 pe-4 transition-colors hover:bg-muted/50">
                   <Link
                     href={`/automations/${j.id}`}
-                    className="flex items-center justify-between gap-3 px-5 py-4 transition-colors hover:bg-muted/50"
+                    className="flex flex-1 items-center justify-between gap-3 px-5 py-4"
                   >
                     <div className="flex items-center gap-3">
                       {j.type === 'listing' ? (
@@ -104,6 +106,14 @@ export default async function AutomationsPage() {
                       {tj(j.status)}
                     </Badge>
                   </Link>
+                  <ConfirmDelete
+                    action={deleteJobAction}
+                    args={[j.id]}
+                    title="Delete this job?"
+                    description="The job and its items are removed. Generated files stay in storage."
+                    successMessage="Job deleted"
+                    compact
+                  />
                 </li>
               ))}
             </ul>

@@ -3,7 +3,14 @@
 import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ds/badge'
 import { cn } from '@/lib/utils'
-import type { ClientStatus, TaskStatus, TaskPriority, ProductStatus, InvoiceStatus } from '@/lib/types'
+import type {
+  ClientStatus,
+  LeadStatus,
+  TaskStatus,
+  TaskPriority,
+  ProductStatus,
+  InvoiceStatus,
+} from '@/lib/types'
 import { deadlineState } from '@/lib/deadlines'
 
 const CLIENT_STATUS_STYLE: Record<ClientStatus, string> = {
@@ -17,6 +24,24 @@ export function ClientStatusBadge({ status }: { status: ClientStatus }) {
   const t = useTranslations('internal.clientStatus')
   return (
     <Badge className={cn('border-transparent font-medium', CLIENT_STATUS_STYLE[status])}>
+      {t(status)}
+    </Badge>
+  )
+}
+
+const LEAD_STATUS_STYLE: Record<LeadStatus, string> = {
+  new: 'bg-secondary text-secondary-foreground',
+  contacted: 'bg-muted text-muted-foreground',
+  qualified: 'bg-warning/15 text-warning',
+  proposal: 'bg-flow-lime/50 text-flow-green',
+  won: 'bg-flow-lime text-flow-green',
+  lost: 'bg-destructive/15 text-destructive',
+}
+
+export function LeadStatusBadge({ status }: { status: LeadStatus }) {
+  const t = useTranslations('internal.leadStatus')
+  return (
+    <Badge className={cn('border-transparent font-medium', LEAD_STATUS_STYLE[status])}>
       {t(status)}
     </Badge>
   )

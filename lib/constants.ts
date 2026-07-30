@@ -6,6 +6,7 @@ import type {
   PermissionKey,
   ProductStatus,
   ClientStatus,
+  LeadStatus,
   TaskStatus,
   TaskPriority,
   InvoiceStatus,
@@ -27,6 +28,7 @@ export const PAYMENT_METHODS = ['Cash', 'Bank transfer', 'InstaPay', 'Card', 'Ot
 export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'clients.view', 'clients.create', 'clients.edit', 'clients.delete',
   'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete', 'tasks.assign',
+  'leads.view', 'leads.create', 'leads.edit', 'leads.delete', 'leads.convert',
   'team.view', 'finance.view', 'finance.manage', 'invoices.issue',
   'chat.access', 'automation.run', 'roles.manage', 'users.invite',
   'users.manage', 'settings.manage', 'content.manage', 'products.view', 'products.manage',
@@ -48,17 +50,22 @@ export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
   churned: 'Churned',
 }
 
-export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-  todo: 'To do',
-  in_progress: 'In progress',
-  blocked: 'Blocked',
-  review: 'Review',
-  done: 'Done',
-}
 
-export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  urgent: 'Urgent',
-}
+/** Enum order for pickers. Labels come from the `internal.status` catalog. */
+export const TASK_STATUSES: TaskStatus[] = ['todo', 'in_progress', 'blocked', 'review', 'done']
+export const TASK_PRIORITIES: TaskPriority[] = ['low', 'medium', 'high', 'urgent']
+
+
+
+/** Sentinel for the leads "owner: unassigned" filter — can't collide with a uuid. */
+export const UNASSIGNED_OWNER = 'unassigned'
+
+/** Pipeline order for pickers and board-style displays. */
+export const LEAD_STATUSES: LeadStatus[] = [
+  'new',
+  'contacted',
+  'qualified',
+  'proposal',
+  'won',
+  'lost',
+]

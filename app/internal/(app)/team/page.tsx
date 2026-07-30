@@ -3,6 +3,7 @@ import { getTasks, getTeam } from '@/lib/db/queries'
 import { requirePermission } from '@/lib/auth/session'
 import { deadlineState } from '@/lib/deadlines'
 import { PageHeader } from '@/components/dashboard/PageHeader'
+import { EditProfileDialog } from '@/components/dashboard/EditProfileDialog'
 import { GroupedBars } from '@/components/dashboard/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
 import {
@@ -20,15 +21,16 @@ function onTime(completedAt: string | null, dueDate: string | null) {
 }
 
 export default async function TeamPage() {
-  await requirePermission('team.view')
+  const user = await requirePermission('team.view')
   const [tasks, team, t] = await Promise.all([
     getTasks(),
     getTeam(),
     getTranslations('internal.team'),
   ])
+  const canManageUsers = user.permissions.has('users.manage')
 
   const rows = team.map((m) => {
-    const mine = tasks.filter((t) => t.assignee_id === m.id)
+    const mine = tasks.filter((t) => t.assignee_ids.includes(m.id))
     const done = mine.filter((t) => t.status === 'done')
     const open = mine.filter((t) => t.status !== 'done')
     const overdue = open.filter((t) => deadlineState(t) === 'overdue')
@@ -37,6 +39,8 @@ export default async function TeamPage() {
     return {
       id: m.id,
       name: m.full_name ?? m.id.slice(0, 6),
+      fullName: m.full_name,
+      status: m.status,
       role: m.role_name,
       open: open.length,
       done: done.length,
@@ -85,12 +89,20 @@ export default async function TeamPage() {
               <TableHead className="text-end">{t('completed')}</TableHead>
               <TableHead className="text-end">{t('overdue')}</TableHead>
               <TableHead className="text-end">{t('onTime')}</TableHead>
+              {canManageUsers && <TableHead className="w-16" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((r) => (
               <TableRow key={r.id}>
-                <TableCell className="font-medium">{r.name}</TableCell>
+                <TableCell className="font-medium">
+                  {r.name}
+                  {r.status === 'disabled' && (
+                    <span className="ms-2 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                      disabled
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell className="capitalize text-muted-foreground">{r.role ?? '—'}</TableCell>
                 <TableCell className="text-end">{r.open}</TableCell>
                 <TableCell className="text-end">{r.done}</TableCell>
@@ -100,6 +112,15 @@ export default async function TeamPage() {
                 <TableCell className="text-end">
                   {r.onTimeRate === null ? '—' : `${r.onTimeRate}%`}
                 </TableCell>
+                {canManageUsers && (
+                  <TableCell className="text-end">
+                    <EditProfileDialog
+                      profileId={r.id}
+                      fullName={r.fullName}
+                      status={r.status}
+                    />
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

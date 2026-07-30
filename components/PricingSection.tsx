@@ -1,14 +1,17 @@
 'use client'
+import { useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Check } from 'lucide-react'
-import { fadeUp } from '@/lib/animations'
+import { ArrowRight, Check } from 'lucide-react'
+import { fadeUp, staggerContainer, revealUp } from '@/lib/animations'
+import { cn } from '@/lib/utils'
 import Counter from './ui/Counter'
 import MagneticButton from './ui/MagneticButton'
 import RevealHeading from './ui/RevealHeading'
-import type { PricingContent, PricingPlan } from '@/data/landing-content'
+import { pricingTabs, type PricingContent, type PricingPlan } from '@/data/landing-content'
 
-function Price({ plan, dark }: { plan: PricingPlan; dark?: boolean }) {
-  const color = dark ? 'text-white' : 'text-flow-green'
+function Price({ plan, featured }: { plan: PricingPlan; featured?: boolean }) {
+  const color = featured ? 'text-white' : 'text-flow-green'
   if (plan.priceText) {
     return <span className={`font-display text-4xl font-bold ${color}`}>{plan.priceText}</span>
   }
@@ -19,17 +22,164 @@ function Price({ plan, dark }: { plan: PricingPlan; dark?: boolean }) {
   )
 }
 
-function Feature({ label, dark }: { label: string; dark?: boolean }) {
+function Feature({ label, featured }: { label: string; featured?: boolean }) {
   return (
-    <li className={`flex items-start gap-2 text-sm ${dark ? 'text-white/80' : 'text-flow-text-muted'}`}>
-      <Check size={14} className={`${dark ? 'text-flow-lime' : 'text-flow-green'} mt-0.5 shrink-0`} />
-      {label}
+    <li className={cn('flex items-start gap-3 text-sm', featured ? 'text-white/85' : 'text-flow-text-muted')}>
+      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-flow-lime">
+        <Check size={12} strokeWidth={3} className="text-flow-green" />
+      </span>
+      <span>{label}</span>
     </li>
   )
 }
 
+function PlanCard({ plan }: { plan: PricingPlan }) {
+  const featured = !!plan.featured
+  return (
+    <motion.div
+      variants={revealUp}
+      className={cn(
+        'relative flex h-full flex-col rounded-3xl p-8',
+        featured
+          ? 'text-white shadow-[var(--shadow-glow-lime)]'
+          : 'border border-flow-border bg-white shadow-[var(--shadow-sm)] transition-shadow hover:shadow-[var(--shadow-md)]',
+      )}
+      style={featured ? { backgroundImage: 'var(--gradient-dark-panel)' } : undefined}
+    >
+      {/* Header: plan name leads, kicker supports it, badge sits inline so it
+          never overlaps. The name is what people compare — it goes first. */}
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p
+            className={cn(
+              'font-display text-2xl font-bold leading-tight',
+              featured ? 'text-flow-lime' : 'text-flow-green',
+            )}
+          >
+            {plan.name}
+          </p>
+          <p
+            className={cn(
+              'mt-1 text-xs font-semibold uppercase tracking-widest',
+              featured ? 'text-white/60' : 'text-flow-text-muted',
+            )}
+          >
+            {plan.kicker}
+          </p>
+        </div>
+        {plan.badge && (
+          <span
+            className={cn(
+              'shrink-0 rounded-full px-3 py-1 text-xs font-bold',
+              featured
+                ? 'bg-flow-lime text-flow-green'
+                : 'border border-flow-border bg-flow-bg-muted text-flow-green',
+            )}
+          >
+            {plan.badge}
+          </span>
+        )}
+      </div>
+
+      {/* Discount framing: what the same volume costs à la carte, struck out.
+          The strike is an inline style, not the `line-through` utility — a
+          missing utility silently renders the old price as if it were current,
+          which misprices the plan. Too important to depend on CSS delivery. */}
+      {plan.compareAt && (
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <span
+            style={{
+              textDecorationLine: 'line-through',
+              textDecorationThickness: '2px',
+              textDecorationColor: featured ? 'rgba(255,255,255,0.55)' : 'var(--color-flow-text-muted)',
+            }}
+            className={cn(
+              'text-base font-semibold',
+              featured ? 'text-white/50' : 'text-flow-text-muted',
+            )}
+          >
+            {plan.compareAt.price}
+          </span>
+          <span className="rounded-full bg-flow-lime px-3 py-1 text-xs font-bold leading-none text-flow-green">
+            {plan.compareAt.discount}
+          </span>
+        </div>
+      )}
+
+      <div className="mb-1">
+        <Price plan={plan} featured={featured} />
+      </div>
+      <p className={cn('text-sm', featured ? 'text-white/60' : 'text-flow-text-muted')}>{plan.unit}</p>
+      {plan.extraNote && (
+        <p className={cn('mt-1 text-sm font-semibold', featured ? 'text-flow-lime' : 'text-flow-green')}>
+          {plan.extraNote}
+        </p>
+      )}
+
+      <ul className="mb-6 mt-6 space-y-3">
+        {plan.features.map((f) => (
+          <Feature key={f} label={f} featured={featured} />
+        ))}
+      </ul>
+
+      {plan.bulk && (
+        <div
+          className={cn(
+            'mb-6 rounded-2xl p-4',
+            featured ? 'border border-white/10 bg-black/20' : 'border border-flow-border bg-flow-bg-soft',
+          )}
+        >
+          <p className={cn('mb-3 text-xs font-bold uppercase tracking-wider', featured ? 'text-flow-lime' : 'text-flow-green')}>
+            {plan.bulk.title}
+          </p>
+          <div className="space-y-2">
+            {plan.bulk.rows.map((r) => (
+              <div key={r.label} className="flex justify-between text-sm">
+                <span className={featured ? 'text-white/70' : 'text-flow-text-muted'}>{r.label}</span>
+                <span className={cn('font-semibold', featured ? 'text-white' : 'text-flow-green')}>{r.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {plan.note && (
+        <p className={cn('mb-6 text-xs italic', featured ? 'text-white/60' : 'text-flow-text-muted')}>{plan.note}</p>
+      )}
+
+      {/* CTA pinned to the bottom so every card lines up. The plan travels to the
+          contact form as ?plan=… so the form preselects it and the lead lands
+          tagged with the plan the visitor actually clicked. */}
+      <div className="mt-auto pt-2">
+        <MagneticButton strength={featured ? 0.25 : 0.15} className="block w-full">
+          <Link
+            href={plan.serviceKey ? `?plan=${plan.serviceKey}#contact` : '#contact'}
+            className={cn(
+              'block rounded-xl py-3.5 text-center text-sm font-semibold transition-colors',
+              featured
+                ? 'bg-flow-lime text-flow-green shadow-[var(--shadow-glow-lime)] hover:bg-flow-lime-hover'
+                : 'border-2 border-flow-green text-flow-green hover:bg-flow-green hover:text-white',
+            )}
+          >
+            {plan.cta}
+          </Link>
+        </MagneticButton>
+      </div>
+    </motion.div>
+  )
+}
+
 export default function PricingSection({ content }: { content: PricingContent }) {
-  const plans = content.plans
+  const tabs = pricingTabs(content)
+  // The monthly-plans tab is the one we want chosen, so it opens first even
+  // though it sits last in the bar.
+  const [activeId, setActiveId] = useState(
+    () => tabs.find((t) => t.id === content.defaultTab)?.id ?? tabs[0]?.id,
+  )
+  const active = tabs.find((t) => t.id === activeId) ?? tabs[0]
+  const monthly = tabs.find((t) => t.id === content.defaultTab)
+
+  if (!active) return null
 
   return (
     <section id="pricing" className="section-padding bg-flow-bg-soft">
@@ -40,143 +190,95 @@ export default function PricingSection({ content }: { content: PricingContent })
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}
           custom={0}
-          className="flex flex-col items-center text-center mb-12"
+          className="flex flex-col items-center text-center mb-10"
         >
-          <span className="eyebrow-index mb-6" data-index="06">{content.eyebrow}</span>
-          <RevealHeading
-            text={content.heading}
-            accent={content.accent}
-            className="section-title mt-6 mb-4"
-          />
-          <p className="text-flow-text-muted text-base leading-relaxed max-w-2xl mx-auto">
-            {content.subheading}
-          </p>
+          <span className="eyebrow-index mb-6" data-index="04">{content.eyebrow}</span>
+          <RevealHeading text={content.heading} accent={content.accent} className="section-title mt-6 mb-4" />
+          <p className="text-flow-text-muted text-base leading-relaxed max-w-2xl mx-auto">{content.subheading}</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:items-center">
-          {plans.map((plan, i) => {
-            const featured = i === 2
-            const fullWidth = i === plans.length - 1
-
-            if (featured) {
-              return (
-                <motion.div
-                  key={plan.name}
-                  variants={fadeUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.15 }}
-                  custom={i + 1}
-                  className="glass-card-dark p-8 lg:p-10 flex flex-col relative z-10 md:col-span-2 lg:col-span-1 lg:-my-6 lg:scale-105 origin-center"
-                  style={{ backgroundImage: 'var(--gradient-dark-panel)', boxShadow: 'var(--shadow-glow-lime)' }}
-                >
-                  {plan.badge && (
-                    <span className="absolute top-4 right-4 rtl:right-auto rtl:left-4 bg-flow-lime text-flow-green text-xs font-bold px-3 py-1 rounded-full">
-                      {plan.badge}
-                    </span>
-                  )}
-                  <p className="text-xs font-semibold uppercase tracking-widest text-white/60 mb-4">{plan.kicker}</p>
-                  <div className="mb-1"><Price plan={plan} dark /></div>
-                  <p className="text-sm text-white/60 mb-6">{plan.unit}</p>
-                  <p className="font-semibold text-flow-lime text-base mb-4">{plan.name}</p>
-                  <ul className="space-y-3 flex-1 mb-6">
-                    {plan.features.map((f) => <Feature key={f} label={f} dark />)}
-                  </ul>
-
-                  {plan.bulk && (
-                    <div className="rounded-xl p-4 mb-6 bg-black/20 border border-white/10">
-                      <p className="text-xs font-bold text-flow-lime uppercase tracking-wider mb-3">{plan.bulk.title}</p>
-                      <div className="space-y-2">
-                        {plan.bulk.rows.map((r) => (
-                          <div key={r.label} className="flex justify-between text-sm">
-                            <span className="text-white/70">{r.label}</span>
-                            <span className="text-white font-semibold">{r.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <MagneticButton className="block w-full">
-                    <a
-                      href="#contact"
-                      className="block text-center bg-flow-lime text-flow-green font-bold py-3.5 rounded-xl hover:bg-flow-lime-hover transition-colors text-sm shadow-[var(--shadow-glow-lime)]"
-                    >
-                      {plan.cta}
-                    </a>
-                  </MagneticButton>
-                </motion.div>
-              )
-            }
-
-            if (fullWidth) {
-              return (
-                <motion.div
-                  key={plan.name}
-                  variants={fadeUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.15 }}
-                  custom={i + 1}
-                  className="col-span-1 md:col-span-2 lg:col-span-3 surface-elevated p-8 relative"
-                >
-                  <div className="flex flex-col md:flex-row md:gap-12 md:items-center">
-                    <div className="md:w-[35%] mb-8 md:mb-0">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-4">{plan.kicker}</p>
-                      <div className="mb-1"><Price plan={plan} /></div>
-                      <p className="text-sm text-flow-text-muted mb-1">{plan.unit}</p>
-                      {plan.extraNote && <p className="text-sm font-semibold text-flow-green mb-6">{plan.extraNote}</p>}
-                      <p className="font-semibold text-flow-green text-base mb-6">{plan.name}</p>
-                    </div>
-                    <div className="md:w-[65%] flex flex-col gap-6">
-                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-                        {plan.features.map((f) => <Feature key={f} label={f} />)}
-                      </ul>
-                      <a
-                        href="#contact"
-                        className="inline-block text-center border-2 border-flow-green text-flow-green font-semibold py-3 px-8 rounded-xl hover:bg-flow-green hover:text-white transition-colors text-sm self-start"
+        {tabs.length > 1 && (
+          <div className="mb-4 flex justify-center">
+            <div
+              role="tablist"
+              aria-label={content.eyebrow}
+              className="inline-flex w-full max-w-2xl flex-col gap-2 rounded-2xl border border-flow-border bg-white p-2 shadow-[var(--shadow-sm)] sm:flex-row"
+            >
+              {tabs.map((tab) => {
+                const on = tab.id === active.id
+                return (
+                  <button
+                    key={tab.id}
+                    role="tab"
+                    type="button"
+                    aria-selected={on}
+                    onClick={() => setActiveId(tab.id)}
+                    className={cn(
+                      'flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-colors',
+                      on
+                        ? 'bg-flow-green text-white shadow-[var(--shadow-sm)]'
+                        : 'text-flow-text-muted hover:bg-flow-bg-muted hover:text-flow-green',
+                    )}
+                  >
+                    {tab.label}
+                    {tab.badge && (
+                      <span
+                        className={cn(
+                          'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                          on ? 'bg-flow-lime text-flow-green' : 'bg-flow-lime/40 text-flow-green',
+                        )}
                       >
-                        {plan.cta}
-                      </a>
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            }
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
-            return (
-              <motion.div
-                key={plan.name}
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.15 }}
-                custom={i + 1}
-                className="surface-elevated p-8 flex flex-col relative"
+        {active.tagline && (
+          <p className="mx-auto mb-8 max-w-2xl text-center text-sm leading-relaxed text-flow-text-muted">
+            {active.tagline}
+          </p>
+        )}
+
+        {/* Uniform, scalable grid — every plan is an equal card; add/remove from
+            the dashboard and the layout reflows. No scaled/overlapping cards.
+            Re-keyed on the tab so the cards animate in on every switch. */}
+        <motion.div
+          key={active.id}
+          role="tabpanel"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          className={cn(
+            'mx-auto grid grid-cols-1 gap-6 sm:grid-cols-2',
+            active.plans.length >= 3 ? 'lg:grid-cols-3' : 'max-w-4xl',
+          )}
+        >
+          {active.plans.map((plan) => (
+            <PlanCard key={plan.name} plan={plan} />
+          ))}
+        </motion.div>
+
+        {active.footnote && (
+          <div className="mt-8 flex flex-col items-center gap-3 text-center">
+            <p className="text-sm text-flow-text-muted">{active.footnote}</p>
+            {monthly && monthly.id !== active.id && (
+              <button
+                type="button"
+                onClick={() => setActiveId(monthly.id)}
+                className="inline-flex items-center gap-1.5 rounded-full border-2 border-flow-green px-5 py-2.5 text-sm font-semibold text-flow-green transition-colors hover:bg-flow-green hover:text-white"
               >
-                {plan.badge && (
-                  <span className="absolute top-4 right-4 rtl:right-auto rtl:left-4 bg-flow-bg-muted text-flow-green text-xs font-bold px-3 py-1 rounded-full border border-flow-border">
-                    {plan.badge}
-                  </span>
-                )}
-                <p className="text-xs font-semibold uppercase tracking-widest text-flow-text-muted mb-4">{plan.kicker}</p>
-                <div className="mb-1"><Price plan={plan} /></div>
-                <p className="text-sm text-flow-text-muted mb-6">{plan.unit}</p>
-                <p className="font-semibold text-flow-green text-base mb-4">{plan.name}</p>
-                <ul className="space-y-3 flex-1 mb-4">
-                  {plan.features.map((f) => <Feature key={f} label={f} />)}
-                </ul>
-                {plan.note && <p className="text-xs text-flow-text-muted italic mb-6">{plan.note}</p>}
-                <a
-                  href="#contact"
-                  className="block text-center border-2 border-flow-green text-flow-green font-semibold py-3 rounded-xl hover:bg-flow-green hover:text-white transition-colors text-sm mt-auto"
-                >
-                  {plan.cta}
-                </a>
-              </motion.div>
-            )
-          })}
-        </div>
+                {monthly.label}
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </section>
   )

@@ -2,7 +2,8 @@ import { getTranslations } from 'next-intl/server'
 import { TrendingUp, Calendar, AlertCircle, PiggyBank } from 'lucide-react'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
 import { getClients } from '@/lib/db/queries'
-import { getFinanceSummary, getInvoices, getPayments } from '@/lib/db/finance-queries'
+import { getFinanceSummary, getInvoices, getPayments, getExpenses } from '@/lib/db/finance-queries'
+import { deletePaymentAction, deleteExpenseAction } from '@/lib/db/finance-actions'
 import { formatMoney } from '@/lib/money'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { StatCard } from '@/components/dashboard/StatCard'
@@ -12,6 +13,8 @@ import { LinkedTableRow } from '@/components/dashboard/LinkedTableRow'
 import { NewInvoiceDialog } from '@/components/dashboard/NewInvoiceDialog'
 import { RecordPaymentDialog } from '@/components/dashboard/RecordPaymentDialog'
 import { AddExpenseDialog } from '@/components/dashboard/AddExpenseDialog'
+import { ConfirmDelete } from '@/components/dashboard/ConfirmDelete'
+import { Button } from '@/components/ds/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
 import {
   Table,
@@ -24,10 +27,11 @@ import {
 
 export default async function FinancePage() {
   await requirePermission('finance.view')
-  const [summary, invoices, payments, clients, user, t] = await Promise.all([
+  const [summary, invoices, payments, expenses, clients, user, t] = await Promise.all([
     getFinanceSummary(),
     getInvoices(),
     getPayments(),
+    getExpenses(),
     getClients(),
     getCurrentUser(),
     getTranslations('internal.finance'),
@@ -39,6 +43,12 @@ export default async function FinancePage() {
   const invoiceOptions = invoices
     .filter((i) => i.balance > 0 && i.status !== 'void')
     .map((i) => ({ id: i.id, client_id: i.client_id, label: `${i.number} · ${formatMoney(i.balance, i.currency)} ${t('due')}` }))
+  // Editing an existing payment may need to point at an already-settled invoice.
+  const allInvoiceOptions = invoices.map((i) => ({
+    id: i.id,
+    client_id: i.client_id,
+    label: `${i.number} · ${formatMoney(i.total, i.currency)}`,
+  }))
 
   return (
     <div className="space-y-8">
@@ -150,6 +160,73 @@ export default async function FinancePage() {
                       {new Date(p.paid_at).toLocaleDateString()}
                     </p>
                   </div>
+                  {canManage && (
+                    <div className="flex shrink-0 items-center gap-1">
+                      <RecordPaymentDialog
+                        clients={clientOptions}
+                        invoices={allInvoiceOptions}
+                        payment={p}
+                        trigger={
+                          <Button variant="ghost" size="sm">
+                            Edit
+                          </Button>
+                        }
+                      />
+                      <ConfirmDelete
+                        action={deletePaymentAction}
+                        args={[p.id]}
+                        title={`Delete this ${formatMoney(Number(p.amount))} payment?`}
+                        description="The invoice it was applied to goes back to unpaid if it no longer covers the total."
+                        successMessage="Payment deleted"
+                        compact
+                      />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Expenses</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {expenses.length === 0 ? (
+            <p className="px-6 pb-6 text-sm text-muted-foreground">No expenses recorded.</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {expenses.slice(0, 8).map((e) => (
+                <li key={e.id} className="flex items-center justify-between gap-3 px-6 py-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{formatMoney(Number(e.amount))}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {[e.category, e.description].filter(Boolean).join(' · ') || '—'} ·{' '}
+                      {new Date(e.incurred_on).toLocaleDateString()}
+                    </p>
+                  </div>
+                  {canManage && (
+                    <div className="flex shrink-0 items-center gap-1">
+                      <AddExpenseDialog
+                        clients={clientOptions}
+                        expense={e}
+                        trigger={
+                          <Button variant="ghost" size="sm">
+                            Edit
+                          </Button>
+                        }
+                      />
+                      <ConfirmDelete
+                        action={deleteExpenseAction}
+                        args={[e.id]}
+                        title={`Delete this ${formatMoney(Number(e.amount))} expense?`}
+                        successMessage="Expense deleted"
+                        compact
+                      />
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

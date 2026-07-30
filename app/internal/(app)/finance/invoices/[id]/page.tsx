@@ -6,9 +6,11 @@ import { getInvoice } from '@/lib/db/finance-queries'
 import { formatMoney } from '@/lib/money'
 import { InvoiceDocument } from '@/components/finance/InvoiceDocument'
 import { PrintButton } from '@/components/dashboard/PrintButton'
-import { DeleteInvoiceButton } from '@/components/dashboard/DeleteInvoiceButton'
+import { ConfirmDelete } from '@/components/dashboard/ConfirmDelete'
+import { deleteInvoiceAction } from '@/lib/db/finance-actions'
 import { InvoiceStatusSelect } from '@/components/dashboard/InvoiceStatusSelect'
 import { RecordPaymentDialog } from '@/components/dashboard/RecordPaymentDialog'
+import { NewInvoiceDialog } from '@/components/dashboard/NewInvoiceDialog'
 import { Button } from '@/components/ds/button'
 
 export default async function InvoiceDetailPage({
@@ -43,8 +45,25 @@ export default async function InvoiceDetailPage({
               trigger={<Button variant="outline">Record payment</Button>}
             />
           )}
+          {canIssue && (
+            <NewInvoiceDialog
+              clients={[{ id: invoice.client_id, label: invoice.client_name }]}
+              fixedClientId={invoice.client_id}
+              invoice={invoice}
+              trigger={<Button variant="outline">Edit</Button>}
+            />
+          )}
           <PrintButton />
-          {canManage && <DeleteInvoiceButton id={invoice.id} number={invoice.number} />}
+          {canManage && (
+            <ConfirmDelete
+              action={deleteInvoiceAction}
+              args={[invoice.id]}
+              title={`Delete invoice ${invoice.number}?`}
+              description="This permanently removes the invoice and its line items. This cannot be undone."
+              successMessage="Invoice deleted"
+              redirectTo="/finance"
+            />
+          )}
         </div>
       </div>
 

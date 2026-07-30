@@ -142,13 +142,6 @@ export default function Navbar() {
 
           {/* Availability + CTA */}
           <div className="hidden md:flex items-center gap-3 shrink-0">
-            <span className="hidden lg:flex items-center gap-1.5 text-xs text-white/70">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-flow-lime opacity-75 animate-ping" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-flow-lime" />
-              </span>
-              {t('spotsLeft')}
-            </span>
             <LanguageSwitcher tone="light" />
             <MagneticButton strength={0.2}>
               <Link

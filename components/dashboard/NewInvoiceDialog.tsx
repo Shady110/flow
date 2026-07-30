@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Trash2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
-import { createInvoiceAction } from '@/lib/db/finance-actions'
+import { createInvoiceAction, updateInvoiceAction } from '@/lib/db/finance-actions'
+import type { InvoiceItem } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
 import { Button } from '@/components/ds/button'
 import { Input } from '@/components/ds/input'
@@ -38,23 +39,45 @@ interface LineItem {
 
 const emptyItem: LineItem = { description: '', quantity: '1', unit_price: '' }
 
+/** The subset of an invoice this dialog can edit. */
+interface EditableInvoice {
+  id: string
+  client_id: string
+  issue_date: string
+  due_date: string | null
+  notes: string | null
+  items: InvoiceItem[]
+}
+
 export function NewInvoiceDialog({
   clients,
   fixedClientId,
+  invoice,
   trigger,
 }: {
   clients: Option[]
   fixedClientId?: string
+  /** Pass an invoice to edit it instead of creating a new one. */
+  invoice?: EditableInvoice
   trigger?: React.ReactNode
 }) {
   const router = useRouter()
+  const editing = !!invoice
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [clientId, setClientId] = useState(fixedClientId ?? clients[0]?.id ?? '')
-  const [issueDate, setIssueDate] = useState('')
-  const [dueDate, setDueDate] = useState('')
-  const [notes, setNotes] = useState('')
-  const [items, setItems] = useState<LineItem[]>([{ ...emptyItem }])
+  const [clientId, setClientId] = useState(invoice?.client_id ?? fixedClientId ?? clients[0]?.id ?? '')
+  const [issueDate, setIssueDate] = useState(invoice?.issue_date ?? '')
+  const [dueDate, setDueDate] = useState(invoice?.due_date ?? '')
+  const [notes, setNotes] = useState(invoice?.notes ?? '')
+  const [items, setItems] = useState<LineItem[]>(
+    invoice?.items.length
+      ? invoice.items.map((it) => ({
+          description: it.description,
+          quantity: String(it.quantity),
+          unit_price: String(it.unit_price),
+        }))
+      : [{ ...emptyItem }],
+  )
 
   const total = items.reduce(
     (s, it) => s + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0),
@@ -68,7 +91,7 @@ export function NewInvoiceDialog({
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const res = await createInvoiceAction({
+    const payload = {
       client_id: clientId,
       issue_date: issueDate || null,
       due_date: dueDate || null,
@@ -78,16 +101,22 @@ export function NewInvoiceDialog({
         quantity: it.quantity,
         unit_price: it.unit_price || '0',
       })),
-    })
+    }
+    const res = editing
+      ? await updateInvoiceAction(invoice!.id, payload)
+      : await createInvoiceAction(payload)
     setLoading(false)
     if (!res.ok) {
       toast.error(res.error)
       return
     }
-    toast.success('Invoice created')
+    toast.success(editing ? 'Invoice updated' : 'Invoice created')
     setOpen(false)
-    if (res.invoiceId) router.push(`/finance/invoices/${res.invoiceId}`)
-    else router.refresh()
+    if (!editing && 'invoiceId' in res && res.invoiceId) {
+      router.push(`/finance/invoices/${res.invoiceId}`)
+    } else {
+      router.refresh()
+    }
   }
 
   return (
@@ -101,7 +130,7 @@ export function NewInvoiceDialog({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>New invoice</DialogTitle>
+          <DialogTitle>{editing ? 'Edit invoice' : 'New invoice'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           {!fixedClientId && (
@@ -192,7 +221,7 @@ export function NewInvoiceDialog({
 
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating…' : 'Create invoice'}
+              {loading ? 'Saving…' : editing ? 'Save changes' : 'Create invoice'}
             </Button>
           </DialogFooter>
         </form>

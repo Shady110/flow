@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { SERVICE_OPTIONS, SERVICE_VALUES } from '@/lib/service-options'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Mail, MessageCircle, MapPin, Phone, type LucideIcon } from 'lucide-react'
 import { fadeUp, staggerContainer, revealUp } from '@/lib/animations'
@@ -15,6 +17,9 @@ const phoneIcons: LucideIcon[] = [Phone, MessageCircle, MessageCircle]
 export default function ContactSection({ content }: { content: ContactContent }) {
   const t = useTranslations('marketing.contactForm')
   const [status, setStatus] = useState<Status>('idle')
+  // Which pricing card sent them here, if any.
+  const planParam = useSearchParams().get('plan')
+  const presetPlan = planParam && SERVICE_VALUES.includes(planParam) ? planParam : null
 
   const contactDetails = [
     ...content.phones.map((label, i) => ({
@@ -212,16 +217,18 @@ export default function ContactSection({ content }: { content: ContactContent })
                 <select
                   id="service"
                   name="service"
+                  // Preselected from ?plan=… when the visitor arrived by clicking
+                  // a pricing card. `key` remounts it if they click another one.
+                  key={presetPlan ?? 'none'}
+                  defaultValue={presetPlan ?? ''}
                   className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white/80 focus-visible:ring-2 focus-visible:ring-flow-lime"
                 >
                   <option value="">{t('selectService')}</option>
-                  <option value="complete-package">{t('serviceOptions.complete')}</option>
-                  <option value="photography">{t('serviceOptions.photography')}</option>
-                  <option value="listing">{t('serviceOptions.listing')}</option>
-                  <option value="video">{t('serviceOptions.video')}</option>
-                  <option value="social-media">{t('serviceOptions.social')}</option>
-                  <option value="website">{t('serviceOptions.website')}</option>
-                  <option value="not-sure">{t('serviceOptions.notSure')}</option>
+                  {SERVICE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {t(`serviceOptions.${o.key}`)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     'FLOW Agency helps Amazon, Noon, TikTok Shop & Shopify sellers ' +
     'in Egypt with professional product photography, bilingual listing ' +
     'content, SEO optimization, and full marketplace account management. ' +
-    'Starting from 15 EGP per product.',
+    'Monthly growth plans from 3,500 EGP, or per-item content from 10 EGP.',
   alternates: {
     canonical: 'https://flow-agency-eg.com',
   },
@@ -64,9 +64,11 @@ export default async function Home() {
       <ProblemSection />
       <SolutionSection />
       <ServicesSection content={content.services} />
+      {/* Pricing sits straight after Services: once someone understands what we
+          do, the plans are the next thing they want — not 3 sections later. */}
+      <PricingSection content={content.pricing} />
       <PortfolioGridSection />
       <WorkflowSection />
-      <PricingSection content={content.pricing} />
       {/* <TeamSection /> hidden until the full team photo is ready */}
       <FAQSection content={content.faq} />
       <ContactSection content={content.contact} />

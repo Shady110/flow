@@ -71,6 +71,36 @@ export async function createClientUserAction(
   return { ok: true, tempPassword }
 }
 
+const updateSchema = z.object({
+  fullName: z.string().min(2, 'Name is required'),
+  roleAtCompany: z.string().optional().nullable(),
+  status: z.enum(['active', 'disabled']),
+})
+
+/** Edit a portal user's details. Email is immutable — it's their login. */
+export async function updateClientUserAction(
+  id: string,
+  clientId: string,
+  input: unknown,
+): Promise<ActionResult> {
+  const parsed = updateSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('client_users')
+    .update({
+      full_name: parsed.data.fullName,
+      role_at_company: parsed.data.roleAtCompany || null,
+      status: parsed.data.status,
+    })
+    .eq('id', id)
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/clients/${clientId}`)
+  return { ok: true }
+}
+
 export async function deleteClientUserAction(
   id: string,
   clientId: string,
