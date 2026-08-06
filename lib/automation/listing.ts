@@ -1,5 +1,6 @@
 import 'server-only'
 import { generateListingFields, type GenField } from '@/lib/ai/gemini'
+import type { AiUsage } from '@/lib/ai/pricing'
 import { getMarketplace, type CanonicalKey, type Marketplace } from '@/lib/automation/marketplaces'
 
 /** A canonical row: the input row reduced to our canonical field keys via the mapping. */
@@ -17,10 +18,16 @@ export function mapRowToCanonical(
   return out
 }
 
-/** Generate + assemble one output row for the chosen marketplace template. */
+/**
+ * Generate + assemble one output row for the chosen marketplace template.
+ *
+ * `usage` is an accumulator: what the call cost is pushed onto it the moment the
+ * model responds, so spend is recorded even if this row later fails.
+ */
 export async function processListingRow(
   canonical: CanonicalRow,
   marketplaceKey: string,
+  usage: AiUsage[],
 ): Promise<Record<string, string>> {
   const marketplace = getMarketplace(marketplaceKey) as Marketplace
   const genCols = marketplace.columns.filter((c) => c.generate)
@@ -30,7 +37,9 @@ export async function processListingRow(
     description: c.guidance,
   }))
 
-  const generated = await generateListingFields(canonical, fields, { marketplace: marketplace.name })
+  const billed = await generateListingFields(canonical, fields, { marketplace: marketplace.name })
+  usage.push(billed.usage)
+  const generated = billed.value
 
   const out: Record<string, string> = {}
   for (const col of marketplace.columns) {

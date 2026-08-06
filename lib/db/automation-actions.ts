@@ -189,3 +189,63 @@ export async function createImageJobAction(input: {
     return { ok: false, error: e instanceof Error ? e.message : 'Could not create the job' }
   }
 }
+
+/** Bounded by what finalizeImages can zip inside one request. */
+const MAX_CLEAN_IMAGES = 500
+
+/**
+ * Clean-up job: one item per image, each cleaned onto a white background.
+ * Shares the 'image' job type — params.mode tells the processor which path to
+ * take, which keeps the type CHECK constraint (and the schema) untouched.
+ *
+ * `name` is the relative output key from outputKeys() — e.g. 'SKU-1001/front'.
+ * It lands in the item's `sku` field and carries the folder structure all the
+ * way through to the zip.
+ */
+export async function createImageCleanJobAction(input: {
+  images: { name: string; path: string }[]
+  clientId?: string | null
+}): Promise<ActionResult & { jobId?: string }> {
+  try {
+    const user = await requireAutomation()
+    const supabase = await createClient()
+
+    if (input.images.length === 0) return { ok: false, error: 'Add at least one image.' }
+    // Refuse up front rather than burning the API budget and then failing at the
+    // single-request zip step, which would leave nothing downloadable.
+    if (input.images.length > MAX_CLEAN_IMAGES) {
+      return {
+        ok: false,
+        error: `That's ${input.images.length} images — the limit per job is ${MAX_CLEAN_IMAGES}. Split it into smaller batches.`,
+      }
+    }
+
+    const { data: job, error } = await supabase
+      .from('automation_jobs')
+      .insert({
+        type: 'image',
+        status: 'processing',
+        client_id: input.clientId ?? null,
+        params: { mode: 'clean' },
+        total: input.images.length,
+        created_by: user.id,
+      })
+      .select('id')
+      .single()
+    if (error) return { ok: false, error: error.message }
+
+    const items = input.images.map((img, i) => ({
+      job_id: job.id,
+      position: i,
+      status: 'queued',
+      input: { sku: img.name, images: [img.path] },
+    }))
+    const { error: itemErr } = await supabase.from('automation_items').insert(items)
+    if (itemErr) return { ok: false, error: itemErr.message }
+
+    revalidatePath('/automations')
+    return { ok: true, jobId: job.id }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Could not create the job' }
+  }
+}

@@ -341,12 +341,19 @@
       "listingTitle": "Listing automation",
       "listingDesc": "Turn a raw product sheet into marketplace-ready listings — titles, descriptions, bullets, size & weight.",
       "newListing": "New listing job",
+      "cleanTitle": "Clean up images",
+      "cleanDesc": "Drop in a batch of product photos and get them back e-commerce ready — white background, no shadows, centred.",
+      "newClean": "New clean-up job",
       "imageTitle": "Image automation",
       "imageDesc": "Turn product photos into clean white-background front, side & back shots for every marketplace.",
       "newImage": "New image job",
       "recentJobs": "Recent jobs",
       "noJobs": "No automation jobs yet.",
-      "doneCount": "{done}/{total} done"
+      "doneCount": "{done}/{total} done",
+      "costThisMonth": "AI spend this month",
+      "costAllTime": "AI spend all time",
+      "costJob": "AI cost for this job",
+      "costCalls": "{calls} calls · {images} images"
     },
     "leadStatus": {
       "new": "New",

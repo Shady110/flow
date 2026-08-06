@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 import { requirePermission } from '@/lib/auth/session'
-import { getJob, getJobItems } from '@/lib/db/automation-queries'
+import { getJob, getJobItems, getJobCosts } from '@/lib/db/automation-queries'
+import { formatCost } from '@/lib/money'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { JobRunner } from '@/components/automation/JobRunner'
 import { Card } from '@/components/ds/card'
@@ -26,13 +28,29 @@ export default async function JobDetailPage({
   const { jobId } = await params
   const job = await getJob(jobId)
   if (!job) notFound()
-  const items = await getJobItems(jobId)
+  const [items, costs, t] = await Promise.all([
+    getJobItems(jobId),
+    getJobCosts(),
+    getTranslations('internal.automations'),
+  ])
+  const cost = costs.get(jobId)
+
+  const clean = (job.params as { mode?: string }).mode === 'clean'
 
   const itemLabel = (input: Record<string, unknown>, position: number) => {
-    if (job.type === 'image') return String(input.sku ?? `Product ${position + 1}`)
+    if (job.type === 'image') {
+      return String(input.sku ?? `${clean ? 'Image' : 'Product'} ${position + 1}`)
+    }
     const canonical = (input.canonical ?? {}) as Record<string, string>
     return canonical.sku || canonical.name || `Row ${position + 1}`
   }
+
+  const description =
+    job.type === 'listing'
+      ? `${job.marketplace ?? ''} · ${job.total} products`
+      : clean
+        ? `${job.total} images · white background`
+        : `${job.total} products · front / side / back`
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -43,14 +61,22 @@ export default async function JobDetailPage({
         <ArrowLeft className="h-4 w-4" /> Back to automations
       </Link>
       <PageHeader
-        title={job.type === 'image' ? 'Image job' : 'Listing job'}
-        description={
-          job.type === 'listing'
-            ? `${job.marketplace ?? ''} · ${job.total} products`
-            : `${job.total} products · front / side / back`
-        }
+        title={job.type === 'listing' ? 'Listing job' : clean ? 'Image clean-up job' : 'Image job'}
+        description={description}
       />
       <JobRunner job={job} />
+
+      {cost && (
+        <Card className="flex flex-wrap items-baseline justify-between gap-2 px-5 py-4">
+          <span className="text-sm text-muted-foreground">
+            {t('costJob')} · {t('costCalls', { calls: cost.calls, images: cost.images })}
+          </span>
+          <span className="text-sm font-medium">
+            {formatCost(cost.usd)}
+            <span className="ms-2 text-muted-foreground">{formatCost(cost.egp, 'EGP')}</span>
+          </span>
+        </Card>
+      )}
 
       <Card className="p-0">
         <ul className="divide-y divide-border">
