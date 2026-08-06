@@ -1,13 +1,15 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import { FileSpreadsheet, ImageIcon, ArrowRight } from 'lucide-react'
+import { FileSpreadsheet, ImageIcon, Wand2, ArrowRight, CircleDollarSign, Coins } from 'lucide-react'
 import { requirePermission } from '@/lib/auth/session'
-import { getJobs } from '@/lib/db/automation-queries'
+import { getJobs, getJobCosts, getUsageTotals } from '@/lib/db/automation-queries'
 import { deleteJobAction } from '@/lib/db/automation-actions'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { ConfirmDelete } from '@/components/dashboard/ConfirmDelete'
+import { StatCard } from '@/components/dashboard/StatCard'
 import { Card, CardContent } from '@/components/ds/card'
 import { Badge } from '@/components/ds/badge'
+import { formatCost } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import type { JobStatus } from '@/lib/types'
 
@@ -20,8 +22,10 @@ const STATUS_STYLE: Record<JobStatus, string> = {
 
 export default async function AutomationsPage() {
   await requirePermission('automation.run')
-  const [jobs, t, tj] = await Promise.all([
+  const [jobs, costs, totals, t, tj] = await Promise.all([
     getJobs(),
+    getJobCosts(),
+    getUsageTotals(),
     getTranslations('internal.automations'),
     getTranslations('internal.jobStatus'),
   ])
@@ -34,7 +38,39 @@ export default async function AutomationsPage() {
         {t('notice')}
       </p>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <StatCard
+          label={t('costThisMonth')}
+          value={formatCost(totals.month.usd)}
+          icon={CircleDollarSign}
+          hint={formatCost(totals.month.egp, 'EGP')}
+        />
+        <StatCard
+          label={t('costAllTime')}
+          value={formatCost(totals.allTime.usd)}
+          icon={Coins}
+          hint={t('costCalls', { calls: totals.allTime.calls, images: totals.allTime.images })}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Link href="/automations/image/clean/new">
+          <Card className="h-full transition-shadow hover:shadow-md">
+            <CardContent className="flex items-start gap-4 p-6">
+              <div className="rounded-xl bg-secondary p-3 text-flow-green">
+                <Wand2 className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-display text-lg font-bold">{t('cleanTitle')}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{t('cleanDesc')}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-flow-green">
+                  {t('newClean')} <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" />
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
         <Link href="/automations/listing/new">
           <Card className="h-full transition-shadow hover:shadow-md">
             <CardContent className="flex items-start gap-4 p-6">
@@ -99,6 +135,9 @@ export default async function AutomationsPage() {
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {t('doneCount', { done: j.done_count, total: j.total })} · {new Date(j.created_at).toLocaleString()}
+                          {costs.get(j.id) && (
+                            <> · {formatCost(costs.get(j.id)!.usd)} / {formatCost(costs.get(j.id)!.egp, 'EGP')}</>
+                          )}
                         </p>
                       </div>
                     </div>
