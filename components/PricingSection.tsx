@@ -149,11 +149,13 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
 
       {/* CTA pinned to the bottom so every card lines up. The plan travels to the
           contact form as ?plan=… so the form preselects it and the lead lands
-          tagged with the plan the visitor actually clicked. */}
+          tagged with the plan the visitor actually clicked. The link is absolute
+          because this section renders on /pricing, where a bare #contact would
+          resolve to a target that does not exist and drop the ?plan handoff. */}
       <div className="mt-auto pt-2">
         <MagneticButton strength={featured ? 0.25 : 0.15} className="block w-full">
           <Link
-            href={plan.serviceKey ? `?plan=${plan.serviceKey}#contact` : '#contact'}
+            href={plan.serviceKey ? `/?plan=${plan.serviceKey}#contact` : '/#contact'}
             className={cn(
               'block rounded-xl py-3.5 text-center text-sm font-semibold transition-colors',
               featured

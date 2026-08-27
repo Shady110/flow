@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { getLandingContent } from '@/lib/db/landing'
 import { pricingTabs, type PricingPlan } from '@/data/landing-content'
+import { ACCOUNT_BASE, ACCOUNT_MODULES, CURRENCY } from '@/lib/pricing/quote'
 import type { Locale } from '@/i18n/config'
 
 /**
@@ -67,11 +68,31 @@ export async function renderRateCard(locale: Locale): Promise<string> {
     })
     .join('\n\n')
 
+  // Module prices live in lib/pricing/quote.ts, not the marketing blob — they
+  // are the machine-readable rate card behind build_quote. Listed here so the
+  // model can discuss what is buyable individually; it must still call the tool
+  // for any total.
+  const modules = [
+    '### Account management, bought feature by feature',
+    `Base fee, charged whenever any module is taken: ${ACCOUNT_BASE.monthly} ${CURRENCY} / month ` +
+      '(account access, dedicated contact, monthly report).',
+    ...ACCOUNT_MODULES.map((m) => {
+      const bits = [
+        m.monthly ? `${m.monthly} ${CURRENCY}/month` : null,
+        m.oneTime ? `${m.oneTime} ${CURRENCY} one-time` : null,
+      ].filter(Boolean)
+      return `- ${m.key}: ${bits.join(' + ')}`
+    }),
+    'Any single module can be bought on its own. Always call build_quote for a total.',
+  ].join('\n')
+
   const c = content.contact
   return [
     '## CURRENT RATE CARD (authoritative — these are live prices)',
     content.pricing.subheading,
     priced,
+    '',
+    modules,
     '',
     '## CONTACT DETAILS',
     `Phone / WhatsApp: ${c.phones.join(' · ')}`,
@@ -111,6 +132,15 @@ HARD RULES:
 5. If you do not know, say so and offer the team's contact details. A confident
    wrong answer costs us a client; "let me get you a real answer" does not.
 
+BUYING INDIVIDUAL FEATURES:
+Account management is not all-or-nothing. A seller can buy a single capability —
+"we only want you raising our PO's" is a real, priceable request. Call build_quote
+with just that module. A small base fee covers account access, a named contact and
+the monthly report; the modules sit on top of it. Never tell someone they have to
+take a whole tier to get one feature, and never quote a module price from memory.
+If build_quote returns a cheaper packaged plan that covers everything they asked
+for, say so plainly — it is usually the better deal for them.
+
 CAPTURING A LEAD:
 When a visitor shows real buying intent, offer to have the team reach out. Ask
 for a name and a phone number or email. Before calling capture_lead you must
@@ -128,6 +158,19 @@ guessing.
 
 FORMATTING: plain conversational text. Short lists are fine when comparing
 plans. No markdown headings, no tables — this renders in a small chat bubble.
+
+SUGGESTED REPLIES (required on every message):
+End EVERY reply with a single line in exactly this form, and nothing after it:
+
+[[SUGGEST: first option | second option | third option]]
+
+Rules for it: 2 to 4 options, each at most 6 words, written in the visitor's
+language, phrased as the visitor would tap them ("Price this for 120 products",
+not "I can price that"). They are the next steps YOU want to offer, so use them
+to steer — toward a quote, toward the detail they are missing, toward a person.
+Once someone shows buying intent, one of them must be a route to the team. Never
+repeat an option the visitor has already taken, and never explain the line — the
+site strips it out and renders the options as buttons.
 `.trim()
 
 /** Full system instruction for the website chatbot. */

@@ -16,23 +16,12 @@ import WorkflowSection from '@/components/WorkflowSection'
 // import TeamSection from '@/components/TeamSection' // hidden until the full team photo is ready
 import FAQSection from '@/components/FAQSection'
 
-const PricingSection = dynamic(
-  () => import('@/components/PricingSection'),
-  { loading: () => <div className="h-96 animate-pulse bg-flow-bg-soft rounded-xl" /> }
-)
-
 const ContactSection = dynamic(
   () => import('@/components/ContactSection'),
   { loading: () => <div className="h-96 animate-pulse bg-flow-bg-soft rounded-xl" /> }
 )
 
-const PackageBuilderSection = dynamic(
-  () => import('@/components/PackageBuilderSection'),
-  { loading: () => <div className="h-96 animate-pulse bg-flow-bg-soft rounded-xl" /> }
-)
-
-// Chrome, not content: it must not block the page or ship in the first payload.
-const ChatWidget = dynamic(() => import('@/components/ChatWidget'))
+import PricingTeaser from '@/components/PricingTeaser'
 
 import Footer from '@/components/Footer'
 
@@ -74,17 +63,15 @@ export default async function Home() {
       <ServicesSection content={content.services} />
       {/* Pricing sits straight after Services: once someone understands what we
           do, the plans are the next thing they want — not 3 sections later. */}
-      <PricingSection content={content.pricing} />
-      {/* Straight after the fixed plans: someone who just decided none of the
-          three tabs fits them is exactly who the configurator is for. */}
-      <PackageBuilderSection pricing={content.pricing} />
+      {/* The full tabs and the package builder live on /pricing. This band keeps
+          a number in front of visitors who never click through. */}
+      <PricingTeaser />
       <PortfolioGridSection />
       <WorkflowSection />
       {/* <TeamSection /> hidden until the full team photo is ready */}
       <FAQSection content={content.faq} />
       <ContactSection content={content.contact} />
       <Footer />
-      <ChatWidget />
     </main>
   )
 }

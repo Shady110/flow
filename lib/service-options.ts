@@ -15,6 +15,8 @@ export const SERVICE_OPTIONS = [
   { value: 'full-content', key: 'fullContent' },
   { value: 'photography', key: 'photography' },
   { value: 'listing', key: 'listing' },
+  // A build from the feature-level package builder — no fixed tier matches it.
+  { value: 'custom', key: 'custom' },
   { value: 'not-sure', key: 'notSure' },
 ] as const
 

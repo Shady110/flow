@@ -28,7 +28,7 @@ export default function FAQSection({ content }: { content: FaqContent }) {
             {content.intro}
           </p>
           <Link
-            href="#contact"
+            href="/#contact"
             className="inline-flex items-center gap-2 text-flow-green font-semibold text-sm border-b-2 border-flow-lime pb-1 hover:gap-3 transition-all"
           >
             {content.cta}

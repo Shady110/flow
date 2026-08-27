@@ -1,7 +1,7 @@
 /**
  * The rate card and the custom-package calculator. One pure function, two front
- * doors: the landing-page package builder calls it in the browser, and the
- * website chatbot calls it server-side as a Gemini tool.
+ * doors: the /pricing package builder calls it in the browser, and the website
+ * chatbot calls it server-side as a Gemini tool.
  *
  * The point of the second one: an LLM asked to price a bundle will happily
  * invent a plausible total. It never does the arithmetic here — it collects the
@@ -91,26 +91,93 @@ export const GROWTH_TIERS: readonly GrowthTier[] = [
   },
 ]
 
-export const NEEDS = ['photography', 'listing', 'accountManagement'] as const
+// ── Feature-level account management ────────────────────────────────────────
+// Buying one capability ("we only want you creating PO's") instead of a whole
+// tier. Derived from the tiers themselves: Premium - Basic = 2,500/mo for four
+// features, so ~625/mo each is the anchor, adjusted for how much ongoing labour
+// each one actually is.
+
+/**
+ * Charged whenever ANY account module is selected. It carries the fixed cost of
+ * holding account access, a named contact and monthly reporting — the work that
+ * exists no matter how little else is bought.
+ *
+ * Without it a single cheap module prices below the cost of servicing the
+ * client at all, and cherry-picking undercuts the packaged tiers. Every
+ * a-la-carte total must stay ABOVE the bundle it mirrors; scripts/check.ts
+ * asserts exactly that.
+ */
+export const ACCOUNT_BASE = { monthly: 1000 } as const
+
+export interface AccountModule {
+  key: ModuleKey
+  monthly: number
+  /** Charged once at the start, on top of `monthly`. */
+  oneTime: number
+  /**
+   * Whether this module directly drives the seller's revenue. Selecting one
+   * lifts the sales share from 1% to 2%, mirroring Basic vs Premium.
+   */
+  revenueDriving: boolean
+}
+
+export const MODULE_KEYS = [
+  'setup',
+  'uploading',
+  'returns',
+  'fba',
+  'purchase-orders',
+  'brand-registry',
+  'price-analysis',
+] as const
+export type ModuleKey = (typeof MODULE_KEYS)[number]
+
+export const ACCOUNT_MODULES: readonly AccountModule[] = [
+  // One-time only: setting an account up is not ongoing work.
+  { key: 'setup', monthly: 0, oneTime: 1500, revenueDriving: false },
+  { key: 'uploading', monthly: 900, oneTime: 0, revenueDriving: false },
+  { key: 'returns', monthly: 700, oneTime: 0, revenueDriving: false },
+  { key: 'fba', monthly: 1100, oneTime: 0, revenueDriving: true },
+  { key: 'purchase-orders', monthly: 700, oneTime: 0, revenueDriving: false },
+  // Enrolment is a one-off; the monthly covers ongoing brand monitoring.
+  { key: 'brand-registry', monthly: 500, oneTime: 800, revenueDriving: false },
+  { key: 'price-analysis', monthly: 800, oneTime: 0, revenueDriving: true },
+]
+
+/** Which modules each packaged account tier already covers. */
+const BASIC_COVERS: readonly ModuleKey[] = ['setup', 'uploading', 'returns']
+const PREMIUM_COVERS: readonly ModuleKey[] = [
+  ...BASIC_COVERS,
+  'fba',
+  'purchase-orders',
+  'brand-registry',
+  'price-analysis',
+]
+
+export const NEEDS = ['photography', 'listing'] as const
 export type Need = (typeof NEEDS)[number]
 
 export interface QuoteInput {
   /** How many products the seller wants covered. */
   productCount: number
-  needs: Need[]
+  /** One-time content work. */
+  content?: Need[]
+  /** Monthly account-management modules. */
+  modules?: ModuleKey[]
   /** Marketplaces the seller is on. Informational — it does not move the price. */
   platforms?: string[]
 }
 
+export type LineKey =
+  | 'content-listing'
+  | 'content-photography'
+  | 'content-full'
+  | 'account-base'
+  | `module-${ModuleKey}`
+
 export interface QuoteLine {
   /** Stable identifier; each consumer supplies its own localized label. */
-  key:
-    | 'content-listing'
-    | 'content-photography'
-    | 'content-full'
-    | 'account-monthly'
-    | 'growth-monthly'
-    | 'growth-extra-items'
+  key: LineKey
   qty: number
   /** Unit price in EGP. */
   rate: number
@@ -123,34 +190,40 @@ export interface QuoteLine {
 export interface Quote {
   /** A `SERVICE_OPTIONS` value — feeds `?plan=` and `leads.plan_interest`. */
   serviceKey: string
-  /** Human-facing plan name as it appears on the pricing cards. */
-  planName: string
   /** Which pricing model was selected. */
-  model: 'content' | 'account' | 'growth' | 'none'
+  model: 'content' | 'custom' | 'none'
   currency: typeof CURRENCY
   /** Total billed once, up front. */
   oneTime: number
   /** Total billed every month. */
   monthly: number
-  /**
-   * Share of managed sales, in percent, on top of `monthly`. `from` and `cap`
-   * are equal when the share is fixed and cannot escalate.
-   */
-  salesShare: { from: number; cap: number } | null
-  /** Products beyond the plan's included count, if any. */
-  overage: { count: number; rate: number; total: number } | null
+  /** Share of managed sales, in percent, on top of `monthly`. */
+  salesShare: number | null
   lines: QuoteLine[]
+  /**
+   * A packaged tier that covers everything selected for less money. Only
+   * account bundles are compared, and only on the recurring fee — that is the
+   * one apples-to-apples comparison available.
+   *
+   * Growth tiers are deliberately NOT compared: they bundle *ongoing* content
+   * for the whole catalogue, while a custom build prices content as a one-time
+   * batch. Putting the two totals side by side would tell most sellers custom
+   * is cheaper, which is both misleading and the opposite of protecting the
+   * packages.
+   */
+  betterBundle: { serviceKey: string; name: string; monthly: number; saving: number } | null
 }
 
 /** Products beyond this are a bespoke conversation, not a calculator result. */
 const MAX_PRODUCTS = 100_000
 
-const line = (
-  key: QuoteLine['key'],
-  qty: number,
-  rate: number,
-  recurring: boolean,
-): QuoteLine => ({ key, qty, rate, total: qty * rate, recurring })
+const line = (key: LineKey, qty: number, rate: number, recurring: boolean): QuoteLine => ({
+  key,
+  qty,
+  rate,
+  total: qty * rate,
+  recurring,
+})
 
 /**
  * Pick the smallest growth tier whose product cap covers the catalogue. Falls
@@ -164,101 +237,117 @@ export function growthTierFor(productCount: number): GrowthTier {
   )
 }
 
+/** The packaged tier that covers `modules` for less than `monthly`, if any. */
+function cheaperBundle(modules: ModuleKey[], monthly: number): Quote['betterBundle'] {
+  const within = (covers: readonly ModuleKey[]) => modules.every((m) => covers.includes(m))
+  const candidates = [
+    within(BASIC_COVERS) ? ACCOUNT_PLANS[0] : null,
+    within(PREMIUM_COVERS) ? ACCOUNT_PLANS[1] : null,
+  ].filter((p): p is (typeof ACCOUNT_PLANS)[number] => p !== null && p.monthly < monthly)
+
+  // Cheapest qualifying tier wins.
+  const best = candidates.sort((a, b) => a.monthly - b.monthly)[0]
+  return best
+    ? {
+        serviceKey: best.serviceKey,
+        name: best.name,
+        monthly: best.monthly,
+        saving: monthly - best.monthly,
+      }
+    : null
+}
+
 export function quote(input: QuoteInput): Quote {
   const productCount = Math.min(
     MAX_PRODUCTS,
     Math.max(0, Math.floor(input.productCount) || 0),
   )
-  const needs = new Set(input.needs ?? [])
-  const wantsPhotography = needs.has('photography')
-  const wantsListing = needs.has('listing')
-  const wantsAccount = needs.has('accountManagement')
+  const content = new Set((input.content ?? []).filter((c) => NEEDS.includes(c)))
+  // Preserve ACCOUNT_MODULES order so the quote reads the same way every time,
+  // whatever order the caller ticked the boxes in.
+  const modules = ACCOUNT_MODULES.filter((m) => (input.modules ?? []).includes(m.key)).map(
+    (m) => m.key,
+  )
+
+  const wantsPhotography = content.has('photography')
+  const wantsListing = content.has('listing')
   const wantsContent = wantsPhotography || wantsListing
+  const wantsAccount = modules.length > 0
 
-  const empty: Quote = {
-    serviceKey: 'not-sure',
-    planName: '',
-    model: 'none',
-    currency: CURRENCY,
-    oneTime: 0,
-    monthly: 0,
-    salesShare: null,
-    overage: null,
-    lines: [],
-  }
-
-  if (!wantsContent && !wantsAccount) return empty
-
-  // ── Content + account management → an all-in growth plan ──────────────────
-  // This is the bundle the growth tab exists for: buying the two separately
-  // always costs more than the plan that contains both.
-  if (wantsContent && wantsAccount) {
-    const tier = growthTierFor(productCount)
-    const extraCount = Math.max(0, productCount - tier.productCap)
-    const extraTotal = extraCount * tier.extraItemRate
-
+  if (!wantsContent && !wantsAccount) {
     return {
-      serviceKey: tier.serviceKey,
-      planName: tier.name,
-      model: 'growth',
+      serviceKey: 'not-sure',
+      model: 'none',
       currency: CURRENCY,
       oneTime: 0,
-      monthly: tier.monthly + extraTotal,
-      salesShare: { from: tier.salesShareFrom, cap: tier.salesShareCap },
-      overage: extraCount
-        ? { count: extraCount, rate: tier.extraItemRate, total: extraTotal }
-        : null,
-      lines: [
-        line('growth-monthly', 1, tier.monthly, true),
-        ...(extraCount
-          ? [line('growth-extra-items', extraCount, tier.extraItemRate, true)]
-          : []),
-      ],
+      monthly: 0,
+      salesShare: null,
+      lines: [],
+      betterBundle: null,
     }
   }
 
-  // ── Account management alone → monthly fee, content billed separately ─────
+  const lines: QuoteLine[] = []
+  let oneTime = 0
+  let monthly = 0
+
+  // ── Content: one-time, per item ──────────────────────────────────────────
+  if (wantsContent) {
+    const both = wantsPhotography && wantsListing
+    const rate = both
+      ? CONTENT_RATES.full
+      : wantsPhotography
+        ? CONTENT_RATES.photography
+        : CONTENT_RATES.listing
+    const key: LineKey = both
+      ? 'content-full'
+      : wantsPhotography
+        ? 'content-photography'
+        : 'content-listing'
+    lines.push(line(key, productCount, rate, false))
+    oneTime += productCount * rate
+  }
+
+  // ── Account management: base fee plus the chosen modules ─────────────────
+  let salesShare: number | null = null
   if (wantsAccount) {
-    // Heuristic, not a rule: a catalogue past the Starter product cap has
-    // enough moving parts (FBA, PO's, price analysis) to need the deeper tier.
-    const plan = productCount > GROWTH_TIERS[0].productCap ? ACCOUNT_PLANS[1] : ACCOUNT_PLANS[0]
-    return {
-      serviceKey: plan.serviceKey,
-      planName: plan.name,
-      model: 'account',
-      currency: CURRENCY,
-      oneTime: 0,
-      monthly: plan.monthly,
-      salesShare: { from: plan.salesShare, cap: plan.salesShare },
-      overage: null,
-      lines: [line('account-monthly', 1, plan.monthly, true)],
+    lines.push(line('account-base', 1, ACCOUNT_BASE.monthly, true))
+    monthly += ACCOUNT_BASE.monthly
+
+    let revenueDriving = false
+    for (const key of modules) {
+      const m = ACCOUNT_MODULES.find((x) => x.key === key)!
+      if (m.monthly) {
+        lines.push(line(`module-${m.key}`, 1, m.monthly, true))
+        monthly += m.monthly
+      }
+      if (m.oneTime) {
+        lines.push(line(`module-${m.key}`, 1, m.oneTime, false))
+        oneTime += m.oneTime
+      }
+      revenueDriving ||= m.revenueDriving
     }
+    // Mirrors the packaged tiers: Basic is 1%, Premium 2%. A custom build can
+    // never carry less share than the tier that covers the same capability.
+    salesShare = revenueDriving ? 2 : 1
   }
 
-  // ── Content alone → one-time, per item ────────────────────────────────────
-  const both = wantsPhotography && wantsListing
-  const rate = both
-    ? CONTENT_RATES.full
+  // Content-only selections keep their existing plan identity so the contact
+  // form still preselects the right option.
+  const contentOnlyKey = wantsPhotography && wantsListing
+    ? 'full-content'
     : wantsPhotography
-      ? CONTENT_RATES.photography
-      : CONTENT_RATES.listing
-  const key = both
-    ? ('content-full' as const)
-    : wantsPhotography
-      ? ('content-photography' as const)
-      : ('content-listing' as const)
-  const serviceKey = both ? 'full-content' : wantsPhotography ? 'photography' : 'listing'
-  const planName = both ? 'Full Content' : wantsPhotography ? 'Photography' : 'Listing'
+      ? 'photography'
+      : 'listing'
 
   return {
-    serviceKey,
-    planName,
-    model: 'content',
+    serviceKey: wantsAccount ? 'custom' : contentOnlyKey,
+    model: wantsAccount ? 'custom' : 'content',
     currency: CURRENCY,
-    oneTime: productCount * rate,
-    monthly: 0,
-    salesShare: null,
-    overage: null,
-    lines: [line(key, productCount, rate, false)],
+    oneTime,
+    monthly,
+    salesShare,
+    lines,
+    betterBundle: wantsAccount && !wantsContent ? cheaperBundle(modules, monthly) : null,
   }
 }

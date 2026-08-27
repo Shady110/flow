@@ -9,9 +9,12 @@ import { readFileSync } from 'node:fs'
 import { pricingTabs, defaultLandingContent } from '../data/landing-content.ts'
 import { SERVICE_OPTIONS, SERVICE_VALUES } from '../lib/service-options.ts'
 import {
+  ACCOUNT_BASE,
+  ACCOUNT_MODULES,
   ACCOUNT_PLANS,
   CONTENT_RATES,
   GROWTH_TIERS,
+  MODULE_KEYS,
   quote,
   growthTierFor,
 } from '../lib/pricing/quote.ts'
@@ -168,68 +171,118 @@ for (const file of ['messages/en.json', 'messages/ar.json']) {
   })
 
   // Content only — one-time, per item, no recurring fee.
-  assert.deepEqual(c(quote({ productCount: 50, needs: ['listing'] })), {
+  assert.deepEqual(c(quote({ productCount: 50, content: ['listing'] })), {
     key: 'listing',
     oneTime: 500,
     monthly: 0,
   })
-  assert.deepEqual(c(quote({ productCount: 50, needs: ['photography'] })), {
+  assert.deepEqual(c(quote({ productCount: 50, content: ['photography'] })), {
     key: 'photography',
     oneTime: 1500,
     monthly: 0,
   })
   // Both together must beat buying them separately (35 < 10 + 30).
-  const bundled = quote({ productCount: 50, needs: ['photography', 'listing'] })
+  const bundled = quote({ productCount: 50, content: ['photography', 'listing'] })
   assert.deepEqual(c(bundled), { key: 'full-content', oneTime: 1750, monthly: 0 })
   assert.ok(bundled.oneTime < 500 + 1500, 'the combined content package must be a discount')
 
-  // Account management alone — monthly + a fixed share, no one-time cost.
-  assert.deepEqual(c(quote({ productCount: 20, needs: ['accountManagement'] })), {
-    key: 'account-basic',
-    oneTime: 0,
+  // Garbage in must not produce a bill.
+  assert.equal(quote({ productCount: 10, content: [], modules: [] }).model, 'none')
+  assert.equal(quote({ productCount: -5, content: ['listing'] }).oneTime, 0)
+  assert.equal(quote({ productCount: 2.7, content: ['listing'] }).oneTime, 20)
+
+  // ── Feature-level account management ──────────────────────────────────────
+  // The headline case: buy one capability, not a whole tier.
+  const poOnly = quote({ productCount: 0, modules: ['purchase-orders'] })
+  assert.equal(poOnly.model, 'custom')
+  assert.equal(poOnly.serviceKey, 'custom')
+  assert.equal(poOnly.monthly, ACCOUNT_BASE.monthly + 700, 'PO only = base + PO module')
+  assert.equal(poOnly.monthly, 1700)
+  assert.equal(poOnly.salesShare, 1, 'no revenue-driving module selected -> 1%')
+  assert.equal(poOnly.betterBundle, null, 'no tier is cheaper than 1,700')
+
+  // The share mirrors Basic vs Premium: FBA or price analysis lifts it to 2%.
+  assert.equal(quote({ productCount: 0, modules: ['returns'] }).salesShare, 1)
+  assert.equal(quote({ productCount: 0, modules: ['fba'] }).salesShare, 2)
+  assert.equal(quote({ productCount: 0, modules: ['price-analysis'] }).salesShare, 2)
+  assert.equal(
+    quote({ productCount: 0, modules: ['returns', 'fba'] }).salesShare,
+    2,
+    'one revenue-driving module is enough to lift the share',
+  )
+  for (const m of ACCOUNT_MODULES) {
+    const q = quote({ productCount: 0, modules: [m.key] })
+    assert.ok(q.salesShare !== null && q.salesShare <= 2, `${m.key}: custom share must never exceed Premium's 2%`)
+  }
+
+  // One-time fees land in oneTime, never in the recurring total.
+  const setup = quote({ productCount: 0, modules: ['setup'] })
+  assert.equal(setup.oneTime, 1500)
+  assert.equal(setup.monthly, ACCOUNT_BASE.monthly, 'setup is one-time; only the base recurs')
+  const registry = quote({ productCount: 0, modules: ['brand-registry'] })
+  assert.equal(registry.oneTime, 800, 'Brand Registry enrolment is one-time')
+  assert.equal(registry.monthly, ACCOUNT_BASE.monthly + 500)
+
+  // ── The invariant that protects the packaged tiers ────────────────────────
+  // Nobody may cherry-pick their way under a bundle. Every a-la-carte mirror of
+  // a tier must cost MORE than the tier, and the builder must say so.
+  const basicMirror = quote({ productCount: 0, modules: ['setup', 'uploading', 'returns'] })
+  assert.ok(
+    basicMirror.monthly > ACCOUNT_PLANS[0].monthly,
+    `Basic-equivalent (${basicMirror.monthly}) must cost more than the Basic bundle (${ACCOUNT_PLANS[0].monthly})`,
+  )
+  assert.deepEqual(basicMirror.betterBundle, {
+    serviceKey: 'account-basic',
+    name: 'Basic',
     monthly: 2500,
-  })
-  assert.deepEqual(c(quote({ productCount: 300, needs: ['accountManagement'] })), {
-    key: 'account-premium',
-    oneTime: 0,
-    monthly: 5000,
+    saving: basicMirror.monthly - 2500,
   })
 
-  // Content + management → an all-in growth plan sized to the catalogue.
-  assert.equal(quote({ productCount: 40, needs: ['listing', 'accountManagement'] }).serviceKey, 'growth-starter')
-  assert.equal(quote({ productCount: 150, needs: ['listing', 'accountManagement'] }).serviceKey, 'growth')
-  const scale = quote({ productCount: 200, needs: ['photography', 'listing', 'accountManagement'] })
-  assert.equal(scale.serviceKey, 'growth-scale')
-  assert.equal(scale.monthly, 16000)
-  assert.equal(scale.overage, null, '200 products sits inside the Scale cap — no overage')
-  assert.deepEqual(scale.salesShare, { from: 2.5, cap: 5 })
+  const premiumMirror = quote({ productCount: 0, modules: [...MODULE_KEYS] })
+  assert.ok(
+    premiumMirror.monthly > ACCOUNT_PLANS[1].monthly,
+    `Premium-equivalent (${premiumMirror.monthly}) must cost more than the Premium bundle (${ACCOUNT_PLANS[1].monthly})`,
+  )
+  assert.equal(premiumMirror.betterBundle?.serviceKey, 'account-premium')
+  assert.equal(premiumMirror.monthly, 5700)
 
-  // Over the biggest cap: stay on Scale, bill the extras at its reduced rate.
-  const over = quote({ productCount: 500, needs: ['photography', 'listing', 'accountManagement'] })
-  assert.equal(over.serviceKey, 'growth-scale')
-  assert.deepEqual(over.overage, { count: 100, rate: 20, total: 2000 })
-  assert.equal(over.monthly, 18000)
+  // A selection Basic cannot cover must never be pointed at Basic.
+  const needsPremium = quote({ productCount: 0, modules: ['uploading', 'fba', 'price-analysis', 'returns', 'purchase-orders', 'brand-registry', 'setup'] })
+  assert.equal(needsPremium.betterBundle?.serviceKey, 'account-premium')
 
-  // Starter's share is flat; the others escalate but stay capped at 5%.
+  // Content + modules is a custom build; content stays one-time, modules recur.
+  const mixed = quote({ productCount: 100, content: ['photography', 'listing'], modules: ['uploading'] })
+  assert.equal(mixed.model, 'custom')
+  assert.equal(mixed.oneTime, 100 * 35)
+  assert.equal(mixed.monthly, ACCOUNT_BASE.monthly + 900)
+  assert.equal(
+    mixed.betterBundle,
+    null,
+    'a build that includes content is never compared to an account-only tier',
+  )
+
+  // Line items must reconcile with the totals, or the breakdown lies.
+  for (const q of [poOnly, setup, registry, basicMirror, premiumMirror, mixed]) {
+    const rec = q.lines.filter((l) => l.recurring).reduce((s, l) => s + l.total, 0)
+    const once = q.lines.filter((l) => !l.recurring).reduce((s, l) => s + l.total, 0)
+    assert.equal(rec, q.monthly, `${q.serviceKey}: recurring lines do not sum to monthly`)
+    assert.equal(once, q.oneTime, `${q.serviceKey}: one-time lines do not sum to oneTime`)
+  }
+
+  // Growth tiers must be ordered by ascending cap — growthTierFor() takes the
+  // first tier that fits and would otherwise pick a plan that is too small.
+  assert.equal(growthTierFor(40).serviceKey, 'growth-starter')
+  assert.equal(growthTierFor(150).serviceKey, 'growth')
+  assert.equal(growthTierFor(5000).serviceKey, 'growth-scale')
   assert.deepEqual(growthTierFor(10).salesShareFrom, growthTierFor(10).salesShareCap)
   for (const tier of GROWTH_TIERS) {
     assert.ok(tier.salesShareCap <= 5, `${tier.serviceKey}: sales share cap must not exceed 5%`)
     assert.ok(tier.salesShareFrom <= tier.salesShareCap, `${tier.serviceKey}: share starts above its cap`)
   }
 
-  // Garbage in must not produce a bill.
-  assert.equal(quote({ productCount: 10, needs: [] }).model, 'none')
-  assert.equal(quote({ productCount: -5, needs: ['listing'] }).oneTime, 0)
-  assert.equal(quote({ productCount: 2.7, needs: ['listing'] }).oneTime, 20)
-
   // Every serviceKey the calculator can emit must be a real contact-form option,
   // or the CTA it produces sends a lead with an unusable plan_interest.
-  const emitted = [
-    ...['listing', 'photography', 'full-content'],
-    ...ACCOUNT_PLANS.map((p) => p.serviceKey),
-    ...GROWTH_TIERS.map((t) => t.serviceKey),
-    'not-sure',
-  ]
+  const emitted = ['listing', 'photography', 'full-content', 'custom', 'not-sure']
   for (const key of emitted) {
     assert.ok(SERVICE_VALUES.includes(key), `quote() can emit "${key}", which is not a service option`)
   }

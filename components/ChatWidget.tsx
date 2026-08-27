@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { MessageCircle, X, Send, Check } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
+import { track } from '@/lib/tracking/visitor'
 
 /**
  * The public website chatbot. Grounded in the company handbook + the live rate
@@ -31,11 +32,15 @@ export default function ChatWidget() {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [captured, setCaptured] = useState(false)
+  // Next steps the model offered on its last reply, rendered as chips.
+  const [suggestions, setSuggestions] = useState<string[]>([])
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (open) inputRef.current?.focus()
+    if (!open) return
+    inputRef.current?.focus()
+    track({ type: 'chat_opened' })
   }, [open])
 
   useEffect(() => {
@@ -58,6 +63,9 @@ export default function ChatWidget() {
     setMessages(next)
     setDraft('')
     setError(null)
+    // Drop the old chips immediately: they belong to the previous answer and
+    // tapping a stale one mid-request sends the conversation sideways.
+    setSuggestions([])
     setPending(true)
 
     try {
@@ -72,6 +80,7 @@ export default function ChatWidget() {
         return
       }
       setMessages([...next, { role: 'model', content: data.reply }])
+      setSuggestions(Array.isArray(data.suggestions) ? data.suggestions.slice(0, 4) : [])
       if (data.leadCaptured) setCaptured(true)
     } catch {
       setError(t('error'))
@@ -80,7 +89,8 @@ export default function ChatWidget() {
     }
   }
 
-  const quickReplies = [t('quickPricing'), t('quickPackage'), t('quickHuman')]
+  const openingMenu = [t('quickPricing'), t('quickPackage'), t('quickHuman')]
+  const chips = messages.length === 0 ? openingMenu : suggestions
 
   return (
     <>
@@ -102,32 +112,22 @@ export default function ChatWidget() {
                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime
                    focus-visible:ring-offset-2"
       >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.span
-            key={open ? 'close' : 'open'}
-            initial={{ rotate: -90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: 90, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-          </motion.span>
-        </AnimatePresence>
+        {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </motion.button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            role="dialog"
-            aria-label={t('title')}
-            initial={{ opacity: 0, y: 16, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-24 end-5 z-50 flex w-[min(24rem,calc(100vw-2.5rem))]
-                       h-[min(34rem,calc(100vh-9rem))] flex-col overflow-hidden rounded-3xl
-                       border border-flow-border bg-flow-bg shadow-2xl shadow-flow-green/20"
-          >
+      {/* Plain div with a CSS entry animation, not motion.div. framer applies
+          `initial` as an inline style, so a panel that never finishes animating
+          stays at opacity 0 — open, correctly positioned, and invisible. The
+          launcher had the same bug. Visibility must not depend on rAF. */}
+      {open && (
+        <div
+          role="dialog"
+          aria-label={t('title')}
+          className="animate-chat-panel-in fixed bottom-24 end-5 z-50 flex
+                     w-[calc(100vw-2.5rem)] max-w-sm
+                     h-[calc(100vh-9rem)] max-h-[34rem] flex-col overflow-hidden rounded-3xl
+                     border border-flow-border bg-flow-bg shadow-2xl shadow-flow-green/20"
+        >
             {/* Header */}
             <div className="flex items-center gap-3 border-b border-flow-border bg-flow-green px-4 py-3.5">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-flow-lime text-flow-green">
@@ -160,11 +160,10 @@ export default function ChatWidget() {
               {pending && (
                 <div className="flex w-fit gap-1 rounded-2xl rounded-es-md border border-flow-border bg-white px-4 py-3">
                   {[0, 1, 2].map((i) => (
-                    <motion.span
+                    <span
                       key={i}
-                      className="h-1.5 w-1.5 rounded-full bg-flow-text-muted"
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                      className="h-1.5 w-1.5 animate-pulse rounded-full bg-flow-text-muted"
+                      style={{ animationDelay: `${i * 0.2}s` }}
                     />
                   ))}
                 </div>
@@ -183,9 +182,11 @@ export default function ChatWidget() {
                 </p>
               )}
 
-              {messages.length === 0 && !pending && (
+              {/* The opening menu sets direction; after that the model supplies
+                  the next steps, so we are steering rather than waiting. */}
+              {chips.length > 0 && !pending && (
                 <div className="mt-1 flex flex-wrap gap-2">
-                  {quickReplies.map((q) => (
+                  {chips.map((q) => (
                     <button
                       key={q}
                       type="button"
@@ -232,9 +233,8 @@ export default function ChatWidget() {
                 <Send className="h-4 w-4 rtl:-scale-x-100" />
               </button>
             </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </>
   )
 }
