@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/chat': ['./docs/**'],
   },
+  // The dev-tools badge defaults to bottom-right, exactly where the chat
+  // launcher sits — it covers the button and steals its clicks in development.
+  devIndicators: { position: 'bottom-left' },
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
@@ -27,10 +30,12 @@ const nextConfig: NextConfig = {
             key: 'X-Robots-Tag',
             value: 'index, follow',
           },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
+          // No Cache-Control here on purpose. This rule matches EVERY route, so
+          // a blanket `immutable, max-age=1y` told browsers to cache HTML, RSC
+          // payloads and API responses for a year and never revalidate — a
+          // returning visitor kept seeing a stale page and never picked up a
+          // deploy. Next already sends exactly this header for the one thing it
+          // is safe on, the content-hashed assets under /_next/static.
         ],
       },
     ]

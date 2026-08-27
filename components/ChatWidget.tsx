@@ -90,9 +90,10 @@ export default function ChatWidget() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? t('close') : t('open')}
         aria-expanded={open}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
+        // No entrance animation: an `initial` of opacity/scale 0 means a
+        // launcher that is invisible until framer runs, and anything that stops
+        // it running (backgrounded tab, a JS error above it) leaves the button
+        // permanently gone. Chrome must not depend on an animation to exist.
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className="fixed bottom-5 end-5 z-50 grid h-14 w-14 place-items-center rounded-full
