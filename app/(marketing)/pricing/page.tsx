@@ -15,6 +15,13 @@ const PackageBuilderSection = dynamic(() => import('@/components/PackageBuilderS
   loading: () => <div className="h-96 animate-pulse rounded-xl bg-flow-bg-soft" />,
 })
 
+// /pricing carries its own contact form. Without it every plan CTA had to throw
+// the visitor back to the landing page to convert — a full route change away
+// from the prices they were reading. The form belongs where the decision is made.
+const ContactSection = dynamic(() => import('@/components/ContactSection'), {
+  loading: () => <div className="h-96 animate-pulse rounded-xl bg-flow-bg-soft" />,
+})
+
 export const metadata: Metadata = {
   title: 'Pricing | Product Content & Marketplace Management Egypt',
   description:
@@ -44,6 +51,7 @@ export default async function PricingPage() {
       {/* The fixed plans first, then the builder for anyone none of them fits. */}
       <PricingSection content={content.pricing} />
       <PackageBuilderSection />
+      <ContactSection content={content.contact} />
       <Footer />
     </main>
   )

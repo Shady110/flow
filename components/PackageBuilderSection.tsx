@@ -353,7 +353,7 @@ export default function PackageBuilderSection() {
 
                 <MagneticButton className="mt-7 w-full">
                   <Link
-                    href={`/?plan=${result.serviceKey}#contact`}
+                    href={`?plan=${result.serviceKey}#contact`}
                     // Recorded on the click, not on every slider tick — this is
                     // the point where a configuration became an intent.
                     onClick={() =>
