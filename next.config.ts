@@ -12,9 +12,12 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/chat': ['./docs/**'],
   },
-  // The dev-tools badge defaults to bottom-right, exactly where the chat
-  // launcher sits — it covers the button and steals its clicks in development.
-  devIndicators: { position: 'bottom-left' },
+  // Keep the dev-tools badge out of BOTH bottom corners. Bottom-right is the
+  // chat launcher (which it used to cover and steal clicks from) and bottom-left
+  // is the cookie banner — and a dark circular badge sitting in either corner
+  // reads as a second floating button, which is exactly how it got mistaken for
+  // the chatbot. It only exists in development; production has one button.
+  devIndicators: { position: 'top-left' },
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
