@@ -26,6 +26,14 @@ const ContactSection = dynamic(
   { loading: () => <div className="h-96 animate-pulse bg-flow-bg-soft rounded-xl" /> }
 )
 
+const PackageBuilderSection = dynamic(
+  () => import('@/components/PackageBuilderSection'),
+  { loading: () => <div className="h-96 animate-pulse bg-flow-bg-soft rounded-xl" /> }
+)
+
+// Chrome, not content: it must not block the page or ship in the first payload.
+const ChatWidget = dynamic(() => import('@/components/ChatWidget'))
+
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
@@ -67,12 +75,16 @@ export default async function Home() {
       {/* Pricing sits straight after Services: once someone understands what we
           do, the plans are the next thing they want — not 3 sections later. */}
       <PricingSection content={content.pricing} />
+      {/* Straight after the fixed plans: someone who just decided none of the
+          three tabs fits them is exactly who the configurator is for. */}
+      <PackageBuilderSection pricing={content.pricing} />
       <PortfolioGridSection />
       <WorkflowSection />
       {/* <TeamSection /> hidden until the full team photo is ready */}
       <FAQSection content={content.faq} />
       <ContactSection content={content.contact} />
       <Footer />
+      <ChatWidget />
     </main>
   )
 }

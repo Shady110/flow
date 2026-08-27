@@ -166,6 +166,60 @@
       "platformOptions": {
         "other": "Other"
       }
+    },
+    "chat": {
+      "title": "FLOW Assistant",
+      "subtitle": "Usually replies instantly",
+      "open": "Open chat",
+      "close": "Close chat",
+      "greeting": "Hi — I am FLOW’s assistant. Ask me about our services, pricing, or how we work. Tell me what you sell and I can put a package together for you.",
+      "placeholder": "Ask about pricing, services…",
+      "send": "Send",
+      "quickPricing": "How much does it cost?",
+      "quickPackage": "Build me a package",
+      "quickHuman": "Talk to a human",
+      "error": "Something went wrong. Please try again.",
+      "rateLimited": "Too many messages. Please try again in a few minutes.",
+      "leadCaptured": "The team has your details"
+    },
+    "packageBuilder": {
+      "eyebrow": "Custom Package",
+      "heading": "Build your own package.",
+      "accent": [
+        "own"
+      ],
+      "intro": "Not every catalogue fits a ready-made plan. Pick what you actually need and see the price straight away — calculated from our published rates, not a sales guess.",
+      "productsLabel": "How many products?",
+      "productsHint": "Drag to set your catalogue size. More than 500? Talk to us and we will scope it.",
+      "needsLabel": "What do you need?",
+      "needs": {
+        "photography": "Photography",
+        "listing": "Listing copy",
+        "accountManagement": "Account management"
+      },
+      "needsHint": {
+        "photography": "Studio photos on white, 3–5 per product",
+        "listing": "Bilingual SEO titles, bullets and descriptions",
+        "accountManagement": "We run your seller account end to end"
+      },
+      "platformsLabel": "Where do you sell?",
+      "resultTitle": "Your package",
+      "empty": "Pick at least one service to see your price.",
+      "perMonth": "/ month",
+      "oneTime": "one-time",
+      "salesShareFixed": "+ {from}% of sales — fixed, it never rises",
+      "salesShareRange": "+ {from}% of sales, rising to {cap}% only as we hit your KPIs",
+      "lines": {
+        "content-listing": "Listing copy",
+        "content-photography": "Studio photography",
+        "content-full": "Photography + listing",
+        "account-monthly": "Account management",
+        "growth-monthly": "Monthly plan",
+        "growth-extra-items": "Extra products"
+      },
+      "overage": "{count} products beyond the plan, billed at {rate} EGP each instead of the full rate.",
+      "cta": "Get this package",
+      "disclaimer": "An estimate from our published rates. We will confirm the final scope with you."
     }
   },
   "internal": {

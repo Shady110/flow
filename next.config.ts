@@ -6,6 +6,12 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
+  // The chatbot reads the company handbook off disk at request time
+  // (lib/ai/knowledge.ts). Without this the .md files are not traced into the
+  // serverless bundle and the route throws ENOENT in production only.
+  outputFileTracingIncludes: {
+    '/api/chat': ['./docs/**'],
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,

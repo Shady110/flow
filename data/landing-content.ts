@@ -438,7 +438,7 @@ const en: LandingContent = {
       {
         question: 'How does per-product pricing work?',
         answer:
-          'Content is priced per product so you only pay for what you send us. Listing optimization starts at 15 EGP, studio photography at 30 EGP, and the complete photo + listing package at 40 EGP — with bulk discounts as low as 20 EGP per product on large batches.',
+          'Content is priced per product so you only pay for what you send us. Listing copy is 10 EGP per item, studio photography 30 EGP, and the complete photo + listing package 35 EGP. On a monthly growth plan photography and listings are included, and any products beyond your plan’s count are billed at a reduced rate — as low as 20 EGP per item on Scale.',
       },
       {
         question: 'How long does a typical batch take?',
@@ -774,7 +774,7 @@ const ar: LandingContent = {
       {
         question: 'كيف يعمل التسعير لكل منتج؟',
         answer:
-          'يُحسب سعر المحتوى لكل منتج فتدفع فقط مقابل ما ترسله لنا. يبدأ تحسين القائمة من 15 ج.م، وتصوير الاستوديو من 30 ج.م، والباقة المتكاملة (صور + قائمة) بـ 40 ج.م — مع خصومات للكميات تصل إلى 20 ج.م لكل منتج في الدفعات الكبيرة.',
+          'يُحسب سعر المحتوى لكل منتج فتدفع فقط مقابل ما ترسله لنا. كتابة القائمة 10 ج.م لكل منتج، وتصوير الاستوديو 30 ج.م، والباقة المتكاملة (صور + قائمة) 35 ج.م. ومع خطة نمو شهرية يصبح التصوير والقوائم مشمولين، وتُحسب المنتجات الزائدة عن عدد خطتك بسعر مخفّض يصل إلى 20 ج.م لكل منتج في خطة Scale.',
       },
       {
         question: 'كم يستغرق تنفيذ الدفعة عادةً؟',
