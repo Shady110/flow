@@ -2,13 +2,24 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, SlidersHorizontal } from 'lucide-react'
 import { fadeUp, staggerContainer, revealUp } from '@/lib/animations'
 import { cn } from '@/lib/utils'
 import Counter from './ui/Counter'
 import MagneticButton from './ui/MagneticButton'
 import RevealHeading from './ui/RevealHeading'
+import { useTranslations } from 'next-intl'
 import { pricingTabs, type PricingContent, type PricingPlan } from '@/data/landing-content'
+import PackageBuilderSection from './PackageBuilderSection'
+
+/**
+ * The builder rides in as a fourth tab rather than a separate section below the
+ * plans: someone deciding none of the three packages fits them is already
+ * looking at the tab bar, so that is where the alternative belongs.
+ *
+ * Its id cannot collide with a tab id from the editable landing blob.
+ */
+const CUSTOM_TAB = '__custom__'
 
 function Price({ plan, featured }: { plan: PricingPlan; featured?: boolean }) {
   const color = featured ? 'text-white' : 'text-flow-green'
@@ -179,36 +190,41 @@ export default function PricingSection({ content }: { content: PricingContent })
   const [activeId, setActiveId] = useState(
     () => tabs.find((t) => t.id === content.defaultTab)?.id ?? tabs[0]?.id,
   )
-  const active = tabs.find((t) => t.id === activeId) ?? tabs[0]
+  // Undefined on the custom tab: that one renders the builder in place of the
+  // plan grid, so everything driven by a tab's plans is guarded on it.
+  const active =
+    activeId === CUSTOM_TAB ? undefined : (tabs.find((t) => t.id === activeId) ?? tabs[0])
   const monthly = tabs.find((t) => t.id === content.defaultTab)
-
-  if (!active) return null
+  const tb = useTranslations('marketing.packageBuilder')
 
   return (
     <section id="pricing" className="section-padding bg-flow-bg-soft">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+        {/* Heading only. The numbered eyebrow belonged to the landing page's
+            section sequence and means nothing on a dedicated /pricing route,
+            and the subheading repeated what the tabs and cards already say —
+            together they pushed the plans most of a screen down. Each tab's
+            own tagline still carries the detail. */}
         <motion.div
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}
           custom={0}
-          className="flex flex-col items-center text-center mb-10"
+          className="mb-6 flex flex-col items-center text-center"
         >
-          <span className="eyebrow-index mb-6" data-index="04">{content.eyebrow}</span>
-          <RevealHeading text={content.heading} accent={content.accent} className="section-title mt-6 mb-4" />
-          <p className="text-flow-text-muted text-base leading-relaxed max-w-2xl mx-auto">{content.subheading}</p>
+          <RevealHeading text={content.heading} accent={content.accent} className="section-title" />
         </motion.div>
 
-        {tabs.length > 1 && (
-          <div className="mb-4 flex justify-center">
+        {tabs.length > 0 && (
+          <div className="mb-6">
             <div
               role="tablist"
               aria-label={content.eyebrow}
-              className="inline-flex w-full max-w-2xl flex-col gap-2 rounded-2xl border border-flow-border bg-white p-2 shadow-[var(--shadow-sm)] sm:flex-row"
+              className="flex w-full flex-col gap-2 rounded-2xl border border-flow-border bg-white p-2 shadow-[var(--shadow-sm)] sm:flex-row"
             >
               {tabs.map((tab) => {
-                const on = tab.id === active.id
+                const on = tab.id === active?.id
                 return (
                   <button
                     key={tab.id}
@@ -237,11 +253,38 @@ export default function PricingSection({ content }: { content: PricingContent })
                   </button>
                 )
               })}
+              <button
+                role="tab"
+                type="button"
+                aria-selected={activeId === CUSTOM_TAB}
+                onClick={() => setActiveId(CUSTOM_TAB)}
+                className={cn(
+                  'flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-colors',
+                  activeId === CUSTOM_TAB
+                    ? 'bg-flow-green text-white shadow-[var(--shadow-sm)]'
+                    : 'text-flow-text-muted hover:bg-flow-bg-muted hover:text-flow-green',
+                )}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                {tb('tabLabel')}
+                <span
+                  className={cn(
+                    'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                    activeId === CUSTOM_TAB
+                      ? 'bg-flow-lime text-flow-green'
+                      : 'bg-flow-lime/40 text-flow-green',
+                  )}
+                >
+                  {tb('tabBadge')}
+                </span>
+              </button>
             </div>
           </div>
         )}
 
-        {active.tagline && (
+        {activeId === CUSTOM_TAB && <PackageBuilderSection embedded />}
+
+        {active?.tagline && (
           <p className="mx-auto mb-8 max-w-2xl text-center text-sm leading-relaxed text-flow-text-muted">
             {active.tagline}
           </p>
@@ -250,6 +293,7 @@ export default function PricingSection({ content }: { content: PricingContent })
         {/* Uniform, scalable grid — every plan is an equal card; add/remove from
             the dashboard and the layout reflows. No scaled/overlapping cards.
             Re-keyed on the tab so the cards animate in on every switch. */}
+        {active && (
         <motion.div
           key={active.id}
           role="tabpanel"
@@ -266,8 +310,9 @@ export default function PricingSection({ content }: { content: PricingContent })
             <PlanCard key={plan.name} plan={plan} />
           ))}
         </motion.div>
+        )}
 
-        {active.footnote && (
+        {active?.footnote && (
           <div className="mt-8 flex flex-col items-center gap-3 text-center">
             <p className="text-sm text-flow-text-muted">{active.footnote}</p>
             {monthly && monthly.id !== active.id && (

@@ -8,7 +8,6 @@ import {
   Camera,
   FileText,
   Check,
-  Settings,
   Upload,
   RotateCcw,
   Boxes,
@@ -51,7 +50,6 @@ const CONTENT_ICONS: Record<Need, typeof Camera> = {
 }
 
 const MODULE_ICONS: Record<ModuleKey, typeof Camera> = {
-  setup: Settings,
   uploading: Upload,
   returns: RotateCcw,
   fba: Boxes,
@@ -64,7 +62,7 @@ const MODULE_ICONS: Record<ModuleKey, typeof Camera> = {
 // so the builder's totals read identically to the plan cards.
 const money = (n: number) => n.toLocaleString('en-US')
 
-export default function PackageBuilderSection() {
+export default function PackageBuilderSection({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations('marketing.packageBuilder')
   const [productCount, setProductCount] = useState(50)
   const [content, setContent] = useState<Need[]>(['photography', 'listing'])
@@ -72,19 +70,19 @@ export default function PackageBuilderSection() {
   const [platforms, setPlatforms] = useState<string[]>(['Amazon'])
 
   const result = useMemo(
-    () => quote({ productCount, content, modules, platforms }),
+    () => quote({ productCount, content, modules, platforms, contentBilling: 'monthly' }),
     [productCount, content, modules, platforms],
   )
 
   const toggle = <T,>(list: T[], value: T): T[] =>
     list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
 
-  const monthlyLines = result.lines.filter((l) => l.recurring)
-  const oneTimeLines = result.lines.filter((l) => !l.recurring)
+  // Every line of a custom plan recurs — quote() bills content monthly the
+  // moment this builder is involved, so there is no one-time column to render.
+  const monthlyLines = result.lines
 
-  return (
-    <section id="build" className="section-padding bg-flow-bg-soft">
-      <div className="mx-auto grid max-w-7xl items-start gap-12 px-5 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
+  const body = (
+    <div className="mx-auto grid max-w-7xl items-start gap-12 lg:grid-cols-12 lg:gap-16">
         {/* ── Controls ───────────────────────────────────────────────── */}
         <motion.div
           variants={fadeUp}
@@ -93,14 +91,18 @@ export default function PackageBuilderSection() {
           viewport={{ once: true, amount: 0.15 }}
           className="lg:col-span-7"
         >
-          <span className="eyebrow-index mb-6" data-index="02">
-            {t('eyebrow')}
-          </span>
-          <RevealHeading
-            text={t('heading')}
-            accent={t.raw('accent') as string[]}
-            className="section-title mt-6 mb-5"
-          />
+          {!embedded && (
+            <>
+              <span className="eyebrow-index mb-6" data-index="02">
+                {t('eyebrow')}
+              </span>
+              <RevealHeading
+                text={t('heading')}
+                accent={t.raw('accent') as string[]}
+                className="section-title mt-6 mb-5"
+              />
+            </>
+          )}
           <p className="mb-10 max-w-xl text-base leading-relaxed text-flow-text-muted">
             {t('intro')}
           </p>
@@ -146,7 +148,8 @@ export default function PackageBuilderSection() {
               })}
             </div>
 
-            {/* Product count only matters once content is selected. */}
+            {/* Content is billed per product per month, so the count is only
+                meaningful while some content is selected. */}
             {content.length > 0 && (
               <div className="mt-5 rounded-2xl border border-flow-border bg-white p-5">
                 <div className="mb-3 flex items-baseline justify-between gap-4">
@@ -279,61 +282,36 @@ export default function PackageBuilderSection() {
                   {t('customPlanName')}
                 </p>
 
-                {/* Monthly */}
-                {monthlyLines.length > 0 && (
-                  <div className="mt-6 border-t border-white/10 pt-6">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
-                      {t('monthlyTitle')}
+                {/* One figure. The whole point of this tab. */}
+                <div className="mt-6 border-t border-white/10 pt-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
+                    {t('monthlyTitle')}
+                  </p>
+                  <p className="mt-1 font-display text-4xl font-bold text-white">
+                    {money(result.monthly)}
+                    <span className="text-lg font-semibold text-white/60"> {result.currency}</span>
+                    <span className="text-base font-normal text-white/50"> {t('perMonth')}</span>
+                  </p>
+                  {result.salesShare !== null && (
+                    <p className="mt-2 text-sm text-flow-lime">
+                      {t('salesShare', { share: result.salesShare })}
                     </p>
-                    <p className="mt-1 font-display text-4xl font-bold text-white">
-                      {money(result.monthly)}
-                      <span className="text-lg font-semibold text-white/60"> {result.currency}</span>
-                      <span className="text-base font-normal text-white/50"> {t('perMonth')}</span>
-                    </p>
-                    {result.salesShare !== null && (
-                      <p className="mt-2 text-sm text-flow-lime">
-                        {t('salesShare', { share: result.salesShare })}
-                      </p>
-                    )}
-                    <ul className="mt-4 space-y-2">
-                      {monthlyLines.map((l) => (
-                        <li key={l.key} className="flex items-start justify-between gap-4 text-sm">
-                          <span className="text-white/70">{t(`lines.${l.key}`)}</span>
-                          <span className="shrink-0 font-medium text-white">
-                            {money(l.total)} {result.currency}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* One-time */}
-                {oneTimeLines.length > 0 && (
-                  <div className="mt-6 border-t border-white/10 pt-6">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
-                      {t('oneTimeTitle')}
-                    </p>
-                    <p className="mt-1 font-display text-4xl font-bold text-white">
-                      {money(result.oneTime)}
-                      <span className="text-lg font-semibold text-white/60"> {result.currency}</span>
-                      <span className="text-base font-normal text-white/50"> {t('oneTime')}</span>
-                    </p>
-                    <ul className="mt-4 space-y-2">
-                      {oneTimeLines.map((l) => (
-                        <li key={l.key} className="flex items-start justify-between gap-4 text-sm">
-                          <span className="text-white/70">
-                            {t(`lines.${l.key}`)}
-                            {l.qty > 1 && <span className="text-white/40"> × {money(l.qty)}</span>}
-                          </span>
-                          <span className="shrink-0 font-medium text-white">
-                            {money(l.total)} {result.currency}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                  )}
+                  <ul className="mt-4 space-y-2">
+                    {monthlyLines.map((l) => (
+                      <li key={l.key} className="flex items-start justify-between gap-4 text-sm">
+                        <span className="text-white/70">
+                          {t(`lines.${l.key}`)}
+                          {l.qty > 1 && <span className="text-white/40"> × {money(l.qty)}</span>}
+                        </span>
+                        <span className="shrink-0 font-medium text-white">
+                          {money(l.total)} {result.currency}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 text-xs leading-relaxed text-white/40">{t('allMonthly')}</p>
+                </div>
 
                 {/* A packaged tier that covers the same ground for less. Surfacing
                     it is the honest move and stops the builder undercutting the
@@ -378,7 +356,14 @@ export default function PackageBuilderSection() {
             )}
           </div>
         </motion.div>
-      </div>
+    </div>
+  )
+
+  if (embedded) return body
+
+  return (
+    <section id="build" className="section-padding bg-flow-bg-soft">
+      <div className="px-5 sm:px-6 lg:px-8">{body}</div>
     </section>
   )
 }
