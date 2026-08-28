@@ -121,6 +121,12 @@ export interface ChatTurn {
   text: string
   /** Tool calls the model wants executed before it can answer. */
   functionCalls: FunctionCall[]
+  /**
+   * Why generation stopped. Anything other than STOP with no text — SAFETY,
+   * MAX_TOKENS, RECITATION — means the model produced nothing usable and the
+   * caller has to recover rather than hand the visitor an empty bubble.
+   */
+  finishReason?: string
 }
 
 /**
@@ -153,7 +159,11 @@ export async function chat(
   }
 
   return {
-    value: { text: res.text ?? '', functionCalls: res.functionCalls ?? [] },
+    value: {
+      text: res.text ?? '',
+      functionCalls: res.functionCalls ?? [],
+      finishReason: res.candidates?.[0]?.finishReason as string | undefined,
+    },
     usage: readUsage(res, TEXT_MODEL),
   }
 }

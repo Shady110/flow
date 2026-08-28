@@ -28,7 +28,23 @@ const MAX_MESSAGE_CHARS = 1000
 const MAX_HISTORY = 12
 /** Tool round-trips per request. Two is enough for quote-then-answer. */
 const MAX_TOOL_ROUNDS = 2
+/** Model calls per request: the tool rounds, the answer, plus one recovery. */
+const MAX_ROUNDS = 4
+
+/**
+ * Sent when the model returns an entirely blank turn, to give it different
+ * input than the one that just failed.
+ */
+const NUDGE =
+  'Answer the visitor now, in plain words, using the tool result above. ' +
+  'Do not call any more tools.'
 const RATE_LIMIT = { max: 20, windowMs: 10 * 60 * 1000 }
+
+/** Shown when the model returns nothing usable on every round. */
+const BLANK_FALLBACK: Record<string, string> = {
+  en: 'Sorry — I lost that one. Could you ask again, or put it a different way? If it is urgent, the team is on the contact form at the bottom of the page.',
+  ar: 'عذرًا، لم أتمكّن من الرد على ذلك. هل يمكنك سؤالي مرة أخرى أو بصيغة مختلفة؟ وإن كان الأمر عاجلًا فالفريق متاح عبر نموذج التواصل أسفل الصفحة.',
+}
 
 const BodySchema = z.object({
   messages: z
@@ -278,54 +294,91 @@ export async function POST(req: NextRequest) {
   try {
     const systemInstruction = await buildSystemPrompt(locale)
     let reply = ''
+    let lastFinish: string | undefined
+    let rounds = 0
 
-    for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
+    let toolRounds = 0
+    let nudged = false
+
+    for (let round = 0; round < MAX_ROUNDS; round++) {
+      const useTools = toolRounds < MAX_TOOL_ROUNDS
       const { value, usage } = await chat(contents, {
         systemInstruction,
-        // Drop the tools on the final round so the model is forced to answer
-        // in words rather than asking for another call it will never get.
-        tools: round < MAX_TOOL_ROUNDS ? TOOLS : undefined,
+        tools: useTools ? TOOLS : undefined,
       })
+      lastFinish = value.finishReason
+      rounds = round + 1
       total.model = usage.model
       total.inputTokens += usage.inputTokens
       total.outputTokens += usage.outputTokens
 
-      if (!value.functionCalls.length) {
+      if (value.functionCalls.length) {
+        toolRounds++
+        contents.push({
+          role: 'model',
+          parts: value.functionCalls.map((fc) => ({ functionCall: fc })),
+        })
+
+        // One user turn carrying every functionResponse. Gemini pairs the
+        // responses to the calls positionally within a single turn; emitting a
+        // separate turn per call breaks that pairing on parallel calls.
+        const responses = []
+        for (const call of value.functionCalls) {
+          const args = (call.args ?? {}) as Args
+          let result: unknown
+          if (call.name === 'build_quote') {
+            result = runQuote(args)
+          } else if (call.name === 'capture_lead') {
+            const res = await captureLead(args, transcript, visitorId)
+            leadCaptured ||= res.ok
+            result = res.ok
+              ? { ok: true, message: 'The team has been notified and will reach out shortly.' }
+              : { ok: false, message: 'Could not save. Ask for a name plus a phone number or email.' }
+          } else {
+            result = { error: 'Unknown tool.' }
+          }
+          responses.push({ functionResponse: { name: call.name ?? '', response: { result } } })
+        }
+        contents.push({ role: 'user', parts: responses })
+
+        // Anything said alongside the call is a fallback if the next round is blank.
+        if (value.text.trim()) reply = value.text
+        continue
+      }
+
+      if (value.text.trim()) {
         reply = value.text
         break
       }
 
-      contents.push({ role: 'model', parts: value.functionCalls.map((fc) => ({ functionCall: fc })) })
-      for (const call of value.functionCalls) {
-        const args = (call.args ?? {}) as Args
-        let result: unknown
-        if (call.name === 'build_quote') {
-          result = runQuote(args)
-        } else if (call.name === 'capture_lead') {
-          const res = await captureLead(args, transcript, visitorId)
-          leadCaptured ||= res.ok
-          result = res.ok
-            ? { ok: true, message: 'The team has been notified and will reach out shortly.' }
-            : { ok: false, message: 'Could not save. Ask for a name plus a phone number or email.' }
-        } else {
-          result = { error: 'Unknown tool.' }
-        }
-        contents.push({
-          role: 'user',
-          parts: [{ functionResponse: { name: call.name ?? '', response: { result } } }],
-        })
+      // A candidate with no text, no tool call and no parts at all. This model
+      // does it regularly on the turn straight after a functionResponse —
+      // measured at roughly half of all quote conversations. Repeating the same
+      // request just reproduces it, so change the input: ask in the open for a
+      // spoken answer, and stop offering tools.
+      if (!nudged) {
+        nudged = true
+        toolRounds = MAX_TOOL_ROUNDS
+        contents.push({ role: 'user', parts: [{ text: NUDGE }] })
+        continue
       }
-      // Anything the model said alongside the tool call is worth keeping as a
-      // fallback in case the next round comes back empty.
-      if (value.text) reply = value.text
+      break
     }
 
     void logUsage(total)
 
     if (!reply.trim()) {
+      // Every round came back blank. Rare now that the loop pushes through one
+      // empty turn, but a red error bubble is the worst possible answer to a
+      // sales question — recover with something the visitor can act on.
+      console.error(`[chat] blank after ${rounds} round(s), finishReason=${lastFinish ?? 'unknown'}`)
       return NextResponse.json(
-        { error: 'Sorry — something went wrong. Please try again.' },
-        { status: 502, headers: { 'Cache-Control': 'no-store' } },
+        {
+          reply: BLANK_FALLBACK[locale],
+          suggestions: [],
+          leadCaptured,
+        },
+        { headers: { 'Cache-Control': 'no-store' } },
       )
     }
 
@@ -338,7 +391,14 @@ export async function POST(req: NextRequest) {
     void logUsage(total)
     console.error('[chat] failed:', err)
     return NextResponse.json(
-      { error: 'Sorry — something went wrong. Please try again.' },
+      {
+        error: 'Sorry — something went wrong. Please try again.',
+        // The visitor-facing message is deliberately vague; the cause is not.
+        // Development only, so an upstream error can never leak to the public.
+        ...(process.env.NODE_ENV !== 'production'
+          ? { detail: err instanceof Error ? err.message : String(err) }
+          : {}),
+      },
       { status: 502, headers: { 'Cache-Control': 'no-store' } },
     )
   }
