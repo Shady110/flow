@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { linkVisitorToLead, VISITOR_COOKIE } from '@/lib/tracking/link-lead'
 
 /**
  * Record the enquiry as a lead so nothing lives only in an inbox. Uses the
@@ -8,7 +9,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * RLS requires the leads.create permission. Best-effort: a DB failure must not
  * break the email or the visitor's form.
  */
-async function recordLead(fields: Record<string, string | undefined>) {
+async function recordLead(
+  fields: Record<string, string | undefined>,
+  visitorId: string | undefined,
+) {
   const { name, email, phone, platform, products, service, message } = fields
   try {
     const admin = createAdminClient()
@@ -20,15 +24,30 @@ async function recordLead(fields: Record<string, string | undefined>) {
       .filter(Boolean)
       .join('\n')
 
-    await admin.from('leads').insert({
-      name,
-      email: email?.toLowerCase(),
-      phone: phone || null,
-      field: platform || null,
-      plan_interest: service || null,
-      source: 'website',
-      notes: notes || null,
-    })
+    const { data: lead } = await admin
+      .from('leads')
+      .insert({
+        name,
+        email: email?.toLowerCase(),
+        phone: phone || null,
+        field: platform || null,
+        plan_interest: service || null,
+        source: 'website',
+        notes: notes || null,
+      })
+      .select('id')
+      .single()
+
+    // Attach the anonymous session, so the call starts with context.
+    if (lead?.id) {
+      const journey = await linkVisitorToLead(visitorId, lead.id)
+      if (journey) {
+        await admin
+          .from('leads')
+          .update({ notes: [notes, `\n--- journey ---\n${journey}`].filter(Boolean).join('\n') })
+          .eq('id', lead.id)
+      }
+    }
   } catch (err) {
     console.error('[contact] could not record lead:', err)
   }
@@ -42,7 +61,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Name and email are required.' }, { status: 400 })
   }
 
-  await recordLead({ name, email, phone, platform, products, service, message })
+  await recordLead(
+    { name, email, phone, platform, products, service, message },
+    req.cookies.get(VISITOR_COOKIE)?.value,
+  )
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',

@@ -60,7 +60,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {serviceLinks.map((s) => (
                 <li key={s}>
-                  <FooterLink href="#services">{s}</FooterLink>
+                  <FooterLink href="/#services">{s}</FooterLink>
                 </li>
               ))}
             </ul>

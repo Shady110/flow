@@ -161,11 +161,109 @@
         "fullContent": "Full Content (photography + listing)",
         "photography": "Photography only",
         "listing": "Listing only",
-        "notSure": "Not Sure Yet"
+        "notSure": "Not Sure Yet",
+        "custom": "Custom package (I picked my own features)"
       },
       "platformOptions": {
         "other": "Other"
       }
+    },
+    "chat": {
+      "title": "FLOW Assistant",
+      "subtitle": "Usually replies instantly",
+      "open": "Open chat",
+      "close": "Close chat",
+      "greeting": "Hi — I am FLOW’s assistant. Ask me about our services, pricing, or how we work. Tell me what you sell and I can put a package together for you.",
+      "placeholder": "Ask about pricing, services…",
+      "send": "Send",
+      "quickPricing": "How much does it cost?",
+      "quickPackage": "Build me a package",
+      "quickHuman": "Talk to a human",
+      "error": "Something went wrong. Please try again.",
+      "rateLimited": "Too many messages. Please try again in a few minutes.",
+      "leadCaptured": "The team has your details"
+    },
+    "packageBuilder": {
+      "eyebrow": "Custom Package",
+      "heading": "Build your own package.",
+      "accent": [
+        "own"
+      ],
+      "intro": "Not every catalogue fits a ready-made plan. Take only the parts you need — one-time content, monthly account work, or a mix — and see the price as you go.",
+      "productsLabel": "How many products?",
+      "productsHint": "Sets the price of one-time content work. More than 500? Talk to us and we will scope it.",
+      "contentLabel": "One-time content",
+      "contentHint": "Billed once, per product.",
+      "needs": {
+        "photography": "Photography",
+        "listing": "Listing copy"
+      },
+      "needsHint": {
+        "photography": "Studio photos on white, 3–5 per product",
+        "listing": "Bilingual SEO titles, bullets and descriptions"
+      },
+      "modulesLabel": "Monthly account management",
+      "modulesHint": "Pick only the parts you want us running. A base fee covers account access, a dedicated contact and your monthly report.",
+      "modules": {
+        "setup": "Account creation & setup",
+        "uploading": "Uploading & catalogue upkeep",
+        "returns": "Manage returns",
+        "fba": "FBA inventory management",
+        "purchase-orders": "Create purchase orders",
+        "brand-registry": "Brand Registry",
+        "price-analysis": "Price analysis"
+      },
+      "modulesDesc": {
+        "setup": "One-time. Skip it if your account already exists.",
+        "uploading": "New products listed and existing ones kept current",
+        "returns": "We handle returns and customer claims",
+        "fba": "Stock levels, shipments and replenishment",
+        "purchase-orders": "We raise and track PO's for you",
+        "brand-registry": "Enrolment plus ongoing brand monitoring",
+        "price-analysis": "Competitor tracking and price positioning"
+      },
+      "platformsLabel": "Where do you sell?",
+      "resultTitle": "Your package",
+      "customPlanName": "Your custom package",
+      "empty": "Pick at least one item to see your price.",
+      "monthlyTitle": "Every month",
+      "oneTimeTitle": "Once, up front",
+      "perMonth": "/ month",
+      "oneTime": "one-time",
+      "salesShare": "+ {share}% of sales on the accounts we manage",
+      "betterBundle": "The {name} plan covers everything you picked for {monthly} EGP a month — {saving} EGP less. Worth a look.",
+      "lines": {
+        "content-listing": "Listing copy",
+        "content-photography": "Studio photography",
+        "content-full": "Photography + listing",
+        "account-base": "Managed account base",
+        "module-setup": "Account creation & setup",
+        "module-uploading": "Uploading & catalogue upkeep",
+        "module-returns": "Manage returns",
+        "module-fba": "FBA inventory management",
+        "module-purchase-orders": "Create purchase orders",
+        "module-brand-registry": "Brand Registry",
+        "module-price-analysis": "Price analysis"
+      },
+      "cta": "Get this package",
+      "disclaimer": "An estimate from our published rates. We will confirm the final scope with you."
+    },
+    "pricingTeaser": {
+      "eyebrow": "Pricing",
+      "heading": "Pick a plan, or build your own.",
+      "accent": [
+        "own."
+      ],
+      "intro": "Per-item content from 10 EGP, or an all-in monthly plan from 3,500 EGP. Need something in between? Choose your own features and price it yourself.",
+      "fromContent": "Content, per item",
+      "fromMonthly": "Monthly plans",
+      "cta": "See pricing & build a package"
+    },
+    "cookies": {
+      "title": "We use cookies",
+      "body": "We keep an anonymous record of how the site is used so we can improve it, and so our team has context if you get in touch. No tracking happens until you accept.",
+      "accept": "Accept",
+      "reject": "Reject"
     }
   },
   "internal": {
@@ -179,7 +277,8 @@
       "finance": "Finance",
       "automations": "Automations",
       "roles": "Roles & access",
-      "landing": "Landing content"
+      "landing": "Landing content",
+      "visitors": "Visitors"
     },
     "topbar": {
       "inbox": "Inbox"
@@ -420,7 +519,14 @@
       "converted": "Lead converted to a client",
       "viewTable": "Table",
       "viewBoard": "Board",
-      "noMatches": "No leads match these filters."
+      "noMatches": "No leads match these filters.",
+      "journeyTitle": "Website journey",
+      "journeyPageViews": "Pages viewed",
+      "journeyFirstSeen": "First visit",
+      "journeyReferrer": "Came from",
+      "journeySource": "Campaign",
+      "journeyConfigured": "Configured package",
+      "journeyChat": "Opened the chat"
     },
     "taskDetail": {
       "backToTasks": "Back to tasks",
@@ -497,6 +603,22 @@
       "roleAtCompany": "Role at company",
       "userUpdated": "Portal user updated",
       "productDeleted": "Product deleted"
+    },
+    "visitors": {
+      "title": "Website visitors",
+      "subtitle": "Everyone who accepted cookies on the site. Most stay anonymous — a cookie carries behaviour, not a name or a phone number. The ones who got in touch are linked to their lead.",
+      "statVisitors": "Visitors",
+      "statPageViews": "Page views",
+      "statIdentified": "Became leads",
+      "empty": "No visitors recorded yet. Nothing is stored until someone accepts the cookie banner.",
+      "anonymous": "Anonymous",
+      "direct": "Direct",
+      "configured": "Configured: {plan}",
+      "colWho": "Visitor",
+      "colLastPage": "Last page",
+      "colViews": "Views",
+      "colSource": "Source",
+      "colLastSeen": "Last seen"
     }
   },
   "portal": {

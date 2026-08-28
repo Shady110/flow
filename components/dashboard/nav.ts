@@ -9,6 +9,7 @@ import {
   Shield,
   MessageSquare,
   FileText,
+  Globe,
   type LucideIcon,
 } from 'lucide-react'
 import type { PermissionKey } from '@/lib/types'
@@ -28,6 +29,7 @@ export interface NavItem {
 export const INTERNAL_NAV: NavItem[] = [
   { key: 'overview', label: 'Overview', href: '/', icon: LayoutDashboard },
   { key: 'leads', label: 'Leads', href: '/leads', icon: UserPlus, permission: 'leads.view' },
+  { key: 'visitors', label: 'Visitors', href: '/visitors', icon: Globe, permission: 'leads.view' },
   { key: 'clients', label: 'Clients', href: '/clients', icon: Users, permission: 'clients.view' },
   { key: 'tasks', label: 'Tasks', href: '/tasks', icon: ListChecks, permission: 'tasks.view' },
   { key: 'inbox', label: 'Inbox', href: '/inbox', icon: MessageSquare, permission: 'chat.access' },

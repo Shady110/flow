@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
 import { getLead } from '@/lib/db/lead-queries'
+import { getLeadJourney } from '@/lib/db/visitor-queries'
 import { getClient, getTeam } from '@/lib/db/queries'
 import { LeadDialog } from '@/components/dashboard/LeadDialog'
 import { LeadStatusSelect } from '@/components/dashboard/LeadStatusSelect'
@@ -38,6 +39,9 @@ export default async function LeadDetailPage({
     getTranslations('internal.common'),
   ])
   if (!lead) notFound()
+
+  // Anonymous browsing session, if this lead came from the website.
+  const journey = await getLeadJourney(leadId)
 
   const client = lead.converted_client_id ? await getClient(lead.converted_client_id) : null
   const teamOptions = team.map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
@@ -133,6 +137,44 @@ export default async function LeadDetailPage({
             )}
           </CardContent>
         </Card>
+
+        {/* What they did on the site before getting in touch. Only present when
+            they accepted cookies — see supabase/migrations/0011_site_visitors.sql. */}
+        {journey && (
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="text-base">{t('journeyTitle')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <Field label={t('journeyPageViews')}>{journey.page_views}</Field>
+                <Field label={t('journeyFirstSeen')}>
+                  {new Date(journey.first_seen).toLocaleDateString()}
+                </Field>
+                <Field label={t('journeyReferrer')}>{journey.referrer}</Field>
+                <Field label={t('journeySource')}>{journey.utm_source}</Field>
+              </div>
+              {journey.activity.length > 0 && (
+                <ul className="space-y-1.5 border-t pt-3 text-xs text-muted-foreground">
+                  {journey.activity.slice(-8).reverse().map((a, i) => (
+                    <li key={i} className="flex justify-between gap-3">
+                      <span className="truncate">
+                        {a.type === 'package_configured'
+                          ? `${t('journeyConfigured')}: ${a.serviceKey}`
+                          : a.type === 'chat_opened'
+                            ? t('journeyChat')
+                            : a.path || a.type}
+                      </span>
+                      <span className="shrink-0">
+                        {a.t ? new Date(a.t).toLocaleDateString() : ''}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="h-fit">
           <CardHeader>

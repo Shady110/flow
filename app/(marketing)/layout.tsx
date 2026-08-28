@@ -1,5 +1,11 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import StructuredData from '@/app/structured-data'
+
+// Chrome, not content: neither must block the page or ship in the first payload.
+// They live on the layout so every marketing page gets them, not just the landing.
+const ChatWidget = dynamic(() => import('@/components/ChatWidget'))
+const CookieConsent = dynamic(() => import('@/components/CookieConsent'))
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://flow-agency-eg.com'),
@@ -116,6 +122,8 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
     <>
       <StructuredData />
       {children}
+      <ChatWidget />
+      <CookieConsent />
     </>
   )
 }

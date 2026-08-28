@@ -149,7 +149,10 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
 
       {/* CTA pinned to the bottom so every card lines up. The plan travels to the
           contact form as ?plan=… so the form preselects it and the lead lands
-          tagged with the plan the visitor actually clicked. */}
+          tagged with the plan the visitor actually clicked. The link is relative
+          on purpose: every page that renders this section also renders a
+          ContactSection, so the CTA scrolls down the current page instead of
+          navigating away from the prices the visitor is still reading. */}
       <div className="mt-auto pt-2">
         <MagneticButton strength={featured ? 0.25 : 0.15} className="block w-full">
           <Link

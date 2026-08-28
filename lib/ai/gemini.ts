@@ -1,5 +1,13 @@
 import 'server-only'
-import { GoogleGenAI, Type, Modality, type GenerateContentResponse } from '@google/genai'
+import {
+  GoogleGenAI,
+  Type,
+  Modality,
+  type Content,
+  type FunctionDeclaration,
+  type FunctionCall,
+  type GenerateContentResponse,
+} from '@google/genai'
 import { withRetry, hardQuotaMessage } from '@/lib/ai/retry'
 import { TOKENS_PER_IMAGE, type AiUsage } from '@/lib/ai/pricing'
 
@@ -105,6 +113,58 @@ export async function generateListingFields(
     return { value: JSON.parse(text) as Record<string, string>, usage }
   } catch {
     return { value: {}, usage }
+  }
+}
+
+export interface ChatTurn {
+  /** The model's reply text; empty when it only asked for a tool call. */
+  text: string
+  /** Tool calls the model wants executed before it can answer. */
+  functionCalls: FunctionCall[]
+  /**
+   * Why generation stopped. Anything other than STOP with no text — SAFETY,
+   * MAX_TOKENS, RECITATION — means the model produced nothing usable and the
+   * caller has to recover rather than hand the visitor an empty bubble.
+   */
+  finishReason?: string
+}
+
+/**
+ * One conversational turn for the website chatbot, optionally with tools.
+ *
+ * Deliberately non-streaming: flash-lite answers in a second or two and a
+ * typing indicator covers it, whereas streaming interleaved with tool calls is
+ * several times the code. Swap to generateContentStream when latency is
+ * actually felt.
+ */
+export async function chat(
+  contents: Content[],
+  opts: { systemInstruction: string; tools?: FunctionDeclaration[]; temperature?: number },
+): Promise<Billed<ChatTurn>> {
+  let res
+  try {
+    res = await withRetry(() =>
+      genai().models.generateContent({
+        model: TEXT_MODEL,
+        contents,
+        config: {
+          systemInstruction: opts.systemInstruction,
+          temperature: opts.temperature ?? 0.7,
+          ...(opts.tools?.length ? { tools: [{ functionDeclarations: opts.tools }] } : {}),
+        },
+      }),
+    )
+  } catch (e) {
+    throw new Error(hardQuotaMessage(e) ?? (e instanceof Error ? e.message : 'Chat failed'))
+  }
+
+  return {
+    value: {
+      text: res.text ?? '',
+      functionCalls: res.functionCalls ?? [],
+      finishReason: res.candidates?.[0]?.finishReason as string | undefined,
+    },
+    usage: readUsage(res, TEXT_MODEL),
   }
 }
 

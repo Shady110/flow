@@ -50,8 +50,9 @@ export default function Navbar() {
         { label: t('work_dd.viewAll'), href: '/portfolio' },
       ],
     },
-    { key: 'pricing', label: t('pricing'), href: '/#pricing' },
-    { key: 'team', label: t('team'), href: '/#team' },
+    { key: 'pricing', label: t('pricing'), href: '/pricing' },
+    // 'team' is deliberately absent: TeamSection is commented out of the landing
+    // page, so /#team was a link to nothing. Restore both together or neither.
     { key: 'faq', label: t('faq'), href: '/#faq' },
   ]
 
@@ -177,15 +178,36 @@ export default function Navbar() {
               className="md:hidden overflow-hidden border-t border-white/10"
             >
               <div className="px-6 py-4 flex flex-col gap-1">
+                {/* Children are rendered too: the desktop dropdown is hover-only,
+                    so without this /portfolio is unreachable from a phone. */}
                 {nav.map((item) => (
-                  <Link
-                    key={item.key}
-                    href={item.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="text-sm font-medium text-white/85 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime rounded"
-                  >
-                    {item.label}
-                  </Link>
+                  <div key={item.key}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="block text-sm font-medium text-white/85 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime rounded"
+                    >
+                      {item.label}
+                    </Link>
+                    {item.children && (
+                      <div className="flex flex-col border-s border-white/10 ms-2 ps-3">
+                        {item.children
+                          // The services dropdown all points at /#services, which the
+                          // parent link already covers — skip pure duplicates.
+                          .filter((child) => child.href !== item.href)
+                          .map((child) => (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              onClick={() => setMenuOpen(false)}
+                              className="text-sm text-white/60 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime rounded"
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
                 <div className="pt-1"><LanguageSwitcher tone="light" /></div>
                 <Link

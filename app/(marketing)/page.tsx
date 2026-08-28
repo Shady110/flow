@@ -16,15 +16,12 @@ import WorkflowSection from '@/components/WorkflowSection'
 // import TeamSection from '@/components/TeamSection' // hidden until the full team photo is ready
 import FAQSection from '@/components/FAQSection'
 
-const PricingSection = dynamic(
-  () => import('@/components/PricingSection'),
-  { loading: () => <div className="h-96 animate-pulse bg-flow-bg-soft rounded-xl" /> }
-)
-
 const ContactSection = dynamic(
   () => import('@/components/ContactSection'),
   { loading: () => <div className="h-96 animate-pulse bg-flow-bg-soft rounded-xl" /> }
 )
+
+import PricingTeaser from '@/components/PricingTeaser'
 
 import Footer from '@/components/Footer'
 
@@ -66,7 +63,9 @@ export default async function Home() {
       <ServicesSection content={content.services} />
       {/* Pricing sits straight after Services: once someone understands what we
           do, the plans are the next thing they want — not 3 sections later. */}
-      <PricingSection content={content.pricing} />
+      {/* The full tabs and the package builder live on /pricing. This band keeps
+          a number in front of visitors who never click through. */}
+      <PricingTeaser />
       <PortfolioGridSection />
       <WorkflowSection />
       {/* <TeamSection /> hidden until the full team photo is ready */}

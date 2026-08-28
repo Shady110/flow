@@ -57,7 +57,13 @@ export async function getJobCosts(): Promise<Map<string, JobCost>> {
 export async function getUsageTotals(): Promise<{ month: JobCost; allTime: JobCost }> {
   try {
     const supabase = await createClient()
-    const { data, error } = await supabase.from('ai_usage').select('cost_usd, fx_rate, images, created_at')
+    // job_id is null marks a website-chatbot call (app/api/chat). This figure
+    // is shown on the Automations page, so chat spend must not inflate it —
+    // query `job_id is null` if you want the chatbot's own spend.
+    const { data, error } = await supabase
+      .from('ai_usage')
+      .select('cost_usd, fx_rate, images, created_at')
+      .not('job_id', 'is', null)
     if (error || !data) return { month: EMPTY_COST, allTime: EMPTY_COST }
 
     const now = new Date()
