@@ -189,11 +189,11 @@
       "accent": [
         "own"
       ],
-      "intro": "Not every catalogue fits a ready-made plan. Take only the parts you need — one-time content, monthly account work, or a mix — and see the price as you go.",
-      "productsLabel": "How many products?",
-      "productsHint": "Sets the price of one-time content work. More than 500? Talk to us and we will scope it.",
-      "contentLabel": "One-time content",
-      "contentHint": "Billed once, per product.",
+      "intro": "Not every catalogue fits a ready-made plan. Take only the parts you need — content, account management, or both — and watch your monthly price build as you go.",
+      "productsLabel": "Products per month",
+      "productsHint": "How many products we produce content for each month. More than 500? Talk to us.",
+      "contentLabel": "Content, every month",
+      "contentHint": "Priced per product, included in your monthly plan.",
       "needs": {
         "photography": "Photography",
         "listing": "Listing copy"
@@ -203,9 +203,8 @@
         "listing": "Bilingual SEO titles, bullets and descriptions"
       },
       "modulesLabel": "Monthly account management",
-      "modulesHint": "Pick only the parts you want us running. A base fee covers account access, a dedicated contact and your monthly report.",
+      "modulesHint": "Pick only the parts you want us running. The base fee covers account access, a dedicated contact, your monthly report and account setup — no setup fee.",
       "modules": {
-        "setup": "Account creation & setup",
         "uploading": "Uploading & catalogue upkeep",
         "returns": "Manage returns",
         "fba": "FBA inventory management",
@@ -214,7 +213,6 @@
         "price-analysis": "Price analysis"
       },
       "modulesDesc": {
-        "setup": "One-time. Skip it if your account already exists.",
         "uploading": "New products listed and existing ones kept current",
         "returns": "We handle returns and customer claims",
         "fba": "Stock levels, shipments and replenishment",
@@ -225,11 +223,9 @@
       "platformsLabel": "Where do you sell?",
       "resultTitle": "Your package",
       "customPlanName": "Your custom package",
-      "empty": "Pick at least one item to see your price.",
-      "monthlyTitle": "Every month",
-      "oneTimeTitle": "Once, up front",
+      "empty": "Pick at least one item to build your plan.",
+      "monthlyTitle": "Your monthly plan",
       "perMonth": "/ month",
-      "oneTime": "one-time",
       "salesShare": "+ {share}% of sales on the accounts we manage",
       "betterBundle": "The {name} plan covers everything you picked for {monthly} EGP a month — {saving} EGP less. Worth a look.",
       "lines": {
@@ -237,7 +233,6 @@
         "content-photography": "Studio photography",
         "content-full": "Photography + listing",
         "account-base": "Managed account base",
-        "module-setup": "Account creation & setup",
         "module-uploading": "Uploading & catalogue upkeep",
         "module-returns": "Manage returns",
         "module-fba": "FBA inventory management",
@@ -246,7 +241,10 @@
         "module-price-analysis": "Price analysis"
       },
       "cta": "Get this package",
-      "disclaimer": "An estimate from our published rates. We will confirm the final scope with you."
+      "disclaimer": "An estimate from our published rates. We will confirm the final scope with you.",
+      "tabLabel": "Customize",
+      "tabBadge": "Your mix",
+      "allMonthly": "One monthly figure. No setup fee, nothing billed separately."
     },
     "pricingTeaser": {
       "eyebrow": "Pricing",

@@ -99,8 +99,10 @@ export const GROWTH_TIERS: readonly GrowthTier[] = [
 
 /**
  * Charged whenever ANY account module is selected. It carries the fixed cost of
- * holding account access, a named contact and monthly reporting — the work that
- * exists no matter how little else is bought.
+ * holding account access, a named contact, monthly reporting and account setup
+ * — the work that exists no matter how little else is bought. Setup used to be
+ * a 1,500 one-time module; it is folded in here so a custom plan is a single
+ * monthly figure with nothing billed separately.
  *
  * Without it a single cheap module prices below the cost of servicing the
  * client at all, and cherry-picking undercuts the packaged tiers. Every
@@ -122,7 +124,6 @@ export interface AccountModule {
 }
 
 export const MODULE_KEYS = [
-  'setup',
   'uploading',
   'returns',
   'fba',
@@ -133,19 +134,17 @@ export const MODULE_KEYS = [
 export type ModuleKey = (typeof MODULE_KEYS)[number]
 
 export const ACCOUNT_MODULES: readonly AccountModule[] = [
-  // One-time only: setting an account up is not ongoing work.
-  { key: 'setup', monthly: 0, oneTime: 1500, revenueDriving: false },
   { key: 'uploading', monthly: 900, oneTime: 0, revenueDriving: false },
   { key: 'returns', monthly: 700, oneTime: 0, revenueDriving: false },
   { key: 'fba', monthly: 1100, oneTime: 0, revenueDriving: true },
   { key: 'purchase-orders', monthly: 700, oneTime: 0, revenueDriving: false },
-  // Enrolment is a one-off; the monthly covers ongoing brand monitoring.
-  { key: 'brand-registry', monthly: 500, oneTime: 800, revenueDriving: false },
+  // Enrolment used to carry an 800 one-off; it is inside this monthly now.
+  { key: 'brand-registry', monthly: 500, oneTime: 0, revenueDriving: false },
   { key: 'price-analysis', monthly: 800, oneTime: 0, revenueDriving: true },
 ]
 
 /** Which modules each packaged account tier already covers. */
-const BASIC_COVERS: readonly ModuleKey[] = ['setup', 'uploading', 'returns']
+const BASIC_COVERS: readonly ModuleKey[] = ['uploading', 'returns']
 const PREMIUM_COVERS: readonly ModuleKey[] = [
   ...BASIC_COVERS,
   'fba',
@@ -160,8 +159,17 @@ export type Need = (typeof NEEDS)[number]
 export interface QuoteInput {
   /** How many products the seller wants covered. */
   productCount: number
-  /** One-time content work. */
+  /** Which content work they want. */
   content?: Need[]
+  /**
+   * Whether content is a one-off batch or an ongoing monthly volume.
+   *
+   * The Content tab sells one-time work per product; a custom plan sells "up to
+   * N products per month", exactly as the growth tiers do. Defaults to monthly
+   * whenever account modules are selected, because a plan with account
+   * management is a subscription by definition.
+   */
+  contentBilling?: 'one-time' | 'monthly'
   /** Monthly account-management modules. */
   modules?: ModuleKey[]
   /** Marketplaces the seller is on. Informational — it does not move the price. */
@@ -291,7 +299,8 @@ export function quote(input: QuoteInput): Quote {
   let oneTime = 0
   let monthly = 0
 
-  // ── Content: one-time, per item ──────────────────────────────────────────
+  // ── Content: per product, billed once or every month ─────────────────────
+  const contentRecurs = (input.contentBilling ?? (wantsAccount ? 'monthly' : 'one-time')) === 'monthly'
   if (wantsContent) {
     const both = wantsPhotography && wantsListing
     const rate = both
@@ -304,8 +313,9 @@ export function quote(input: QuoteInput): Quote {
       : wantsPhotography
         ? 'content-photography'
         : 'content-listing'
-    lines.push(line(key, productCount, rate, false))
-    oneTime += productCount * rate
+    lines.push(line(key, productCount, rate, contentRecurs))
+    if (contentRecurs) monthly += productCount * rate
+    else oneTime += productCount * rate
   }
 
   // ── Account management: base fee plus the chosen modules ─────────────────
@@ -340,9 +350,10 @@ export function quote(input: QuoteInput): Quote {
       ? 'photography'
       : 'listing'
 
+  const isPlan = wantsAccount || contentRecurs
   return {
-    serviceKey: wantsAccount ? 'custom' : contentOnlyKey,
-    model: wantsAccount ? 'custom' : 'content',
+    serviceKey: isPlan ? 'custom' : contentOnlyKey,
+    model: isPlan ? 'custom' : 'content',
     currency: CURRENCY,
     oneTime,
     monthly,

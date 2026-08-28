@@ -215,18 +215,21 @@ for (const file of ['messages/en.json', 'messages/ar.json']) {
     assert.ok(q.salesShare !== null && q.salesShare <= 2, `${m.key}: custom share must never exceed Premium's 2%`)
   }
 
-  // One-time fees land in oneTime, never in the recurring total.
-  const setup = quote({ productCount: 0, modules: ['setup'] })
-  assert.equal(setup.oneTime, 1500)
-  assert.equal(setup.monthly, ACCOUNT_BASE.monthly, 'setup is one-time; only the base recurs')
+  // A custom plan is a single monthly figure. Nothing may be billed separately:
+  // account setup is folded into the base fee and Brand Registry enrolment into
+  // its monthly, so a visitor is never shown two numbers.
   const registry = quote({ productCount: 0, modules: ['brand-registry'] })
-  assert.equal(registry.oneTime, 800, 'Brand Registry enrolment is one-time')
   assert.equal(registry.monthly, ACCOUNT_BASE.monthly + 500)
+  for (const m of ACCOUNT_MODULES) {
+    assert.equal(m.oneTime, 0, `${m.key}: custom plans are all-monthly, no one-time fees`)
+    const q = quote({ productCount: 0, modules: [m.key] })
+    assert.equal(q.oneTime, 0, `${m.key}: produced a one-time charge`)
+  }
 
   // ── The invariant that protects the packaged tiers ────────────────────────
   // Nobody may cherry-pick their way under a bundle. Every a-la-carte mirror of
   // a tier must cost MORE than the tier, and the builder must say so.
-  const basicMirror = quote({ productCount: 0, modules: ['setup', 'uploading', 'returns'] })
+  const basicMirror = quote({ productCount: 0, modules: ['uploading', 'returns'] })
   assert.ok(
     basicMirror.monthly > ACCOUNT_PLANS[0].monthly,
     `Basic-equivalent (${basicMirror.monthly}) must cost more than the Basic bundle (${ACCOUNT_PLANS[0].monthly})`,
@@ -237,6 +240,7 @@ for (const file of ['messages/en.json', 'messages/ar.json']) {
     monthly: 2500,
     saving: basicMirror.monthly - 2500,
   })
+  assert.equal(basicMirror.monthly, 2600)
 
   const premiumMirror = quote({ productCount: 0, modules: [...MODULE_KEYS] })
   assert.ok(
@@ -247,14 +251,32 @@ for (const file of ['messages/en.json', 'messages/ar.json']) {
   assert.equal(premiumMirror.monthly, 5700)
 
   // A selection Basic cannot cover must never be pointed at Basic.
-  const needsPremium = quote({ productCount: 0, modules: ['uploading', 'fba', 'price-analysis', 'returns', 'purchase-orders', 'brand-registry', 'setup'] })
+  const needsPremium = quote({ productCount: 0, modules: ['uploading', 'fba', 'price-analysis', 'returns', 'purchase-orders', 'brand-registry'] })
   assert.equal(needsPremium.betterBundle?.serviceKey, 'account-premium')
 
-  // Content + modules is a custom build; content stays one-time, modules recur.
+  // A custom plan is monthly all the way through: picking any module makes the
+  // content an ongoing "up to N products per month" volume, exactly like the
+  // growth tiers, so nothing is left billed once.
   const mixed = quote({ productCount: 100, content: ['photography', 'listing'], modules: ['uploading'] })
   assert.equal(mixed.model, 'custom')
-  assert.equal(mixed.oneTime, 100 * 35)
-  assert.equal(mixed.monthly, ACCOUNT_BASE.monthly + 900)
+  assert.equal(mixed.oneTime, 0, 'a custom plan must not produce a one-time charge')
+  assert.equal(mixed.monthly, ACCOUNT_BASE.monthly + 900 + 100 * 35)
+  assert.ok(
+    mixed.lines.every((l) => l.recurring),
+    'every line of a custom plan recurs',
+  )
+
+  // The Content tab is still one-time work bought by the product.
+  const batch = quote({ productCount: 100, content: ['photography', 'listing'] })
+  assert.equal(batch.model, 'content')
+  assert.equal(batch.oneTime, 3500)
+  assert.equal(batch.monthly, 0)
+  // ...and the same content sold as a monthly volume is a plan, not a product.
+  const retainer = quote({ productCount: 100, content: ['photography', 'listing'], contentBilling: 'monthly' })
+  assert.equal(retainer.model, 'custom')
+  assert.equal(retainer.serviceKey, 'custom')
+  assert.equal(retainer.monthly, 3500)
+  assert.equal(retainer.oneTime, 0)
   assert.equal(
     mixed.betterBundle,
     null,
@@ -262,7 +284,7 @@ for (const file of ['messages/en.json', 'messages/ar.json']) {
   )
 
   // Line items must reconcile with the totals, or the breakdown lies.
-  for (const q of [poOnly, setup, registry, basicMirror, premiumMirror, mixed]) {
+  for (const q of [poOnly, registry, basicMirror, premiumMirror, mixed, batch, retainer]) {
     const rec = q.lines.filter((l) => l.recurring).reduce((s, l) => s + l.total, 0)
     const once = q.lines.filter((l) => !l.recurring).reduce((s, l) => s + l.total, 0)
     assert.equal(rec, q.monthly, `${q.serviceKey}: recurring lines do not sum to monthly`)
