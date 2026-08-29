@@ -117,9 +117,24 @@ export const metadata: Metadata = {
   category: 'E-Commerce Services',
 }
 
+/**
+ * Everything on the marketing pages is sized in rem, so one root font-size
+ * scales the whole design — type, spacing, container widths and radii together
+ * — exactly the way a browser zoom does, rather than shrinking text against
+ * fixed padding.
+ *
+ * 75% is the setting that looked right; it is the only number to change if it
+ * wants tuning. Deliberately rendered from *this* layout rather than the root
+ * one: rem always resolves against <html>, so scoping by route is the only way
+ * to leave /internal and /portal at their own scale. Server-rendered, so it
+ * applies on first paint with no resize flash.
+ */
+const MARKETING_SCALE = '75%'
+
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <style>{`html{font-size:${MARKETING_SCALE}}`}</style>
       <StructuredData />
       {children}
       <ChatWidget />

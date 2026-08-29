@@ -4,8 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-display: var(--font-syne);
-  --font-body: var(--font-dm-sans);
+  --font-display: var(--font-funnel);
+  --font-body: var(--font-didact);
 
   /* ── Elevated Green ramp ─────────────────────────────── */
   --color-flow-green: #143C28;          /* primary — deep refined forest */
@@ -80,15 +80,42 @@ html {
 }
 
 body {
-  font-family: var(--font-dm-sans), sans-serif;
+  font-family: var(--font-body), sans-serif;
   background-color: #FBFBF7;
   color: #10231A;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Tracking is size-specific, never one value for every heading. Letters read
+   too far apart as type grows, so display sizes track negative and the effect
+   eases off as the heading shrinks; body sits at 0 and small uppercase labels
+   go positive (see .eyebrow-label). Leading moves inversely to size. */
 h1, h2, h3, h4 {
-  font-family: var(--font-syne), sans-serif;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+}
+h1 { letter-spacing: -0.035em; line-height: 1.02; }
+h2 { letter-spacing: -0.028em; line-height: 1.08; }
+h3 { letter-spacing: -0.018em; line-height: 1.18; }
+h4 { letter-spacing: -0.01em;  line-height: 1.28; }
+
+/* Didact Gothic ships a single weight (400) — it has no bold cut. Left alone,
+   every `font-semibold`/`font-bold` on body text (138 of them across 55 files)
+   would render as a browser-synthesised faux bold, which smears the stems and
+   reads as a rendering bug. So any request for a weight the body face does not
+   own is served by the display face, which is variable 300-800 and does own it.
+
+   Deliberately unlayered: unlayered rules outrank every @layer, so this wins
+   over the `font-body` utility without needing !important. One rule here
+   replaces editing 138 call sites — and it holds for call sites not yet
+   written. Under lang="ar" both faces are already Cairo, so this is a no-op. */
+:where(.font-semibold, .font-bold, .font-extrabold, strong, b) {
+  font-family: var(--font-display), sans-serif;
+}
+
+/* Nothing should ever fall back to a synthesised weight or slant. */
+body {
+  font-synthesis-weight: none;
 }
 
 /* ── Keyframes ───────────────────────────────────────── */
@@ -96,7 +123,14 @@ h1, h2, h3, h4 {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
+/* Mirrored track for RTL — the LTR keyframes translate -50% unconditionally,
+   which scrolls the logo strip against the reading direction in Arabic. */
+@keyframes marquee-rtl {
+  from { transform: translateX(0); }
+  to   { transform: translateX(50%); }
+}
 .animate-marquee { animation: marquee 28s linear infinite; }
+[dir='rtl'] .animate-marquee { animation-name: marquee-rtl; }
 .animate-marquee:hover { animation-play-state: paused; }
 
 /* The chat panel's entry.
@@ -112,12 +146,6 @@ h1, h2, h3, h4 {
   to   { transform: none; }
 }
 .animate-chat-panel-in { animation: chat-panel-in 200ms cubic-bezier(0.16, 1, 0.3, 1); }
-
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-14px); }
-}
-.animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
 
 @keyframes sheen {
   0%   { transform: translateX(-120%) skewX(-18deg); }
@@ -171,13 +199,18 @@ h1, h2, h3, h4 {
     @apply inline-flex items-center gap-3 text-[11px] font-semibold
            uppercase tracking-[0.22em] text-flow-text-muted;
   }
+  /* Numeral and rule inherit the element's own colour, so the same class
+     works on a bone ground and on a dark panel without a second variant.
+     These opacities multiply against whatever the caller sets, so they stay
+     mild — dimming an already-muted colour twice is what made these
+     effectively invisible on the dark panels. */
   .eyebrow-index::before {
     content: attr(data-index);
-    @apply text-flow-green/50 font-display font-bold tracking-normal;
+    @apply font-display font-bold tracking-normal opacity-90;
   }
   .eyebrow-index::after {
     content: '';
-    @apply block h-px w-10 bg-flow-border;
+    @apply block h-px w-10 bg-current opacity-50;
   }
 
   .card-base {
@@ -191,12 +224,27 @@ h1, h2, h3, h4 {
            text-flow-green leading-[1.02] tracking-tight;
   }
 
-  /* Gradient ink for accent words in headings */
-  .text-gradient {
-    background-image: var(--gradient-brand);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  /* Accent ink for emphasised words in a heading.
+
+     This was a three-stop brand gradient clipped to the text. Gradient-filled
+     display type has become the single most recognisable tell of a generated
+     layout, and it fought the headline besides — the eye tracked the colour
+     ramp instead of the sentence. A solid tonal step does the same job: the
+     emphasised words sit one shade off the rest of the line, which reads as
+     typography rather than as an effect.
+
+     Two tones because the two grounds need opposite directions: a step
+     *lighter* than near-black green on bone, a step *warmer* than white on the
+     dark panels.
+
+     Named `heading-accent`, not `text-accent`: Tailwind mints a `text-accent`
+     utility from the shadcn `--accent` token, and utilities outrank this
+     layer, so that name silently resolved to lime on both grounds. */
+  .heading-accent {
+    color: var(--color-flow-green-light);
+  }
+  .heading-accent-light {
+    color: var(--color-flow-lime);
   }
 
   /* Opaque elevated surface — default card */
@@ -225,6 +273,87 @@ h1, h2, h3, h4 {
   /* Hairline divider between editorial sections */
   .hairline {
     @apply h-px w-full bg-flow-border;
+  }
+
+  /* ── Translucent chrome ──────────────────────────────────────
+     Floating functional layers that content scrolls *under*, rather
+     than opaque bars that consume a fixed strip of the viewport. The
+     bright top edge is light catching the material. Bigger surfaces
+     read as thicker, so the nav blurs harder than a chip would. */
+  /* Blur comes from Tailwind's utilities, not a hand-written
+     `backdrop-filter`. Lightning CSS rewrites a raw declaration down to the
+     -webkit- prefix alone and drops the standard property, so the blur
+     silently never lands — the same reason .glass-card above is written this
+     way. Verified: this compiles to a real `backdrop-filter`. */
+  .chrome-dark {
+    @apply border border-white/10 backdrop-blur-xl backdrop-saturate-150;
+    background: rgba(11, 36, 23, 0.72);
+    border-top-color: rgba(255, 255, 255, 0.18);
+    box-shadow: var(--shadow-glow-green);
+  }
+
+  .chrome-light {
+    @apply border border-white/55 backdrop-blur-xl backdrop-saturate-150;
+    background: rgba(251, 251, 247, 0.72);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Vibrancy: flat grey goes muddy over a blurred, shifting backdrop.
+     Slightly heavier and a touch more tracking keeps it legible. */
+  .on-chrome {
+    @apply font-medium;
+    letter-spacing: 0.005em;
+  }
+
+  /* Scroll edge effect — a soft fade where content meets floating
+     chrome, instead of a hard 1px divider under a sticky header. */
+  .scroll-edge {
+    position: relative;
+  }
+  .scroll-edge::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    height: 2.25rem;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--scroll-edge-color, var(--color-flow-bg)) 92%, transparent),
+      transparent
+    );
+  }
+}
+
+/* Frostier, not see-through, when the viewer asks for less transparency. */
+@media (prefers-reduced-transparency: reduce) {
+  .chrome-dark {
+    @apply backdrop-blur-none backdrop-saturate-100;
+    background: #0B2417;
+  }
+  .chrome-light {
+    @apply backdrop-blur-none backdrop-saturate-100;
+    background: #FBFBF7;
+  }
+  .glass-card {
+    @apply backdrop-blur-none backdrop-saturate-100;
+    background: #FFFFFF;
+  }
+  .glass-card-dark {
+    @apply backdrop-blur-none backdrop-saturate-100;
+    background: #143C28;
+  }
+}
+
+/* Near-solid with a defined border when more contrast is requested. */
+@media (prefers-contrast: more) {
+  .chrome-dark {
+    background: #08170E;
+    border-color: rgba(255, 255, 255, 0.55);
+  }
+  .chrome-light {
+    background: #FFFFFF;
+    border-color: var(--color-flow-green);
   }
 }
 

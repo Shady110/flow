@@ -107,15 +107,25 @@
           "title": "Sales Growth",
           "description": "Optimized listings drive more visibility, clicks, and conversions."
         }
-      }
+      },
+      "stepLabel": "Step"
     },
     "portfolio": {
       "eyebrow": "Selected Work",
       "heading": "Product photography that sells across every category.",
       "productsShot": "Products shot",
       "categories": "Categories",
-      "shots": "shots",
-      "cta": "Explore the full portfolio"
+      "cta": "Explore the full portfolio",
+      "pageEyebrow": "Our Work",
+      "pageHeading": "Work That Sells.",
+      "pageIntro": "Browse our product photography, listing content, and marketplace-ready visuals.",
+      "photos": "Photos",
+      "platforms": "Platforms",
+      "all": "All",
+      "showing": "Showing {count} photos",
+      "previous": "Previous image",
+      "next": "Next image",
+      "closeViewer": "Close image viewer"
     },
     "footer": {
       "tagline": "Elevate every listing. Amplify every sale.",
@@ -262,6 +272,15 @@
       "body": "We keep an anonymous record of how the site is used so we can improve it, and so our team has context if you get in touch. No tracking happens until you accept.",
       "accept": "Accept",
       "reject": "Reject"
+    },
+    "faqAside": {
+      "title": "Still have questions?",
+      "intro": "Send us a note and a human will reply, usually the same day."
+    },
+    "finalCta": {
+      "heading": "Ready to put your products to work?",
+      "intro": "Tell us what you sell. We'll come back with a plan, a price, and a timeline.",
+      "cta": "Book a free consultation"
     }
   },
   "internal": {

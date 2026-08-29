@@ -1,165 +1,163 @@
 'use client'
-import Image from 'next/image'
-import { motion } from 'framer-motion'
-import { ArrowRight } from 'lucide-react'
-import { portfolioData, getAllImagesFromCategory } from '@/data/portfolioData'
+import { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { ArrowRight, ChevronDown } from 'lucide-react'
 import MagneticButton from './ui/MagneticButton'
-import ParallaxLayer from './ui/ParallaxLayer'
 import Counter from './ui/Counter'
 import RevealHeading from './ui/RevealHeading'
-import { fadeUp } from '@/lib/animations'
+import { spring } from '@/lib/animations'
+import { useReducedMotion } from '@/lib/useReducedMotion'
+import { HeroArt } from './ui/illustrations'
 import type { HeroContent } from '@/data/landing-content'
 
-// Some categories lead with a lifestyle/model shot — pin those to a
-// product-only cover so the hero strip shows products, never people.
-const productCovers: Record<string, string> = {
-  accessories: '/assets/portfolio/Accessories/Wallet/61BygHH-M2L._AC_UY1000_.jpg',
-  home: '/assets/portfolio/Home/cookware/Gemini_Generated_Image_5d0wwd5d0wwd5d0w.png',
-}
-
-// A curated strip of real product shots for the floating gallery.
-const gallery = portfolioData.slice(0, 5).map((cat) => ({
-  src: productCovers[cat.id] ?? getAllImagesFromCategory(cat)[0]?.src ?? '',
-  alt: `${cat.name} product photography`,
-}))
-
-// Depth/rotation per card so the row feels hand-arranged.
-const tilts = [
-  { rotate: -6, y: 28, z: 10 },
-  { rotate: 4, y: 8, z: 20 },
-  { rotate: -2, y: -8, z: 30 },
-  { rotate: 5, y: 6, z: 20 },
-  { rotate: -5, y: 26, z: 10 },
-]
-
+/**
+ * The hero.
+ *
+ * Centred, and deliberately not full-height. A hero that fills the viewport
+ * exactly gives a visitor no reason to believe anything follows it — the single
+ * most common way a landing page loses someone on the first screen. This one
+ * ends just below the fold and lets the artwork cross that line, so the page
+ * reads as continuing before anyone has decided whether to scroll.
+ *
+ * The artwork is also the argument: it shows the whole service — raw product in,
+ * live ranked listing out — before a word of the sections below is read.
+ */
 export default function HeroSection({ content }: { content: HeroContent }) {
   const { heading, accent, subheading, ctaPrimary, ctaSecondary, stats } = content
+  const reduced = useReducedMotion()
+  const ref = useRef<HTMLElement>(null)
+
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  // Text recedes a little as the page leaves; the artwork rises to meet the
+  // next section. They separate rather than sliding as one slab, which is what
+  // gives the handover depth.
+  const textLift = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -60])
+  const textFade = useTransform(scrollYProgress, [0, 0.7], [1, reduced ? 1 : 0.15])
+  const artLift = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -110])
+
   return (
-    <section className="relative min-h-screen flex flex-col items-center overflow-hidden bg-flow-bg grain-overlay">
-      {/* Layered background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0" style={{ background: 'var(--gradient-hero-mesh)' }} />
-        <ParallaxLayer speed={0.5} className="absolute top-1/4 right-[12%]">
-          <div
-            className="w-[420px] h-[420px] rounded-full blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(196,240,117,0.28) 0%, transparent 70%)' }}
+    <section ref={ref} className="relative overflow-hidden bg-flow-bg grain-overlay">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'var(--gradient-hero-mesh)' }}
+      />
+
+      <div className="relative z-10 section-container pt-32 md:pt-40">
+        <motion.div style={{ y: textLift, opacity: textFade }} className="flex flex-col items-center text-center">
+          <RevealHeading
+            as="h1"
+            text={heading}
+            accent={accent}
+            whileInView={false}
+            className="max-w-4xl font-display text-[clamp(2.5rem,4.5vw,5rem)] font-bold leading-[0.98] tracking-[-0.034em] text-flow-green"
           />
-        </ParallaxLayer>
-        <ParallaxLayer speed={0.3} className="absolute top-1/3 left-[8%]">
-          <div
-            className="w-[320px] h-[320px] rounded-full blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(20,60,40,0.10) 0%, transparent 70%)' }}
-          />
-        </ParallaxLayer>
-      </div>
 
-      {/* Text block */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-5 sm:px-6 text-center pt-32 md:pt-36">
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring.ui, delay: 0.22 }}
+            className="mt-7 max-w-2xl text-base leading-relaxed text-flow-text-muted sm:text-lg"
+          >
+            {subheading}
+          </motion.p>
 
-
-        <RevealHeading
-          as="h1"
-          text={heading}
-          accent={accent}
-          whileInView={false}
-          className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-flow-green leading-[0.98] tracking-tight"
-        />
-
-        <motion.p
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          custom={3}
-          className="text-flow-text-muted text-base sm:text-lg leading-relaxed mt-7 max-w-2xl mx-auto"
-        >
-          {subheading}
-        </motion.p>
-
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          custom={4}
-          className="flex flex-wrap justify-center gap-4 mt-10"
-        >
-          <MagneticButton>
-            <a
-              href="#contact"
-              className="flex items-center gap-2 bg-flow-green text-flow-bg font-semibold px-7 py-3.5 rounded-full hover:bg-flow-green-hover transition-colors text-sm shadow-[var(--shadow-md)]"
-            >
-              {ctaPrimary}
-              <ArrowRight size={16} className="rtl:-scale-x-100" />
-            </a>
-          </MagneticButton>
-          <MagneticButton strength={0.2}>
-            <a
-              href="#workflow"
-              className="block border border-flow-green/25 text-flow-green font-semibold px-7 py-3.5 rounded-full hover:bg-flow-green hover:text-flow-bg transition-colors text-sm bg-white/50 backdrop-blur"
-            >
-              {ctaSecondary}
-            </a>
-          </MagneticButton>
-        </motion.div>
-
-        {/* Inline stats */}
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          custom={5}
-          className="flex items-center justify-center gap-8 sm:gap-12 mt-12"
-        >
-          {stats.map((s, i) => (
-            <div key={s.label} className="flex items-center gap-8 sm:gap-12">
-              {i > 0 && <div className="w-px h-8 bg-flow-border" />}
-              <div className="text-center">
-                <p className="font-display text-2xl sm:text-3xl font-bold text-flow-green">
-                  <Counter value={s.value} suffix={s.suffix} />
-                </p>
-                <p className="text-[11px] sm:text-xs text-flow-text-muted uppercase tracking-wide mt-1 whitespace-nowrap">
-                  {s.label}
-                </p>
-              </div>
-            </div>
-          ))}
-        </motion.div>
-      </div>
-
-      {/* Floating portfolio gallery — hidden on mobile */}
-      <div className="relative z-10 w-full mt-10 md:mt-14 flex-1 hidden md:flex items-end">
-        <div className="w-full flex justify-center items-end gap-3 sm:gap-5 px-4 pb-0 -mb-6 md:-mb-10">
-          {gallery.map((img, i) => {
-            const t = tilts[i]
-            // Hide the outermost cards on small screens to avoid crowding.
-            const responsive = i === 0 || i === 4 ? 'hidden lg:block' : i === 1 || i === 3 ? 'hidden sm:block' : ''
-            return (
-              <motion.div
-                key={img.src}
-                initial={{ opacity: 0, y: 60, rotate: t.rotate }}
-                animate={{ opacity: 1, y: t.y, rotate: t.rotate }}
-                transition={{ delay: 0.5 + i * 0.09, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                style={{ zIndex: t.z }}
-                className={`relative shrink-0 ${responsive}`}
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring.ui, delay: 0.3 }}
+            className="mt-9 flex flex-wrap justify-center gap-3"
+          >
+            <MagneticButton>
+              <a
+                href="#contact"
+                className="flex items-center gap-2 rounded-full bg-flow-green px-7 py-3.5 text-sm font-semibold text-flow-bg shadow-[var(--shadow-md)] transition-colors hover:bg-flow-green-hover"
               >
-                <div className="animate-float-slow" style={{ animationDelay: `${i * 0.6}s` }}>
-                  <div className="relative w-40 h-52 sm:w-44 sm:h-56 md:w-52 md:h-64 rounded-2xl overflow-hidden border-4 border-white shadow-[var(--shadow-xl)] bg-flow-bg-muted">
-                    {img.src && (
-                      <Image
-                        src={img.src}
-                        alt={img.alt}
-                        fill
-                        sizes="(max-width: 768px) 40vw, 220px"
-                        className="object-cover"
-                        priority={i === 2}
-                      />
-                    )}
-                  </div>
+                {ctaPrimary}
+                <ArrowRight size={16} className="rtl:-scale-x-100" />
+              </a>
+            </MagneticButton>
+            <MagneticButton strength={0.2}>
+              <a
+                href="#workflow"
+                className="block rounded-full border border-flow-green/25 bg-white/60 px-7 py-3.5 text-sm font-semibold text-flow-green backdrop-blur transition-colors hover:bg-flow-green hover:text-flow-bg"
+              >
+                {ctaSecondary}
+              </a>
+            </MagneticButton>
+          </motion.div>
+
+          {/* Proof sits directly under the CTAs, where it answers the doubt
+              the CTAs have just raised. */}
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring.ui, delay: 0.38 }}
+            className="mt-12 flex flex-wrap items-center justify-center gap-x-10 gap-y-6 sm:gap-x-16"
+          >
+            {stats.map((s, i) => (
+              <div key={s.label} className="flex items-center gap-10 sm:gap-16">
+                {i > 0 && <span aria-hidden="true" className="h-9 w-px bg-flow-border" />}
+                <div className="text-center">
+                  <p className="font-display text-2xl font-bold text-flow-green sm:text-3xl">
+                    <Counter value={s.value} suffix={s.suffix} />
+                  </p>
+                  <p className="mt-1 whitespace-nowrap text-[11px] uppercase tracking-[0.14em] text-flow-text-muted">
+                    {s.label}
+                  </p>
                 </div>
-              </motion.div>
-            )
-          })}
-        </div>
+              </div>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        {/* The anchor. Deliberately clipped by the fold — the cut edge is the
+            invitation, and it beats any "scroll" label for getting someone to
+            move. */}
+        <motion.div
+          style={{ y: artLift }}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spring.ui, delay: 0.46, duration: 0.6 }}
+          className="relative mx-auto mt-14 -mb-16 max-w-5xl md:mt-16 md:-mb-24"
+        >
+          <div
+            className="rounded-t-3xl border border-white/10 border-b-0 px-6 pb-16 pt-8 shadow-[var(--shadow-xl)] sm:px-10 sm:pt-10"
+            style={{ backgroundImage: 'var(--gradient-dark-panel)' }}
+          >
+            <HeroArt />
+          </div>
+        </motion.div>
       </div>
+
+      <ScrollCue reduced={reduced} />
     </section>
+  )
+}
+
+/**
+ * A quiet nudge. It rides on top of the clipped artwork and fades out the
+ * instant scrolling starts, so it never nags someone already moving.
+ */
+function ScrollCue({ reduced }: { reduced: boolean }) {
+  const { scrollY } = useScroll()
+  const opacity = useTransform(scrollY, [0, 140], [1, 0])
+
+  return (
+    <motion.div
+      aria-hidden="true"
+      style={reduced ? undefined : { opacity }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ ...spring.ui, delay: 1 }}
+      className="pointer-events-none absolute bottom-5 left-1/2 z-20 -translate-x-1/2"
+    >
+      <motion.span
+        animate={reduced ? undefined : { y: [0, 6, 0] }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-flow-lime backdrop-blur"
+      >
+        <ChevronDown size={16} />
+      </motion.span>
+    </motion.div>
   )
 }

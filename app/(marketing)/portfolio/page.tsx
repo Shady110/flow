@@ -28,7 +28,7 @@ export default function PortfolioPage() {
   return (
     <main>
       <ScrollProgress />
-      <Navbar />
+      <Navbar heroTone="dark" />
       <PortfolioClient data={portfolioData} />
       <Footer />
     </main>
