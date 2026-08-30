@@ -10,6 +10,7 @@ import {
   MessageSquare,
   FileText,
   Globe,
+  Megaphone,
   type LucideIcon,
 } from 'lucide-react'
 import type { PermissionKey } from '@/lib/types'
@@ -35,6 +36,7 @@ export const INTERNAL_NAV: NavItem[] = [
   { key: 'inbox', label: 'Inbox', href: '/inbox', icon: MessageSquare, permission: 'chat.access' },
   { key: 'team', label: 'Team', href: '/team', icon: BarChart3, permission: 'team.view' },
   { key: 'finance', label: 'Finance', href: '/finance', icon: Wallet, permission: 'finance.view' },
+  { key: 'social', label: 'Social', href: '/social', icon: Megaphone, permission: 'social.view' },
   { key: 'automations', label: 'Automations', href: '/automations', icon: Sparkles, permission: 'automation.run' },
   { key: 'landing', label: 'Landing content', href: '/settings/landing', icon: FileText, permission: 'content.manage' },
   { key: 'roles', label: 'Roles & access', href: '/settings/roles', icon: Shield, permission: 'roles.manage' },

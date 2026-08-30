@@ -106,6 +106,8 @@ export async function POST(req: NextRequest) {
         utm_source: utm(body.search, 'utm_source'),
         utm_medium: utm(body.search, 'utm_medium'),
         utm_campaign: utm(body.search, 'utm_campaign'),
+        // Identifies the individual post inside a campaign — see 0012.
+        utm_content: utm(body.search, 'utm_content'),
         locale: body.locale ?? null,
         user_agent: req.headers.get('user-agent')?.slice(0, 500) ?? null,
         activity,

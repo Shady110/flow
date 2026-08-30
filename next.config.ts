@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   // serverless bundle and the route throws ENOENT in production only.
   outputFileTracingIncludes: {
     '/api/chat': ['./docs/**'],
+    // Same trap as the handbook above: Satori needs the raw font files at
+    // request time, and without this they are not traced into the serverless
+    // bundle — so post rendering throws ENOENT in production only.
+    '/api/social/render': ['./assets/fonts/**'],
   },
   // Keep the dev-tools badge out of BOTH bottom corners. Bottom-right is the
   // chat launcher (which it used to cover and steal clicks from) and bottom-left

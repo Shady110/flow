@@ -295,7 +295,8 @@
       "automations": "Automations",
       "roles": "Roles & access",
       "landing": "Landing content",
-      "visitors": "Visitors"
+      "visitors": "Visitors",
+      "social": "Social"
     },
     "topbar": {
       "inbox": "Inbox"
@@ -314,7 +315,11 @@
       "unassigned": "Unassigned",
       "total": "{count} total",
       "openTasks": "{count} open tasks",
-      "overdueCount": "{count} overdue"
+      "overdueCount": "{count} overdue",
+      "none": "None",
+      "copy": "Copy",
+      "copied": "Copied",
+      "saved": "Saved"
     },
     "status": {
       "todo": "To do",
@@ -636,6 +641,93 @@
       "colViews": "Views",
       "colSource": "Source",
       "colLastSeen": "Last seen"
+    },
+    "social": {
+      "title": "Social",
+      "description": "Plan, write and schedule posts across Instagram, Facebook and LinkedIn.",
+      "newPost": "New post",
+      "created": "Post created",
+      "backToCalendar": "Back to calendar",
+      "composerDescription": "Write both languages, render the design, and schedule it.",
+      "statOpen": "Still to do",
+      "statScheduled": "Scheduled",
+      "statPublished": "Published",
+      "statLeads": "Leads attributed",
+      "platform": "Platform",
+      "campaign": "Campaign",
+      "hook": "The idea",
+      "hookPlaceholder": "The Q4 timeline sellers get wrong every year",
+      "hookHelp": "One line. This is what shows on the calendar before anything is written.",
+      "scheduledAt": "Scheduled for",
+      "scheduledOptional": "Leave empty to keep it in the backlog.",
+      "provisional": "dates TBC",
+      "backlog": "Backlog — no date yet",
+      "noPostsYet": "No posts yet. Create one, or seed the Sep–Dec plan.",
+      "noMatches": "No posts match these filters.",
+      "copyMissing": "copy needed",
+      "designMissing": "design needed",
+      "leadsFromPost": "Leads attributed to this post",
+      "readOnly": "view only",
+      "copy": "Copy",
+      "captionEn": "Caption — English",
+      "captionAr": "Caption — Arabic",
+      "hashtags": "Hashtags",
+      "draftWithAi": "Draft with AI",
+      "drafting": "Drafting…",
+      "drafted": "Both captions drafted",
+      "design": "Design",
+      "template": "Template",
+      "size": "Size",
+      "designBrief": "Design brief",
+      "preview": "Post preview",
+      "openFullSize": "Open full size",
+      "publishing": "Publishing",
+      "linkUrl": "Link",
+      "trackedLink": "Tracked link",
+      "trackedLinkHelp": "Use this in the post. It is what connects a lead back to this post.",
+      "needsPublishPermission": "You can draft, but scheduling needs publish permission.",
+      "manualPublish": "Publish",
+      "manualPublishHelp": "Auto-publishing is not switched on yet. Copy the caption, download the image, and post it.",
+      "tokenWarning": "An access token needs attention",
+      "tokenExpired": "expired",
+      "tokenExpiring": "expires {date}",
+      "platformName": {
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "linkedin": "LinkedIn"
+      },
+      "openPlatform": {
+        "instagram": "Open Meta Business Suite",
+        "facebook": "Open Meta Business Suite",
+        "linkedin": "Open LinkedIn"
+      },
+      "pillarName": {
+        "proof": "Proof",
+        "teach": "Teach",
+        "process": "Process",
+        "offer": "Offer",
+        "pulse": "Market pulse"
+      },
+      "formatName": {
+        "reel": "Reel",
+        "carousel": "Carousel",
+        "static": "Image",
+        "story": "Story",
+        "text": "Text",
+        "article": "Article"
+      },
+      "statusName": {
+        "idea": "Idea",
+        "draft": "Draft",
+        "needs_design": "Needs design",
+        "approved": "Approved",
+        "scheduled": "Scheduled",
+        "published": "Published",
+        "failed": "Failed"
+      },
+      "pillar": "Pillar",
+      "format": "Format",
+      "status": "Status"
     }
   },
   "portal": {

@@ -28,6 +28,9 @@ export type PermissionKey =
   | 'content.manage'
   | 'products.view'
   | 'products.manage'
+  | 'social.view'
+  | 'social.create'
+  | 'social.publish'
 
 export type ProfileStatus = 'invited' | 'active' | 'disabled'
 export type ClientStatus = 'lead' | 'active' | 'paused' | 'churned'
@@ -271,3 +274,68 @@ export interface AutomationItem {
 
 // Runtime label maps + ALL_PERMISSION_KEYS live in lib/constants.ts so this
 // module stays type-only (see the note there).
+
+// ── Social planner (migration 0012) ─────────────────────────────────────────
+
+export type SocialPlatform = 'instagram' | 'facebook' | 'linkedin'
+export type SocialPillar = 'proof' | 'teach' | 'process' | 'offer' | 'pulse'
+export type SocialFormat = 'reel' | 'carousel' | 'static' | 'story' | 'text' | 'article'
+export type SocialPostStatus =
+  | 'idea'
+  | 'draft'
+  | 'needs_design'
+  | 'approved'
+  | 'scheduled'
+  | 'published'
+  | 'failed'
+
+export interface SocialCampaign {
+  id: string
+  slug: string
+  name: string
+  starts_at: string
+  ends_at: string
+  goal: string | null
+  colour: string | null
+  dates_provisional: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SocialPost {
+  id: string
+  campaign_id: string | null
+  platform: SocialPlatform
+  pillar: SocialPillar
+  format: SocialFormat
+  status: SocialPostStatus
+  hook: string
+  caption_en: string | null
+  caption_ar: string | null
+  hashtags: string[]
+  design_brief: string | null
+  template: string | null
+  scheduled_at: string | null
+  published_at: string | null
+  link_url: string | null
+  utm_campaign: string | null
+  utm_content: string | null
+  media_path: string | null
+  external_post_id: string | null
+  error: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SocialAccount {
+  id: string
+  platform: SocialPlatform
+  external_id: string | null
+  display_name: string
+  token_ref: string | null
+  token_expires_at: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
