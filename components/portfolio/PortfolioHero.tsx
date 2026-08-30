@@ -1,66 +1,74 @@
 'use client'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
+import { spring } from '@/lib/animations'
+import RevealHeading from '../ui/RevealHeading'
+import Counter from '../ui/Counter'
 
 interface Props {
   totalImages: number
   totalCategories: number
 }
 
-const stats = (total: number, cats: number) => [
-  { value: total, label: 'Photos' },
-  { value: cats, label: 'Categories' },
-  { value: 6, label: 'Platforms' },
-]
-
 export default function PortfolioHero({ totalImages, totalCategories }: Props) {
+  const t = useTranslations('marketing.portfolio')
+
+  const stats = [
+    { value: totalImages, label: t('photos') },
+    { value: totalCategories, label: t('categories') },
+    { value: 6, label: t('platforms') },
+  ]
+
   return (
-    <section className="pt-36 md:pt-40 pb-14 text-center grain-overlay bg-flow-bg relative overflow-hidden">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'var(--gradient-hero-mesh)' }}
-      />
-      <div className="relative max-w-3xl mx-auto px-6">
+    <section
+      className="relative overflow-hidden grain-overlay pb-16 pt-36 md:pb-20 md:pt-44"
+      style={{ backgroundImage: 'var(--gradient-dark-panel)' }}
+    >
+      <div className="section-container">
+        {/* Off-centre, matching the landing page's cadence rather than the
+            centred stack this page used to open with. */}
+        <div className="grid gap-x-12 gap-y-8 md:grid-cols-12">
+          <div className="md:col-span-8">
+            <motion.span
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={spring.ui}
+              className="eyebrow-index text-flow-lime/80"
+              data-index="01"
+            >
+              {t('pageEyebrow')}
+            </motion.span>
+            <RevealHeading
+              as="h1"
+              text={t('pageHeading')}
+              whileInView={false}
+              className="mt-6 font-display text-[clamp(2.5rem,3.9vw,5rem)] font-bold leading-[0.98] tracking-[-0.032em] text-white"
+            />
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring.ui, delay: 0.2 }}
+            className="flex items-end md:col-span-4"
+          >
+            <p className="text-base leading-relaxed text-white/60">{t('pageIntro')}</p>
+          </motion.div>
+        </div>
+
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ ...spring.ui, delay: 0.3 }}
+          className="mt-14 grid grid-cols-3 gap-6 border-t border-white/15 pt-7"
         >
-          <span className="eyebrow-label mb-6">Our Work</span>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="font-display text-5xl md:text-6xl font-bold text-flow-green leading-tight mb-5"
-        >
-          Work That Sells.
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-flow-text-muted text-lg leading-relaxed mb-12"
-        >
-          Browse our product photography, listing content, and
-          marketplace-ready visuals.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex justify-center gap-12"
-        >
-          {stats(totalImages, totalCategories).map(({ value, label }) => (
-            <div key={label} className="flex flex-col items-center">
-              <span className="font-display text-4xl font-bold text-flow-green">
-                {value}+
-              </span>
-              <span className="text-xs font-medium uppercase tracking-widest text-flow-text-muted mt-1">
+          {stats.map(({ value, label }) => (
+            <div key={label}>
+              <p className="font-display text-3xl font-bold text-flow-lime sm:text-4xl">
+                <Counter value={value} suffix="+" />
+              </p>
+              <p className="mt-1.5 text-[11px] uppercase tracking-[0.14em] text-white/50 sm:text-xs">
                 {label}
-              </span>
+              </p>
             </div>
           ))}
         </motion.div>

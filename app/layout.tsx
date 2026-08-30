@@ -1,22 +1,26 @@
 import type { Metadata } from 'next'
-import { Syne, DM_Sans, Cairo } from 'next/font/google'
+import { Funnel_Display, Didact_Gothic, Cairo } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import './globals.css'
 import { Providers } from './providers'
 import { dirFor, type Locale } from '@/i18n/config'
 
-const syne = Syne({
+// Display face. Variable 300-800, so it carries every emphasis weight on the
+// site — headings, buttons, badges, numerals. No `weight` key: omitting it
+// selects the variable axis.
+const funnel = Funnel_Display({
   subsets: ['latin'],
-  weight: ['700', '800'],
-  variable: '--font-syne',
+  variable: '--font-funnel',
   display: 'swap',
 })
 
-const dmSans = DM_Sans({
+// Body face. Ships a single weight (400) — there is no bold cut, so anything
+// that needs emphasis uses the display face rather than a synthesised bold.
+const didact = Didact_Gothic({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-dm-sans',
+  weight: ['400'],
+  variable: '--font-didact',
   display: 'swap',
 })
 
@@ -42,7 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang={locale}
       dir={dirFor(locale)}
-      className={`${syne.variable} ${dmSans.variable} ${cairo.variable}`}
+      className={`${funnel.variable} ${didact.variable} ${cairo.variable}`}
     >
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>

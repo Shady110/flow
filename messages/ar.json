@@ -107,15 +107,25 @@
           "title": "نمو المبيعات",
           "description": "القوائم المحسّنة تزيد الظهور والنقرات والتحويلات."
         }
-      }
+      },
+      "stepLabel": "خطوة"
     },
     "portfolio": {
       "eyebrow": "أعمال مختارة",
       "heading": "تصوير منتجات يبيع في كل فئة.",
       "productsShot": "منتج تم تصويره",
       "categories": "فئات",
-      "shots": "صورة",
-      "cta": "استكشف كل الأعمال"
+      "cta": "استكشف كل الأعمال",
+      "pageEyebrow": "أعمالنا",
+      "pageHeading": "أعمال تصنع المبيعات.",
+      "pageIntro": "تصفّح تصوير المنتجات ومحتوى القوائم والمواد الجاهزة للمتاجر الإلكترونية.",
+      "photos": "صورة",
+      "platforms": "منصات",
+      "all": "الكل",
+      "showing": "عرض {count} صورة",
+      "previous": "الصورة السابقة",
+      "next": "الصورة التالية",
+      "closeViewer": "إغلاق عارض الصور"
     },
     "footer": {
       "tagline": "ارتقِ بكل قائمة. ضاعِف كل عملية بيع.",
@@ -262,6 +272,15 @@
       "body": "نحتفظ بسجلّ مجهول الهوية لطريقة استخدام الموقع كي نطوّره، وليكون لدى فريقنا سياق إن تواصلت معنا. ولا يبدأ أي تتبّع قبل موافقتك.",
       "accept": "أوافق",
       "reject": "أرفض"
+    },
+    "faqAside": {
+      "title": "لا تزال لديك أسئلة؟",
+      "intro": "راسلنا وسيرد عليك شخص من الفريق، في نفس اليوم غالبًا."
+    },
+    "finalCta": {
+      "heading": "جاهز تشغّل منتجاتك؟",
+      "intro": "أخبرنا بما تبيعه، وسنعود إليك بخطة وسعر وجدول زمني.",
+      "cta": "احجز استشارة مجانية"
     }
   },
   "internal": {
@@ -276,7 +295,8 @@
       "automations": "الأتمتة",
       "roles": "الأدوار والصلاحيات",
       "landing": "محتوى الصفحة الرئيسية",
-      "visitors": "الزوّار"
+      "visitors": "الزوّار",
+      "social": "السوشيال"
     },
     "topbar": {
       "inbox": "الوارد"
@@ -295,7 +315,11 @@
       "unassigned": "غير مُسنَد",
       "total": "{count} إجمالًا",
       "openTasks": "{count} مهمة مفتوحة",
-      "overdueCount": "{count} متأخرة"
+      "overdueCount": "{count} متأخرة",
+      "none": "بدون",
+      "copy": "نسخ",
+      "copied": "تم النسخ",
+      "saved": "تم الحفظ"
     },
     "status": {
       "todo": "قيد الانتظار",
@@ -617,6 +641,93 @@
       "colViews": "المشاهدات",
       "colSource": "المصدر",
       "colLastSeen": "آخر ظهور"
+    },
+    "social": {
+      "title": "السوشيال",
+      "description": "خطّط واكتب واجدول المنشورات على إنستجرام وفيسبوك ولينكد إن.",
+      "newPost": "منشور جديد",
+      "created": "تم إنشاء المنشور",
+      "backToCalendar": "رجوع للتقويم",
+      "composerDescription": "اكتب باللغتين، جهّز التصميم، وحدد الميعاد.",
+      "statOpen": "لسه محتاج شغل",
+      "statScheduled": "مجدول",
+      "statPublished": "منشور",
+      "statLeads": "عملاء محتملين منسوبين",
+      "platform": "المنصة",
+      "campaign": "الحملة",
+      "hook": "الفكرة",
+      "hookPlaceholder": "الجدول الزمني للربع الأخير اللي البائعين بيغلطوا فيه كل سنة",
+      "hookHelp": "سطر واحد. ده اللي بيظهر في التقويم قبل ما يتكتب أي حاجة.",
+      "scheduledAt": "مجدول يوم",
+      "scheduledOptional": "سيبها فاضية عشان يفضل في قايمة الانتظار.",
+      "provisional": "التواريخ غير مؤكدة",
+      "backlog": "قايمة الانتظار — من غير تاريخ",
+      "noPostsYet": "مفيش منشورات لسه. أنشئ واحد، أو حمّل خطة سبتمبر–ديسمبر.",
+      "noMatches": "مفيش منشورات مطابقة للفلاتر دي.",
+      "copyMissing": "محتاج نص",
+      "designMissing": "محتاج تصميم",
+      "leadsFromPost": "عملاء محتملين منسوبين للمنشور ده",
+      "readOnly": "للعرض فقط",
+      "copy": "النص",
+      "captionEn": "النص — إنجليزي",
+      "captionAr": "النص — عربي",
+      "hashtags": "الهاشتاجات",
+      "draftWithAi": "اكتب بالذكاء الاصطناعي",
+      "drafting": "بيكتب…",
+      "drafted": "تم كتابة النصين",
+      "design": "التصميم",
+      "template": "القالب",
+      "size": "المقاس",
+      "designBrief": "بريف التصميم",
+      "preview": "معاينة المنشور",
+      "openFullSize": "افتح بالحجم الكامل",
+      "publishing": "النشر",
+      "linkUrl": "اللينك",
+      "trackedLink": "لينك متتبَّع",
+      "trackedLinkHelp": "استخدم ده في المنشور. هو اللي بيربط العميل المحتمل بالمنشور ده.",
+      "needsPublishPermission": "تقدر تكتب، لكن الجدولة محتاجة صلاحية نشر.",
+      "manualPublish": "النشر",
+      "manualPublishHelp": "النشر التلقائي لسه مش مفعّل. انسخ النص، نزّل الصورة، وانشر.",
+      "tokenWarning": "فيه توكن وصول محتاج انتباه",
+      "tokenExpired": "منتهي",
+      "tokenExpiring": "بينتهي {date}",
+      "platformName": {
+        "instagram": "إنستجرام",
+        "facebook": "فيسبوك",
+        "linkedin": "لينكد إن"
+      },
+      "openPlatform": {
+        "instagram": "افتح Meta Business Suite",
+        "facebook": "افتح Meta Business Suite",
+        "linkedin": "افتح لينكد إن"
+      },
+      "pillarName": {
+        "proof": "إثبات",
+        "teach": "تعليم",
+        "process": "طريقة الشغل",
+        "offer": "عرض",
+        "pulse": "نبض السوق"
+      },
+      "formatName": {
+        "reel": "ريل",
+        "carousel": "كاروسيل",
+        "static": "صورة",
+        "story": "ستوري",
+        "text": "نص",
+        "article": "مقال"
+      },
+      "statusName": {
+        "idea": "فكرة",
+        "draft": "مسودة",
+        "needs_design": "محتاج تصميم",
+        "approved": "معتمد",
+        "scheduled": "مجدول",
+        "published": "منشور",
+        "failed": "فشل"
+      },
+      "pillar": "المحور",
+      "format": "الشكل",
+      "status": "الحالة"
     }
   },
   "portal": {

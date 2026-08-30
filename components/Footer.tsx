@@ -1,20 +1,22 @@
 'use client'
-import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin } from 'lucide-react'
+import { useReducedMotion } from '@/lib/useReducedMotion'
+import Logo from './ui/Logo'
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <a href={href} className="group relative inline-block text-white/60 text-sm hover:text-white transition-colors">
       {children}
-      <span className="absolute left-0 -bottom-0.5 h-px w-full bg-white/60 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+      <span className="absolute -bottom-0.5 start-0 h-px w-full origin-left scale-x-0 bg-white/60 transition-transform duration-300 group-hover:scale-x-100 rtl:origin-right" />
     </a>
   )
 }
 
 export default function Footer() {
   const t = useTranslations('marketing.footer')
+  const reduced = useReducedMotion()
   const serviceLinks = [
     t('services.photography'),
     t('services.listing'),
@@ -31,19 +33,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Left — wider brand block */}
           <div className="relative md:col-span-5">
+            {/* A 6s opacity loop is a slow oscillation in the band that
+                triggers motion sensitivity, so it holds still when asked. */}
             <motion.div
-              animate={{ opacity: [0.4, 0.7, 0.4] }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -top-6 -left-6 w-40 h-40 rounded-full pointer-events-none blur-3xl"
+              animate={reduced ? { opacity: 0.55 } : { opacity: [0.4, 0.7, 0.4] }}
+              transition={reduced ? { duration: 0 } : { duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              className="pointer-events-none absolute -top-6 -start-6 h-40 w-40 rounded-full blur-3xl"
               style={{ background: 'radial-gradient(circle, rgba(196,240,117,0.35) 0%, transparent 70%)' }}
             />
-            <Image
-              src="/assets/flow-wordmark-white.png"
-              alt="FLOW"
-              width={220}
-              height={88}
-              className="relative object-contain mb-4"
-            />
+            <Logo variant="lockup" tone="white" className="relative mb-5 h-9" />
             <p className="relative text-white font-semibold text-sm mb-3">
               {t('tagline')}
             </p>

@@ -107,15 +107,25 @@
           "title": "Sales Growth",
           "description": "Optimized listings drive more visibility, clicks, and conversions."
         }
-      }
+      },
+      "stepLabel": "Step"
     },
     "portfolio": {
       "eyebrow": "Selected Work",
       "heading": "Product photography that sells across every category.",
       "productsShot": "Products shot",
       "categories": "Categories",
-      "shots": "shots",
-      "cta": "Explore the full portfolio"
+      "cta": "Explore the full portfolio",
+      "pageEyebrow": "Our Work",
+      "pageHeading": "Work That Sells.",
+      "pageIntro": "Browse our product photography, listing content, and marketplace-ready visuals.",
+      "photos": "Photos",
+      "platforms": "Platforms",
+      "all": "All",
+      "showing": "Showing {count} photos",
+      "previous": "Previous image",
+      "next": "Next image",
+      "closeViewer": "Close image viewer"
     },
     "footer": {
       "tagline": "Elevate every listing. Amplify every sale.",
@@ -262,6 +272,15 @@
       "body": "We keep an anonymous record of how the site is used so we can improve it, and so our team has context if you get in touch. No tracking happens until you accept.",
       "accept": "Accept",
       "reject": "Reject"
+    },
+    "faqAside": {
+      "title": "Still have questions?",
+      "intro": "Send us a note and a human will reply, usually the same day."
+    },
+    "finalCta": {
+      "heading": "Ready to put your products to work?",
+      "intro": "Tell us what you sell. We'll come back with a plan, a price, and a timeline.",
+      "cta": "Book a free consultation"
     }
   },
   "internal": {
@@ -276,7 +295,8 @@
       "automations": "Automations",
       "roles": "Roles & access",
       "landing": "Landing content",
-      "visitors": "Visitors"
+      "visitors": "Visitors",
+      "social": "Social"
     },
     "topbar": {
       "inbox": "Inbox"
@@ -295,7 +315,11 @@
       "unassigned": "Unassigned",
       "total": "{count} total",
       "openTasks": "{count} open tasks",
-      "overdueCount": "{count} overdue"
+      "overdueCount": "{count} overdue",
+      "none": "None",
+      "copy": "Copy",
+      "copied": "Copied",
+      "saved": "Saved"
     },
     "status": {
       "todo": "To do",
@@ -617,6 +641,93 @@
       "colViews": "Views",
       "colSource": "Source",
       "colLastSeen": "Last seen"
+    },
+    "social": {
+      "title": "Social",
+      "description": "Plan, write and schedule posts across Instagram, Facebook and LinkedIn.",
+      "newPost": "New post",
+      "created": "Post created",
+      "backToCalendar": "Back to calendar",
+      "composerDescription": "Write both languages, render the design, and schedule it.",
+      "statOpen": "Still to do",
+      "statScheduled": "Scheduled",
+      "statPublished": "Published",
+      "statLeads": "Leads attributed",
+      "platform": "Platform",
+      "campaign": "Campaign",
+      "hook": "The idea",
+      "hookPlaceholder": "The Q4 timeline sellers get wrong every year",
+      "hookHelp": "One line. This is what shows on the calendar before anything is written.",
+      "scheduledAt": "Scheduled for",
+      "scheduledOptional": "Leave empty to keep it in the backlog.",
+      "provisional": "dates TBC",
+      "backlog": "Backlog — no date yet",
+      "noPostsYet": "No posts yet. Create one, or seed the Sep–Dec plan.",
+      "noMatches": "No posts match these filters.",
+      "copyMissing": "copy needed",
+      "designMissing": "design needed",
+      "leadsFromPost": "Leads attributed to this post",
+      "readOnly": "view only",
+      "copy": "Copy",
+      "captionEn": "Caption — English",
+      "captionAr": "Caption — Arabic",
+      "hashtags": "Hashtags",
+      "draftWithAi": "Draft with AI",
+      "drafting": "Drafting…",
+      "drafted": "Both captions drafted",
+      "design": "Design",
+      "template": "Template",
+      "size": "Size",
+      "designBrief": "Design brief",
+      "preview": "Post preview",
+      "openFullSize": "Open full size",
+      "publishing": "Publishing",
+      "linkUrl": "Link",
+      "trackedLink": "Tracked link",
+      "trackedLinkHelp": "Use this in the post. It is what connects a lead back to this post.",
+      "needsPublishPermission": "You can draft, but scheduling needs publish permission.",
+      "manualPublish": "Publish",
+      "manualPublishHelp": "Auto-publishing is not switched on yet. Copy the caption, download the image, and post it.",
+      "tokenWarning": "An access token needs attention",
+      "tokenExpired": "expired",
+      "tokenExpiring": "expires {date}",
+      "platformName": {
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "linkedin": "LinkedIn"
+      },
+      "openPlatform": {
+        "instagram": "Open Meta Business Suite",
+        "facebook": "Open Meta Business Suite",
+        "linkedin": "Open LinkedIn"
+      },
+      "pillarName": {
+        "proof": "Proof",
+        "teach": "Teach",
+        "process": "Process",
+        "offer": "Offer",
+        "pulse": "Market pulse"
+      },
+      "formatName": {
+        "reel": "Reel",
+        "carousel": "Carousel",
+        "static": "Image",
+        "story": "Story",
+        "text": "Text",
+        "article": "Article"
+      },
+      "statusName": {
+        "idea": "Idea",
+        "draft": "Draft",
+        "needs_design": "Needs design",
+        "approved": "Approved",
+        "scheduled": "Scheduled",
+        "published": "Published",
+        "failed": "Failed"
+      },
+      "pillar": "Pillar",
+      "format": "Format",
+      "status": "Status"
     }
   },
   "portal": {

@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import { motion, useInView, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { useReducedMotion } from '@/lib/useReducedMotion'
 
 interface CounterProps {
   value: number
@@ -10,6 +11,7 @@ interface CounterProps {
 }
 
 export default function Counter({ value, prefix = '', suffix = '', className }: CounterProps) {
+  const reduced = useReducedMotion()
   const ref = useRef<HTMLSpanElement>(null)
   const isInView = useInView(ref, { once: true, amount: 0.5 })
   const motionValue = useMotionValue(0)
@@ -24,6 +26,16 @@ export default function Counter({ value, prefix = '', suffix = '', className }: 
   useEffect(() => {
     if (isInView) motionValue.set(value)
   }, [isInView, value, motionValue])
+
+  // A number counting up is vestibular motion in miniature. Under reduced
+  // motion show the figure outright — it is the information, not the effect.
+  if (reduced) {
+    return (
+      <span className={className}>
+        {`${prefix}${value.toLocaleString('en-US')}${suffix}`}
+      </span>
+    )
+  }
 
   return (
     <motion.span ref={ref} className={className}>

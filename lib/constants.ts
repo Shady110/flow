@@ -10,6 +10,10 @@ import type {
   TaskStatus,
   TaskPriority,
   InvoiceStatus,
+  SocialPlatform,
+  SocialPillar,
+  SocialFormat,
+  SocialPostStatus,
 } from '@/lib/types'
 
 /** Default trading currency for the agency. */
@@ -32,6 +36,7 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'team.view', 'finance.view', 'finance.manage', 'invoices.issue',
   'chat.access', 'automation.run', 'roles.manage', 'users.invite',
   'users.manage', 'settings.manage', 'content.manage', 'products.view', 'products.manage',
+  'social.view', 'social.create', 'social.publish',
 ]
 
 export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
@@ -68,4 +73,22 @@ export const LEAD_STATUSES: LeadStatus[] = [
   'proposal',
   'won',
   'lost',
+]
+
+/** Enum order for pickers. Labels come from the `internal.social` catalog. */
+export const SOCIAL_PLATFORMS: SocialPlatform[] = ['instagram', 'facebook', 'linkedin']
+export const SOCIAL_PILLARS: SocialPillar[] = ['proof', 'teach', 'process', 'offer', 'pulse']
+export const SOCIAL_FORMATS: SocialFormat[] = [
+  'reel', 'carousel', 'static', 'story', 'text', 'article',
+]
+export const SOCIAL_POST_STATUSES: SocialPostStatus[] = [
+  'idea', 'draft', 'needs_design', 'approved', 'scheduled', 'published', 'failed',
+]
+
+/**
+ * Statuses a post can reach without anything being published. Used to keep the
+ * calendar's "still to do" count honest.
+ */
+export const SOCIAL_OPEN_STATUSES: SocialPostStatus[] = [
+  'idea', 'draft', 'needs_design', 'approved',
 ]

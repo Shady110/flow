@@ -5,6 +5,7 @@ import { getLandingContent } from '@/lib/db/landing'
 import type { Locale } from '@/i18n/config'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import FinalCTA from '@/components/FinalCTA'
 import ScrollProgress from '@/components/ui/ScrollProgress'
 
 const PricingSection = dynamic(() => import('@/components/PricingSection'), {
@@ -43,12 +44,13 @@ export default async function PricingPage() {
   return (
     <main>
       <ScrollProgress />
-      <Navbar />
+      <Navbar heroTone="dark" />
       {/* The fixed plans first, then the builder for anyone none of them fits. */}
       {/* The builder is the fourth tab inside PricingSection, not a section
           of its own — someone who has just rejected all three packages is
           already looking at the tab bar. */}
       <PricingSection content={content.pricing} />
+      <FinalCTA />
       <ContactSection content={content.contact} />
       <Footer />
     </main>

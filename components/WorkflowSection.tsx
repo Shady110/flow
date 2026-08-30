@@ -1,150 +1,141 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
-import { useReducedMotion } from '@/lib/useReducedMotion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Plus } from 'lucide-react'
+import { spring } from '@/lib/animations'
+import { cn } from '@/lib/utils'
 import RevealHeading from './ui/RevealHeading'
+import Reveal from './ui/Reveal'
+import { ProcessArt } from './ui/illustrations'
 
 const stepKeys = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
-const N = stepKeys.length
 
+/**
+ * The process, as a column of expandable step cards beside a fixed visual.
+ *
+ * This replaced a 260vh pinned section that scrubbed the steps against scroll.
+ * That version looked impressive and behaved badly: it took over the scroll for
+ * two and a half screens, could not be skimmed, gave a reader no way to go
+ * straight to a step, and needed an entirely separate DOM branch for mobile.
+ * Steps you can click through are the same information under the reader's
+ * control, in a third of the code and with one layout for every screen.
+ */
 export default function WorkflowSection() {
   const t = useTranslations('marketing.workflow')
-  const workflowSteps = stepKeys.map((key, i) => ({
+  const steps = stepKeys.map((key, i) => ({
     num: String(i + 1).padStart(2, '0'),
     title: t(`steps.${key}.title`),
     description: t(`steps.${key}.description`),
   }))
-  const wrapperRef = useRef<HTMLElement>(null)
-  const [active, setActive] = useState(0)
-  const reduced = useReducedMotion()
-
-  const { scrollYProgress } = useScroll({
-    target: wrapperRef,
-    offset: ['start start', 'end end'],
-  })
-
-  const stepFloat = useTransform(scrollYProgress, [0, 1], [0, N - 1])
-
-  useMotionValueEvent(stepFloat, 'change', (v) => {
-    const i = Math.min(N - 1, Math.max(0, Math.round(v)))
-    setActive((prev) => (prev === i ? prev : i))
-  })
-
-  function scrollToStep(i: number) {
-    const el = wrapperRef.current
-    if (!el) return
-    const total = el.offsetHeight - window.innerHeight
-    window.scrollTo({ top: el.offsetTop + (i / (N - 1)) * total, behavior: 'smooth' })
-  }
-
-  const step = workflowSteps[active]
+  const [open, setOpen] = useState(0)
 
   return (
-    <div id="workflow" className="grain-overlay" style={{ backgroundImage: 'var(--gradient-dark-panel)' }}>
-      {/* Desktop: pinned scroll-storytelling */}
-      <section ref={wrapperRef} className="hidden md:block relative h-[260vh]">
-        <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 w-full">
-            <div className="mb-16 max-w-xl">
-              <span className="eyebrow-index text-white/50 mb-6" data-index="06">{t('eyebrow')}</span>
-              <RevealHeading
-                text={t('heading')}
-                accent={[]}
-                className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.02] tracking-tight mt-6"
-              />
-              <p className="text-white/60 text-base leading-relaxed mt-5">
-                {t('intro')}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-[auto_1fr] gap-16 items-center">
-              {/* Progress rail */}
-              <div className="flex flex-col gap-3">
-                {workflowSteps.map((s, i) => (
-                  <button
-                    key={s.num}
-                    onClick={() => scrollToStep(i)}
-                    aria-label={`Go to step ${i + 1}`}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === active ? 'w-12 bg-flow-lime' : 'w-6 bg-white/20'
-                    }`}
-                  />
-                ))}
-                <div className="mt-4 h-0.5 w-24 bg-white/15 relative overflow-hidden rounded-full">
-                  <motion.div
-                    className="absolute inset-y-0 left-0 bg-flow-lime origin-left"
-                    style={{ scaleX: scrollYProgress }}
-                  />
-                </div>
-              </div>
-
-              {/* Active step content */}
-              <div className="relative min-h-[300px] flex flex-col justify-center">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={active}
-                    initial={reduced ? false : { opacity: 0, y: 24, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={reduced ? undefined : { opacity: 0, y: -24, filter: 'blur(4px)' }}
-                    transition={{ duration: reduced ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <span className="font-display text-7xl lg:text-9xl leading-none font-bold text-flow-lime/25 block -mb-6">
-                      {step.num}
-                    </span>
-                    <h3 className="font-display text-3xl font-bold text-white mb-3">
-                      {step.title}
-                    </h3>
-                    <p className="text-white/60 text-base leading-relaxed max-w-md">
-                      {step.description}
-                    </p>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mobile: plain vertical stack, no pinning/scroll-linking */}
-      <section className="md:hidden py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16 flex flex-col items-center">
-            <span className="eyebrow-index text-white/50 mb-6" data-index="06">{t('eyebrow')}</span>
-            <h2 className="font-display text-3xl font-bold text-white leading-tight tracking-tight mt-6 mb-4">
-              {t('heading')}
-            </h2>
-            <p className="text-white/60 text-base leading-relaxed max-w-2xl mx-auto">
+    <section id="workflow" className="section-padding bg-flow-bg">
+      <div className="section-container">
+        <div className="flex flex-col items-center text-center">
+          <Reveal y={16}>
+            <span className="eyebrow-index text-flow-text-muted" data-index="05">
+              {t('eyebrow')}
+            </span>
+          </Reveal>
+          <RevealHeading text={t('heading')} className="section-title mt-6 max-w-3xl" />
+          <Reveal delay={0.1}>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-flow-text-muted">
               {t('intro')}
             </p>
+          </Reveal>
+        </div>
+
+        <div className="mt-14 grid gap-10 lg:grid-cols-2 lg:gap-14">
+          {/* Steps */}
+          <div className="relative">
+            {/* The rail runs behind the markers, inset by half a marker so it
+                meets their centres. Logical inset so it mirrors in Arabic. */}
+            <div
+              aria-hidden="true"
+              className="absolute bottom-6 start-[19px] top-6 border-s-2 border-dashed border-flow-border"
+            />
+            <ul className="relative space-y-3">
+              {steps.map((s, i) => {
+                const isOpen = i === open
+                return (
+                  <Reveal as="li" key={s.num} delay={i * 0.05} y={18}>
+                    <motion.button
+                      type="button"
+                      onClick={() => setOpen(isOpen ? -1 : i)}
+                      aria-expanded={isOpen}
+                      whileTap={{ scale: 0.995 }}
+                      transition={spring.snappy}
+                      className={cn(
+                        'flex w-full gap-4 rounded-2xl border p-4 text-start transition-colors sm:p-5',
+                        isOpen
+                          ? 'border-flow-green/20 bg-white shadow-[var(--shadow-md)]'
+                          : 'border-flow-border bg-flow-bg-soft hover:border-flow-green/20',
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-display text-xs font-bold transition-colors',
+                          isOpen
+                            ? 'bg-flow-green text-flow-lime'
+                            : 'bg-white text-flow-green ring-1 ring-flow-border',
+                        )}
+                      >
+                        {s.num}
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-flow-text-muted">
+                          {t('stepLabel')} {s.num}
+                        </span>
+                        <span className="mt-1 block font-display text-lg font-bold text-flow-green">
+                          {s.title}
+                        </span>
+
+                        <AnimatePresence initial={false}>
+                          {isOpen && (
+                            <motion.span
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={spring.ui}
+                              className="block overflow-hidden"
+                            >
+                              <span className="mt-2 block text-sm leading-relaxed text-flow-text-muted">
+                                {s.description}
+                              </span>
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </span>
+
+                      <motion.span
+                        animate={{ rotate: isOpen ? 45 : 0 }}
+                        transition={spring.snappy}
+                        className="mt-0.5 shrink-0 text-flow-green/50"
+                      >
+                        <Plus size={16} />
+                      </motion.span>
+                    </motion.button>
+                  </Reveal>
+                )
+              })}
+            </ul>
           </div>
 
-          <div className="flex flex-col gap-0 relative">
-            <div className="absolute left-[21px] rtl:left-auto rtl:right-[21px] top-2 bottom-8 border-l-2 rtl:border-l-0 rtl:border-r-2 border-dashed border-white/15" />
-            {workflowSteps.map((s, i) => (
-              <motion.div
-                key={s.num}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.5, delay: i * 0.05 }}
-                className="relative z-10 flex gap-5"
-              >
-                <div className="flex flex-col items-center">
-                  <div className="w-11 h-11 rounded-full bg-flow-lime flex items-center justify-center text-flow-green font-bold text-sm shrink-0">
-                    {s.num}
-                  </div>
-                </div>
-                <div className="pb-8 pt-1">
-                  <p className="font-semibold text-white text-sm mb-1">{s.title}</p>
-                  <p className="text-white/60 text-sm leading-relaxed">{s.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {/* Visual, held in view while the steps are read through. */}
+          <Reveal delay={0.1} y={24} className="lg:sticky lg:top-28 lg:self-start">
+            <div
+              className="rounded-3xl border border-white/10 p-6 shadow-[var(--shadow-xl)] sm:p-8"
+              style={{ backgroundImage: 'var(--gradient-dark-panel)' }}
+            >
+              <ProcessArt />
+            </div>
+          </Reveal>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   )
 }
 

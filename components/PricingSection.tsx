@@ -1,13 +1,14 @@
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, Check, SlidersHorizontal } from 'lucide-react'
-import { fadeUp, staggerContainer, revealUp } from '@/lib/animations'
+import { spring, staggerContainer, revealUp } from '@/lib/animations'
 import { cn } from '@/lib/utils'
 import Counter from './ui/Counter'
 import MagneticButton from './ui/MagneticButton'
 import RevealHeading from './ui/RevealHeading'
+import Reveal from './ui/Reveal'
 import { useTranslations } from 'next-intl'
 import { pricingTabs, type PricingContent, type PricingPlan } from '@/data/landing-content'
 import PackageBuilderSection from './PackageBuilderSection'
@@ -183,6 +184,49 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
   )
 }
 
+/**
+ * Segmented control.
+ *
+ * The selected state used to be a background-colour class that simply moved
+ * from one button to another — no continuity, so nothing connected the tab you
+ * left to the tab you arrived at. A single shared `layoutId` pill physically
+ * travels between them instead, and the label colours cross-fade over it.
+ */
+function Tab({
+  active,
+  onSelect,
+  children,
+}: {
+  active: boolean
+  onSelect: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <motion.button
+      role="tab"
+      type="button"
+      aria-selected={active}
+      tabIndex={active ? 0 : -1}
+      onClick={onSelect}
+      whileTap={{ scale: 0.98 }}
+      transition={spring.snappy}
+      className={cn(
+        'relative flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-colors duration-200',
+        active ? 'text-white' : 'text-flow-text-muted hover:text-flow-green',
+      )}
+    >
+      {active && (
+        <motion.span
+          layoutId="pricing-tab-pill"
+          transition={spring.snappy}
+          className="absolute inset-0 rounded-xl bg-flow-green shadow-[var(--shadow-sm)]"
+        />
+      )}
+      <span className="relative z-10 flex items-center gap-2">{children}</span>
+    </motion.button>
+  )
+}
+
 export default function PricingSection({ content }: { content: PricingContent }) {
   const tabs = pricingTabs(content)
   // The monthly-plans tab is the one we want chosen, so it opens first even
@@ -196,139 +240,164 @@ export default function PricingSection({ content }: { content: PricingContent })
     activeId === CUSTOM_TAB ? undefined : (tabs.find((t) => t.id === activeId) ?? tabs[0])
   const monthly = tabs.find((t) => t.id === content.defaultTab)
   const tb = useTranslations('marketing.packageBuilder')
+  const listRef = useRef<HTMLDivElement>(null)
+
+  const allIds = [...tabs.map((t) => t.id), CUSTOM_TAB]
+
+  // Roving arrow-key navigation, mirrored: in Arabic the left arrow moves to
+  // the next tab, because the next tab is physically to the left.
+  function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+    e.preventDefault()
+    const rtl = document.documentElement.dir === 'rtl'
+    const forward = rtl ? e.key === 'ArrowLeft' : e.key === 'ArrowRight'
+    const i = allIds.indexOf(activeId ?? allIds[0])
+    const next = allIds[(i + (forward ? 1 : -1) + allIds.length) % allIds.length]
+    setActiveId(next)
+    // Move focus with selection so the control stays keyboard-navigable.
+    const buttons = listRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+    buttons?.[allIds.indexOf(next)]?.focus()
+  }
 
   return (
-    <section id="pricing" className="section-padding bg-flow-bg-soft">
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-        {/* Heading only. The numbered eyebrow belonged to the landing page's
-            section sequence and means nothing on a dedicated /pricing route,
-            and the subheading repeated what the tabs and cards already say —
-            together they pushed the plans most of a screen down. Each tab's
-            own tagline still carries the detail. */}
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
-          custom={0}
-          className="mb-6 flex flex-col items-center text-center"
-        >
-          <RevealHeading text={content.heading} accent={content.accent} className="section-title" />
-        </motion.div>
+    <>
+      {/* Establishing band. The page used to open straight onto a tab bar with
+          no statement of what was being priced. */}
+      <section
+        className="relative overflow-hidden pb-16 pt-32 md:pb-20 md:pt-40"
+        style={{ backgroundImage: 'var(--gradient-dark-panel)' }}
+      >
+        <div className="section-container">
+          <Reveal y={16}>
+            <span className="eyebrow-index text-flow-lime/80" data-index="01">
+              {content.eyebrow}
+            </span>
+          </Reveal>
+          <RevealHeading
+            text={content.heading}
+            accent={content.accent}
+            accentTone="light"
+            as="h1"
+            whileInView={false}
+            className="mt-6 max-w-4xl font-display text-4xl font-bold leading-[1.02] tracking-[-0.03em] text-white md:text-5xl lg:text-6xl"
+          />
+        </div>
+      </section>
 
-        {tabs.length > 0 && (
-          <div className="mb-6">
-            <div
-              role="tablist"
-              aria-label={content.eyebrow}
-              className="flex w-full flex-col gap-2 rounded-2xl border border-flow-border bg-white p-2 shadow-[var(--shadow-sm)] sm:flex-row"
-            >
-              {tabs.map((tab) => {
-                const on = tab.id === active?.id
-                return (
-                  <button
+      <section id="pricing" className="section-padding bg-flow-bg-soft">
+        <div className="section-container">
+          {tabs.length > 0 && (
+            <div className="mb-6">
+              <div
+                role="tablist"
+                ref={listRef}
+                onKeyDown={onKeyDown}
+                aria-label={content.eyebrow}
+                className="flex w-full flex-col gap-2 rounded-2xl border border-flow-border bg-white p-2 shadow-[var(--shadow-sm)] sm:flex-row"
+              >
+                {tabs.map((tab) => (
+                  <Tab
                     key={tab.id}
-                    role="tab"
-                    type="button"
-                    aria-selected={on}
-                    onClick={() => setActiveId(tab.id)}
-                    className={cn(
-                      'flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-colors',
-                      on
-                        ? 'bg-flow-green text-white shadow-[var(--shadow-sm)]'
-                        : 'text-flow-text-muted hover:bg-flow-bg-muted hover:text-flow-green',
-                    )}
+                    active={tab.id === active?.id}
+                    onSelect={() => setActiveId(tab.id)}
                   >
                     {tab.label}
                     {tab.badge && (
                       <span
                         className={cn(
                           'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-                          on ? 'bg-flow-lime text-flow-green' : 'bg-flow-lime/40 text-flow-green',
+                          tab.id === active?.id
+                            ? 'bg-flow-lime text-flow-green'
+                            : 'bg-flow-lime/40 text-flow-green',
                         )}
                       >
                         {tab.badge}
                       </span>
                     )}
-                  </button>
-                )
-              })}
-              <button
-                role="tab"
-                type="button"
-                aria-selected={activeId === CUSTOM_TAB}
-                onClick={() => setActiveId(CUSTOM_TAB)}
-                className={cn(
-                  'flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-colors',
-                  activeId === CUSTOM_TAB
-                    ? 'bg-flow-green text-white shadow-[var(--shadow-sm)]'
-                    : 'text-flow-text-muted hover:bg-flow-bg-muted hover:text-flow-green',
-                )}
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                {tb('tabLabel')}
-                <span
+                  </Tab>
+                ))}
+                <Tab
+                  active={activeId === CUSTOM_TAB}
+                  onSelect={() => setActiveId(CUSTOM_TAB)}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {tb('tabLabel')}
+                  <span
+                    className={cn(
+                      'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                      activeId === CUSTOM_TAB
+                        ? 'bg-flow-lime text-flow-green'
+                        : 'bg-flow-lime/40 text-flow-green',
+                    )}
+                  >
+                    {tb('tabBadge')}
+                  </span>
+                </Tab>
+              </div>
+            </div>
+          )}
+
+          {/* One presence boundary around the whole panel, so switching tabs
+              reads as one surface being replaced rather than a stack of
+              independently-timed pieces. `popLayout` pulls the outgoing panel
+              out of flow, so the incoming one does not wait for it. */}
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={activeId}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={spring.ui}
+            >
+              {activeId === CUSTOM_TAB && <PackageBuilderSection embedded />}
+
+              {active?.tagline && (
+                <p className="mx-auto mb-8 max-w-2xl text-center text-sm leading-relaxed text-flow-text-muted">
+                  {active.tagline}
+                </p>
+              )}
+
+              {/* Uniform, scalable grid — every plan is an equal card; add/remove
+                  from the dashboard and the layout reflows. */}
+              {active && (
+                <motion.div
+                  role="tabpanel"
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
                   className={cn(
-                    'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-                    activeId === CUSTOM_TAB
-                      ? 'bg-flow-lime text-flow-green'
-                      : 'bg-flow-lime/40 text-flow-green',
+                    'mx-auto grid grid-cols-1 gap-6 sm:grid-cols-2',
+                    active.plans.length >= 3 ? 'lg:grid-cols-3' : 'max-w-4xl',
                   )}
                 >
-                  {tb('tabBadge')}
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
+                  {active.plans.map((plan) => (
+                    <PlanCard key={plan.name} plan={plan} />
+                  ))}
+                </motion.div>
+              )}
 
-        {activeId === CUSTOM_TAB && <PackageBuilderSection embedded />}
-
-        {active?.tagline && (
-          <p className="mx-auto mb-8 max-w-2xl text-center text-sm leading-relaxed text-flow-text-muted">
-            {active.tagline}
-          </p>
-        )}
-
-        {/* Uniform, scalable grid — every plan is an equal card; add/remove from
-            the dashboard and the layout reflows. No scaled/overlapping cards.
-            Re-keyed on the tab so the cards animate in on every switch. */}
-        {active && (
-        <motion.div
-          key={active.id}
-          role="tabpanel"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-          className={cn(
-            'mx-auto grid grid-cols-1 gap-6 sm:grid-cols-2',
-            active.plans.length >= 3 ? 'lg:grid-cols-3' : 'max-w-4xl',
-          )}
-        >
-          {active.plans.map((plan) => (
-            <PlanCard key={plan.name} plan={plan} />
-          ))}
-        </motion.div>
-        )}
-
-        {active?.footnote && (
-          <div className="mt-8 flex flex-col items-center gap-3 text-center">
-            <p className="text-sm text-flow-text-muted">{active.footnote}</p>
-            {monthly && monthly.id !== active.id && (
-              <button
-                type="button"
-                onClick={() => setActiveId(monthly.id)}
-                className="inline-flex items-center gap-1.5 rounded-full border-2 border-flow-green px-5 py-2.5 text-sm font-semibold text-flow-green transition-colors hover:bg-flow-green hover:text-white"
-              >
-                {monthly.label}
-                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    </section>
+              {active?.footnote && (
+                <div className="mt-8 flex flex-col items-center gap-3 text-center">
+                  <p className="text-sm text-flow-text-muted">{active.footnote}</p>
+                  {monthly && monthly.id !== active.id && (
+                    <motion.button
+                      type="button"
+                      onClick={() => setActiveId(monthly.id)}
+                      whileTap={{ scale: 0.97 }}
+                      transition={spring.snappy}
+                      className="inline-flex items-center gap-1.5 rounded-full border-2 border-flow-green px-5 py-2.5 text-sm font-semibold text-flow-green transition-colors hover:bg-flow-green hover:text-white"
+                    >
+                      {monthly.label}
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    </motion.button>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </section>
+    </>
   )
 }
 

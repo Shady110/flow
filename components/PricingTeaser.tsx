@@ -1,11 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { ArrowRight, SlidersHorizontal } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { fadeUp } from '@/lib/animations'
 import RevealHeading from './ui/RevealHeading'
+import Reveal from './ui/Reveal'
 import MagneticButton from './ui/MagneticButton'
 import Counter from './ui/Counter'
 import { CONTENT_RATES, GROWTH_TIERS, CURRENCY } from '@/lib/pricing/quote'
@@ -28,53 +27,60 @@ export default function PricingTeaser() {
   ]
 
   return (
-    <section id="pricing" className="section-padding bg-flow-bg">
-      <motion.div
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.25 }}
-        className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8"
-      >
-        <div className="grid items-center gap-10 rounded-3xl border border-flow-border bg-white p-8 shadow-[var(--shadow-sm)] sm:p-12 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-7">
-            <span className="eyebrow-index mb-6" data-index="04">
-              {t('eyebrow')}
-            </span>
+    <section
+      id="pricing"
+      className="relative overflow-hidden py-24 md:py-28"
+      style={{ backgroundImage: 'var(--gradient-dark-panel)' }}
+    >
+      <div className="section-container">
+        <div className="grid items-end gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-6">
+            <Reveal y={16}>
+              <span className="eyebrow-index text-flow-lime/80" data-index="06">
+                {t('eyebrow')}
+              </span>
+            </Reveal>
             <RevealHeading
               text={t('heading')}
               accent={t.raw('accent') as string[]}
-              className="section-title mt-6 mb-5"
+              accentTone="light"
+              className="mt-6 font-display text-4xl font-bold leading-[1.02] tracking-tight text-white md:text-5xl lg:text-6xl"
             />
-            <p className="max-w-xl text-base leading-relaxed text-flow-text-muted">{t('intro')}</p>
+            <Reveal delay={0.1}>
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-white/60">{t('intro')}</p>
+            </Reveal>
           </div>
 
-          <div className="lg:col-span-5">
-            <div className="mb-7 grid grid-cols-2 gap-6">
+          {/* The numbers get their own column and are set as large as the
+              heading — they are the reason this band exists. */}
+          <div className="lg:col-span-5 lg:col-start-8">
+            <Reveal delay={0.15} className="grid grid-cols-2 gap-8 border-t border-white/15 pt-7">
               {figures.map((f) => (
                 <div key={f.label}>
-                  <p className="font-display text-4xl font-bold text-flow-green">
+                  <p className="font-display text-3xl font-bold text-flow-lime sm:text-4xl">
                     <Counter value={f.value} suffix={` ${CURRENCY}`} />
                   </p>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-wider text-flow-text-muted">
+                  <p className="mt-1.5 text-xs font-medium uppercase tracking-[0.14em] text-white/50">
                     {f.label}
                   </p>
                 </div>
               ))}
-            </div>
-            <MagneticButton className="w-full">
-              <Link
-                href="/pricing"
-                className="btn-primary flex w-full items-center justify-center gap-2"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                {t('cta')}
-                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-              </Link>
-            </MagneticButton>
+            </Reveal>
+            <Reveal delay={0.2} className="mt-8">
+              <MagneticButton className="w-full">
+                <Link
+                  href="/pricing"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-flow-lime px-7 py-3.5 text-sm font-semibold text-flow-green shadow-[var(--shadow-glow-lime)] transition-colors hover:bg-flow-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime focus-visible:ring-offset-2 focus-visible:ring-offset-flow-green-deep"
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {t('cta')}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+              </MagneticButton>
+            </Reveal>
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   )
 }

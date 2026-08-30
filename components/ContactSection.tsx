@@ -5,14 +5,20 @@ import { useTranslations } from 'next-intl'
 import { SERVICE_OPTIONS, SERVICE_VALUES } from '@/lib/service-options'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Mail, MessageCircle, MapPin, Phone, type LucideIcon } from 'lucide-react'
-import { fadeUp, staggerContainer, revealUp } from '@/lib/animations'
+import { spring } from '@/lib/animations'
 import MagneticButton from './ui/MagneticButton'
 import RevealHeading from './ui/RevealHeading'
+import Reveal from './ui/Reveal'
 import type { ContactContent } from '@/data/landing-content'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
 const phoneIcons: LucideIcon[] = [Phone, MessageCircle, MessageCircle]
+
+/** One shared field style — a solid surface, because a translucent input on a
+ *  translucent card is the stack that destroys legibility. */
+const field =
+  'w-full rounded-xl border border-flow-border bg-flow-bg px-4 py-3 text-sm text-flow-text outline-none transition-shadow focus:ring-2 focus:ring-flow-lime focus-visible:ring-2 focus-visible:ring-flow-lime'
 
 export default function ContactSection({ content }: { content: ContactContent }) {
   const t = useTranslations('marketing.contactForm')
@@ -59,84 +65,60 @@ export default function ContactSection({ content }: { content: ContactContent })
     }
   }
 
+  // Light, deliberately. This is the one screen where someone is being asked to
+  // do work, and a dark form reads as heavier than it is — the CTA band right
+  // above already supplies the contrast beat. The old angled panel here was a
+  // hardcoded left-to-right clip-path that pointed the wrong way in Arabic; the
+  // ground change does that job with no handedness.
   return (
-    <section id="contact" className="section-padding bg-flow-bg relative overflow-hidden">
-      {/* Layered angled background panel behind the asymmetric split */}
-      <div
-        className="hidden lg:block absolute right-0 top-0 bottom-0 w-2/3 bg-flow-bg-soft pointer-events-none"
-        style={{ clipPath: 'polygon(18% 0, 100% 0, 100% 100%, 0% 100%)' }}
-      />
-      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+    <section id="contact" className="relative overflow-hidden bg-flow-bg-soft py-24 md:py-28">
+      <div className="section-container grid grid-cols-1 items-start gap-14 lg:grid-cols-12 lg:gap-16">
         {/* Left */}
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
-          custom={0}
-          className="lg:col-span-4"
-        >
-          <span className="eyebrow-index mb-6" data-index="08">{content.eyebrow}</span>
+        <Reveal className="lg:col-span-4">
+          <span className="eyebrow-index text-flow-text-muted" data-index="08">
+            {content.eyebrow}
+          </span>
           <RevealHeading
             text={content.heading}
             accent={content.accent}
-            className="section-title mt-6 mb-6"
+            className="section-title mt-6"
           />
-          <p className="text-flow-text-muted text-base leading-relaxed mb-10">
-            {content.intro}
-          </p>
+          <p className="mb-10 mt-6 text-base leading-relaxed text-flow-text-muted">{content.intro}</p>
 
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.15 }}
-            className="space-y-5"
-          >
-            {contactDetails.map(({ icon: Icon, href, label }) => (
-              <motion.div key={label} variants={revealUp} className="flex items-center gap-4">
-                <motion.div
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  viewport={{ once: true, amount: 0.6 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0"
-                >
+          <div className="space-y-5">
+            {contactDetails.map(({ icon: Icon, href, label }, i) => (
+              <Reveal key={label} delay={i * 0.06} y={16} className="flex items-center gap-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-flow-bg-muted ring-1 ring-flow-border">
                   <Icon size={18} className="text-flow-green" />
-                </motion.div>
-                <a href={href} className="text-flow-text-muted text-sm hover:text-flow-green transition-colors">
+                </span>
+                <a
+                  href={href}
+                  className="text-sm text-flow-text-muted transition-colors hover:text-flow-green"
+                >
                   {label}
                 </a>
-              </motion.div>
+              </Reveal>
             ))}
-            <motion.div variants={revealUp} className="flex items-center gap-4">
-              <motion.div
-                initial={{ scale: 0.6, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true, amount: 0.6 }}
-                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="w-10 h-10 rounded-full bg-flow-bg-muted flex items-center justify-center shrink-0"
-              >
+            <Reveal delay={contactDetails.length * 0.06} y={16} className="flex items-center gap-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-flow-bg-muted ring-1 ring-flow-border">
                 <MapPin size={18} className="text-flow-green" />
-              </motion.div>
-              <span className="text-flow-text-muted text-sm">{content.location}</span>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+              </span>
+              <span className="text-sm text-flow-text-muted">{content.location}</span>
+            </Reveal>
+          </div>
+        </Reveal>
 
-        {/* Right — Form */}
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
-          custom={1}
-          className="lg:col-span-8"
-        >
-          <form className="glass-card space-y-5 p-8" onSubmit={handleSubmit} noValidate>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {/* Right — Form. A solid light card, not glass: a form is the one place
+            on the page where legibility beats atmosphere outright. */}
+        <Reveal delay={0.1} className="lg:col-span-8">
+          <form
+            className="space-y-5 rounded-3xl border border-flow-border bg-white p-6 shadow-[var(--shadow-lg)] sm:p-8"
+            onSubmit={handleSubmit}
+            noValidate
+          >
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-flow-green mb-1.5">
+                <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-flow-green">
                   {t('fullName')}
                 </label>
                 <input
@@ -146,11 +128,11 @@ export default function ContactSection({ content }: { content: ContactContent })
                   placeholder={t('namePlaceholder')}
                   required
                   aria-required="true"
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
+                  className={field}
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-flow-green mb-1.5">
+                <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-flow-green">
                   {t('email')}
                 </label>
                 <input
@@ -160,14 +142,14 @@ export default function ContactSection({ content }: { content: ContactContent })
                   placeholder={t('emailPlaceholder')}
                   required
                   aria-required="true"
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
+                  className={field}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-flow-green mb-1.5">
+                <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-flow-green">
                   {t('phone')}
                 </label>
                 <input
@@ -175,18 +157,17 @@ export default function ContactSection({ content }: { content: ContactContent })
                   name="phone"
                   type="tel"
                   placeholder={t('phonePlaceholder')}
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
+                  className={field}
                 />
               </div>
               <div>
-                <label htmlFor="platform" className="block text-sm font-medium text-flow-green mb-1.5">
+                <label
+                  htmlFor="platform"
+                  className="mb-1.5 block text-sm font-medium text-flow-green"
+                >
                   {t('platform')}
                 </label>
-                <select
-                  id="platform"
-                  name="platform"
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white/80 focus-visible:ring-2 focus-visible:ring-flow-lime"
-                >
+                <select id="platform" name="platform" className={field}>
                   <option value="">{t('selectPlatform')}</option>
                   <option value="amazon">Amazon</option>
                   <option value="noon">Noon</option>
@@ -197,9 +178,12 @@ export default function ContactSection({ content }: { content: ContactContent })
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="products" className="block text-sm font-medium text-flow-green mb-1.5">
+                <label
+                  htmlFor="products"
+                  className="mb-1.5 block text-sm font-medium text-flow-green"
+                >
                   {t('products')}
                 </label>
                 <input
@@ -207,11 +191,14 @@ export default function ContactSection({ content }: { content: ContactContent })
                   name="products"
                   type="text"
                   placeholder={t('productsPlaceholder')}
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
+                  className={field}
                 />
               </div>
               <div>
-                <label htmlFor="service" className="block text-sm font-medium text-flow-green mb-1.5">
+                <label
+                  htmlFor="service"
+                  className="mb-1.5 block text-sm font-medium text-flow-green"
+                >
                   {t('service')}
                 </label>
                 <select
@@ -221,7 +208,7 @@ export default function ContactSection({ content }: { content: ContactContent })
                   // a pricing card. `key` remounts it if they click another one.
                   key={presetPlan ?? 'none'}
                   defaultValue={presetPlan ?? ''}
-                  className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow bg-white/80 focus-visible:ring-2 focus-visible:ring-flow-lime"
+                  className={field}
                 >
                   <option value="">{t('selectService')}</option>
                   {SERVICE_OPTIONS.map((o) => (
@@ -234,7 +221,7 @@ export default function ContactSection({ content }: { content: ContactContent })
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-flow-green mb-1.5">
+              <label htmlFor="message" className="mb-1.5 block text-sm font-medium text-flow-green">
                 {t('message')}
               </label>
               <textarea
@@ -242,7 +229,7 @@ export default function ContactSection({ content }: { content: ContactContent })
                 name="message"
                 rows={4}
                 placeholder={t('messagePlaceholder')}
-                className="w-full border border-flow-border rounded-xl px-4 py-3 text-sm text-flow-text outline-none focus:ring-2 focus:ring-flow-lime transition-shadow resize-none focus-visible:ring-2 focus-visible:ring-flow-lime bg-white/80"
+                className={`${field} resize-none`}
               />
             </div>
 
@@ -252,8 +239,8 @@ export default function ContactSection({ content }: { content: ContactContent })
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3 overflow-hidden"
+                  transition={spring.ui}
+                  className="overflow-hidden rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"
                 >
                   {t('success')}
                 </motion.p>
@@ -263,8 +250,8 @@ export default function ContactSection({ content }: { content: ContactContent })
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3 overflow-hidden"
+                  transition={spring.ui}
+                  className="overflow-hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
                 >
                   {t('error')}
                 </motion.p>
@@ -275,7 +262,7 @@ export default function ContactSection({ content }: { content: ContactContent })
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="w-full bg-flow-lime text-flow-green font-bold py-4 rounded-xl hover:bg-flow-lime-hover transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-lime focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-glow-lime)]"
+                className="w-full rounded-xl bg-flow-green py-4 text-sm font-bold text-flow-lime shadow-[var(--shadow-xs)] transition-colors hover:bg-flow-green-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow-green focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {status === 'loading' ? t('sending') : t('send')}
               </button>
@@ -286,14 +273,14 @@ export default function ContactSection({ content }: { content: ContactContent })
                 href={`https://wa.me/2${content.phones[0] ?? ''}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 border-2 border-green-700 text-green-700 font-bold py-4 rounded-xl hover:bg-green-700 hover:text-white transition-colors text-sm"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-green-700 py-4 text-sm font-bold text-green-700 transition-colors hover:bg-green-700 hover:text-white"
               >
                 <MessageCircle size={18} />
                 {t('whatsapp')}
               </a>
             </MagneticButton>
           </form>
-        </motion.div>
+        </Reveal>
       </div>
     </section>
   )

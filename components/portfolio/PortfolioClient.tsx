@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { spring } from '@/lib/animations'
 import { Category, getAllImagesFromCategory } from '@/data/portfolioData'
 import PortfolioHero from './PortfolioHero'
 import CategoryTabs from './CategoryTabs'
@@ -12,6 +13,9 @@ export default function PortfolioClient({ data }: { data: Category[] }) {
   const [activeCategoryId, setActiveCategoryId] = useState('all')
   const [activeSubcategoryId, setActiveSubcategoryId] = useState('all')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  // Viewport rect of the tile the viewer was opened from, so it can emerge
+  // from where it came rather than appearing from nowhere in the middle.
+  const [originRect, setOriginRect] = useState<DOMRect | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
 
   const activeCategory = data.find(c => c.id === activeCategoryId) ?? null
@@ -49,6 +53,15 @@ export default function PortfolioClient({ data }: { data: Category[] }) {
 
   const totalImages = data.flatMap(c => getAllImagesFromCategory(c)).length
 
+  function openLightbox(index: number) {
+    const id = visibleImages[index]?.id
+    const tile = id
+      ? document.querySelector<HTMLElement>(`[data-shot-id="${CSS.escape(id)}"]`)
+      : null
+    setOriginRect(tile?.getBoundingClientRect() ?? null)
+    setLightboxIndex(index)
+  }
+
   function handleCategoryChange(id: string) {
     setActiveCategoryId(id)
     setActiveSubcategoryId('all')
@@ -62,7 +75,10 @@ export default function PortfolioClient({ data }: { data: Category[] }) {
       <PortfolioHero totalImages={totalImages} totalCategories={data.length} />
 
       {/* Sticky filter bar */}
-      <div ref={gridRef} className="sticky top-16 md:top-20 z-30 bg-flow-bg/90 backdrop-blur-md border-y border-flow-border">
+      <div
+        ref={gridRef}
+        className="chrome-light scroll-edge sticky top-16 z-30 border-x-0 border-t-0 md:top-20"
+      >
         <div className="max-w-7xl mx-auto px-6">
           <CategoryTabs
             categories={data}
@@ -80,7 +96,7 @@ export default function PortfolioClient({ data }: { data: Category[] }) {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              transition={spring.snappy}
             >
               <SubcategoryFilter
                 subcategories={activeCategory.subcategories}
@@ -91,10 +107,7 @@ export default function PortfolioClient({ data }: { data: Category[] }) {
           )}
         </AnimatePresence>
 
-        <ImageGrid
-          images={visibleImages}
-          onImageClick={setLightboxIndex}
-        />
+        <ImageGrid images={visibleImages} onImageClick={openLightbox} />
       </div>
 
       <AnimatePresence>
@@ -102,6 +115,7 @@ export default function PortfolioClient({ data }: { data: Category[] }) {
           <LightboxModal
             images={visibleImages}
             currentIndex={lightboxIndex}
+            originRect={originRect}
             onClose={() => setLightboxIndex(null)}
             onPrev={() => setLightboxIndex(i => Math.max(0, (i ?? 0) - 1))}
             onNext={() => setLightboxIndex(i => Math.min(visibleImages.length - 1, (i ?? 0) + 1))}

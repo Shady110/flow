@@ -88,7 +88,7 @@ export default function PackageBuilderSection({ embedded = false }: { embedded?:
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
+          viewport={{ once: true, amount: 'some', margin: '0px 0px -120px 0px' }}
           className="lg:col-span-7"
         >
           {!embedded && (
@@ -262,7 +262,7 @@ export default function PackageBuilderSection({ embedded = false }: { embedded?:
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
+          viewport={{ once: true, amount: 'some', margin: '0px 0px -120px 0px' }}
           custom={1}
           className="lg:col-span-5 lg:sticky lg:top-28"
         >
