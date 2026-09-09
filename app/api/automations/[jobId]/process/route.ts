@@ -3,20 +3,25 @@ import JSZip from 'jszip'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { downloadBuffer, uploadBuffer, INPUT_BUCKET, OUTPUT_BUCKET } from '@/lib/storage'
-import { processListingRow } from '@/lib/automation/listing'
+import { runCollecting, runAmazon, buildAmazonRow } from '@/lib/automation/listing'
+import { addReason } from '@/lib/automation/listing-rules'
+import { buildCollectingSheet, type CollectingRow } from '@/lib/automation/collecting'
+import { parseAmazonTemplate, type AmazonTemplate } from '@/lib/automation/amazon-template'
 import { toWhiteCanvas } from '@/lib/automation/image'
-import { buildWorkbook } from '@/lib/automation/xlsx'
+import { writeIntoTemplate } from '@/lib/automation/xlsx'
 import { generateProductImage, cleanupProductImage, type RefImage } from '@/lib/ai/gemini'
 import { costUsd, type AiUsage } from '@/lib/ai/pricing'
 import { usdToEgp } from '@/lib/ai/fx'
-import { getMarketplace } from '@/lib/automation/marketplaces'
-import type { AutomationItem, AutomationJob } from '@/lib/types'
+import type { AutomationItem, AutomationJob, ListingJobParams } from '@/lib/types'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
 
 const ANGLES = ['front', 'side', 'back'] as const
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+const XLSM_MIME = 'application/vnd.ms-excel.sheet.macroEnabled.12'
 
 function mimeFromPath(p: string) {
   const ext = p.split('.').pop()?.toLowerCase()
@@ -28,6 +33,19 @@ async function readRef(path: string): Promise<RefImage> {
     mimeType: mimeFromPath(path),
     base64: (await downloadBuffer(INPUT_BUCKET, path)).toString('base64'),
   }
+}
+
+/**
+ * Parsing a 1.2 MB flat file costs a second or two, so hold it for the life of
+ * the container. One parse per batch of items, not one per item.
+ */
+const templateCache = new Map<string, AmazonTemplate>()
+async function loadTemplate(path: string): Promise<AmazonTemplate> {
+  const hit = templateCache.get(path)
+  if (hit) return hit
+  const parsed = parseAmazonTemplate(await downloadBuffer(INPUT_BUCKET, path))
+  templateCache.set(path, parsed)
+  return parsed
 }
 
 /** Clean mode: one source photo in, one white-background photo out. */
@@ -61,26 +79,93 @@ async function processImageItem(jobId: string, item: AutomationItem, usage: AiUs
   return { sku: input.sku, images }
 }
 
-async function finalizeListing(job: AutomationJob, supabase: Awaited<ReturnType<typeof createClient>>) {
-  const marketplace = getMarketplace(job.marketplace ?? '')
-  if (!marketplace) return
+interface ListingOutput {
+  collecting: CollectingRow
+  /** Flat-file cells indexed by Template column. Absent on collecting-only jobs. */
+  amazon?: string[]
+}
+
+/** One product through the pipeline: receiving -> collecting -> Amazon row. */
+async function processListingItem(
+  item: AutomationItem,
+  params: ListingJobParams,
+  template: AmazonTemplate | null,
+  usage: AiUsage[],
+): Promise<ListingOutput> {
+  const input = item.input as {
+    sku: string
+    orgTitle: string
+    collecting?: CollectingRow
+    reviewReason?: string
+  }
+
+  // The Amazon-only stage starts from a collecting sheet you have already
+  // reviewed, so stage A is skipped entirely — no second bill for the same row.
+  let row: CollectingRow
+  if (params.stage === 'amazon' && input.collecting) {
+    row = input.collecting
+  } else {
+    row = await runCollecting(input.sku, input.orgTitle, usage, params.constants?.brand)
+    if (input.reviewReason) row.needsReview = addReason(row.needsReview, input.reviewReason)
+  }
+
+  if (params.stage === 'collecting' || !template) return { collecting: row }
+
+  const generated = await runAmazon(row, template, usage)
+  return { collecting: row, amazon: buildAmazonRow(template, row, params.constants ?? {}, generated) }
+}
+
+/**
+ * Run `fn` over items with a bounded number in flight. A sliding window rather
+ * than Promise.all over everything: 40 concurrent Gemini calls would trip the
+ * rate limit that withRetry then has to unwind.
+ */
+async function pool<T>(items: T[], limit: number, fn: (item: T) => Promise<void>) {
+  let next = 0
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (next < items.length) await fn(items[next++])
+    }),
+  )
+}
+
+async function finalizeListing(
+  job: AutomationJob,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+) {
+  const params = job.params as unknown as ListingJobParams
   const { data: items } = await supabase
     .from('automation_items')
     .select('output')
     .eq('job_id', job.id)
     .eq('status', 'done')
     .order('position')
-  const headers = marketplace.columns.map((c) => c.header)
-  const rows = ((items as { output: Record<string, string> }[]) ?? []).map((i) => i.output ?? {})
-  const buf = buildWorkbook(headers, rows)
-  const path = `${job.id}/${marketplace.key}-listings.xlsx`
-  await uploadBuffer(
-    OUTPUT_BUCKET,
-    path,
-    buf,
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  )
-  return path
+
+  const outputs = ((items as { output: ListingOutput }[]) ?? []).map((i) => i.output).filter(Boolean)
+  const paths: { collecting?: string; amazon?: string } = {}
+
+  // The Amazon-only stage was handed a collecting sheet; re-emitting it would
+  // just hand back the user's own file.
+  if (params.stage !== 'amazon') {
+    paths.collecting = `${job.id}/collecting.xlsx`
+    const rows = outputs.map((o) => o.collecting).filter(Boolean)
+    await uploadBuffer(OUTPUT_BUCKET, paths.collecting, buildCollectingSheet(rows), XLSX_MIME)
+  }
+
+  if (params.stage !== 'collecting' && params.templatePath) {
+    const template = await loadTemplate(params.templatePath)
+    const aoa = outputs.map((o) => o.amazon).filter((r): r is string[] => Array.isArray(r))
+    const { buf, ext } = writeIntoTemplate(
+      await downloadBuffer(INPUT_BUCKET, params.templatePath),
+      template.sheetName,
+      template.firstDataRow,
+      aoa,
+    )
+    paths.amazon = `${job.id}/amazon-${template.productType || 'listings'}.${ext}`
+    await uploadBuffer(OUTPUT_BUCKET, paths.amazon, buf, ext === 'xlsm' ? XLSM_MIME : XLSX_MIME)
+  }
+
+  return { primary: paths.amazon ?? paths.collecting, paths }
 }
 
 // ponytail: downloads every output and builds the whole zip in memory in one
@@ -124,9 +209,16 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ jo
     return NextResponse.json({ done: j.done_count, failed: j.failed_count, total: j.total, remaining: 0 })
   }
 
-  // One item per call keeps each request short and avoids bursting the rate limit;
-  // withRetry() handles pacing/backoff on 429s.
-  const chunk = 1
+  const listing = j.type === 'listing'
+  const listingParams = j.params as unknown as ListingJobParams
+
+  // Listing rows are one or two text calls each, so a batch of them fits
+  // comfortably inside maxDuration and a 1000-row job costs ~25 requests
+  // instead of 1000. Images stay one per call: they are far slower and each
+  // one holds a multi-megabyte buffer.
+  const chunk = listing ? 40 : 1
+  const concurrency = listing ? 8 : 1
+
   const { data: queued } = await supabase
     .from('automation_items')
     .select('*')
@@ -136,21 +228,20 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ jo
     .limit(chunk)
 
   const clean = (j.params as { mode?: string }).mode === 'clean'
+  const template =
+    listing && listingParams.stage !== 'collecting' && listingParams.templatePath
+      ? await loadTemplate(listingParams.templatePath)
+      : null
 
-  for (const item of (queued as AutomationItem[]) ?? []) {
+  await pool((queued as AutomationItem[]) ?? [], concurrency, async (item) => {
     await supabase.from('automation_items').update({ status: 'processing' }).eq('id', item.id)
     const usage: AiUsage[] = []
     try {
-      const output =
-        j.type === 'listing'
-          ? await processListingRow(
-              (item.input as { canonical: Record<string, string> }).canonical,
-              j.marketplace ?? '',
-              usage,
-            )
-          : clean
-            ? await processCleanItem(jobId, item, usage)
-            : await processImageItem(jobId, item, usage)
+      const output = listing
+        ? await processListingItem(item, listingParams, template, usage)
+        : clean
+          ? await processCleanItem(jobId, item, usage)
+          : await processImageItem(jobId, item, usage)
       await supabase.from('automation_items').update({ status: 'done', output }).eq('id', item.id)
     } catch (e) {
       await supabase
@@ -180,7 +271,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ jo
         }
       }
     }
-  }
+  })
 
   // Recompute progress.
   const { data: all } = await supabase.from('automation_items').select('status').eq('job_id', jobId)
@@ -192,8 +283,13 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ jo
   const patch: Record<string, unknown> = { done_count: done, failed_count: failed }
   if (remaining === 0) {
     try {
-      const outputPath = j.type === 'listing' ? await finalizeListing(j, supabase) : await finalizeImages(j, supabase)
-      patch.output_path = outputPath
+      if (listing) {
+        const { primary, paths } = await finalizeListing(j, supabase)
+        patch.output_path = primary
+        patch.params = { ...listingParams, outputs: paths }
+      } else {
+        patch.output_path = await finalizeImages(j, supabase)
+      }
       patch.status = failed === statuses.length ? 'failed' : 'done'
     } catch (e) {
       patch.status = 'failed'

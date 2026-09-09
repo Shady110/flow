@@ -59,8 +59,8 @@ export function JobRunner({ job }: { job: AutomationJob }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function download() {
-    const res = await getJobDownloadUrlAction(job.id)
+  async function download(which?: 'collecting' | 'amazon') {
+    const res = await getJobDownloadUrlAction(job.id, which)
     if (!res.ok) {
       toast.error(res.error)
       return
@@ -82,7 +82,17 @@ export function JobRunner({ job }: { job: AutomationJob }) {
 
   const pct = progress.total ? Math.round(((progress.done + progress.failed) / progress.total) * 100) : 0
   const finished = progress.remaining === 0 && progress.total > 0
-  const downloadLabel = job.type === 'image' ? 'Download images (.zip)' : 'Download sheet (.xlsx)'
+
+  // A listing job can produce two files; only offer the ones that exist.
+  const outputs = (job.params as { outputs?: { collecting?: string; amazon?: string } }).outputs
+  const downloads: { which?: 'collecting' | 'amazon'; label: string }[] =
+    job.type === 'image'
+      ? [{ label: 'Download images (.zip)' }]
+      : [
+          ...(outputs?.collecting ? [{ which: 'collecting' as const, label: 'Collecting sheet (.xlsx)' }] : []),
+          ...(outputs?.amazon ? [{ which: 'amazon' as const, label: 'Amazon flat file' }] : []),
+        ]
+  if (downloads.length === 0) downloads.push({ label: 'Download result' })
 
   return (
     <Card>
@@ -111,11 +121,13 @@ export function JobRunner({ job }: { job: AutomationJob }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {finished && progress.done > 0 && (
-            <Button onClick={download}>
-              <Download className="h-4 w-4" /> {downloadLabel}
-            </Button>
-          )}
+          {finished &&
+            progress.done > 0 &&
+            downloads.map((d) => (
+              <Button key={d.label} onClick={() => download(d.which)}>
+                <Download className="h-4 w-4" /> {d.label}
+              </Button>
+            ))}
           {!running && progress.remaining > 0 && (
             <Button onClick={run} variant="outline">
               Resume processing

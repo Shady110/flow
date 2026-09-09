@@ -131,7 +131,12 @@ export default async function AutomationsPage() {
                       )}
                       <div>
                         <p className="text-sm font-medium capitalize">
-                          {j.type} {j.marketplace ? `· ${j.marketplace}` : ''}
+                          {j.type}
+                          {j.type === 'listing' && (j.params as { stage?: string }).stage
+                            ? ` · ${(j.params as { stage?: string }).stage}`
+                            : j.marketplace
+                              ? ` · ${j.marketplace}`
+                              : ''}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {t('doneCount', { done: j.done_count, total: j.total })} · {new Date(j.created_at).toLocaleString()}

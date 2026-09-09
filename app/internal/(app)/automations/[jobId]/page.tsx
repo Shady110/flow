@@ -41,13 +41,24 @@ export default async function JobDetailPage({
     if (job.type === 'image') {
       return String(input.sku ?? `${clean ? 'Image' : 'Product'} ${position + 1}`)
     }
-    const canonical = (input.canonical ?? {}) as Record<string, string>
-    return canonical.sku || canonical.name || `Row ${position + 1}`
+    return String(input.sku || input.orgTitle || `Row ${position + 1}`)
   }
+
+  const STAGE_LABEL: Record<string, string> = {
+    collecting: 'collecting sheet',
+    full: 'collecting sheet + Amazon flat file',
+    amazon: 'Amazon flat file',
+  }
+  const stage = (job.params as { stage?: string }).stage ?? 'full'
+
+  // Rows carrying an estimated spec, a blank UPC or a thin/duplicated title.
+  const needsReview = items.filter(
+    (it) => (it.output as { collecting?: { needsReview?: string } } | null)?.collecting?.needsReview,
+  ).length
 
   const description =
     job.type === 'listing'
-      ? `${job.marketplace ?? ''} · ${job.total} products`
+      ? `${job.total} products · ${STAGE_LABEL[stage] ?? stage}`
       : clean
         ? `${job.total} images · white background`
         : `${job.total} products · front / side / back`
@@ -65,6 +76,19 @@ export default async function JobDetailPage({
         description={description}
       />
       <JobRunner job={job} />
+
+      {needsReview > 0 && (
+        <Card className="border-warning/40 bg-warning/5 px-5 py-4">
+          <p className="text-sm">
+            <span className="font-medium">{needsReview} of {items.length} rows need a look.</span>{' '}
+            <span className="text-muted-foreground">
+              Check the <em>Needs Review</em> and <em>Estimated Fields</em> columns in the collecting
+              sheet before uploading to Amazon — every barcode is blank by design, and any spec the
+              title did not state was estimated.
+            </span>
+          </p>
+        </Card>
+      )}
 
       {cost && (
         <Card className="flex flex-wrap items-baseline justify-between gap-2 px-5 py-4">

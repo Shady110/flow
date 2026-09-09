@@ -460,7 +460,7 @@
       "description": "AI-assisted listing & image production.",
       "notice": "On the Gemini free tier, large batches are paced under the rate limit and may hit a daily cap — jobs are resumable and you can “Retry failed” later. Enable billing for faster bulk runs.",
       "listingTitle": "Listing automation",
-      "listingDesc": "Turn a raw product sheet into marketplace-ready listings — titles, descriptions, bullets, size & weight.",
+      "listingDesc": "Receiving sheet in — collecting sheet and an uploadable Amazon flat file out. Titles, descriptions, bullets, keywords and specs, with every estimate flagged.",
       "newListing": "New listing job",
       "cleanTitle": "Clean up images",
       "cleanDesc": "Drop in a batch of product photos and get them back e-commerce ready — white background, no shadows, centred.",
