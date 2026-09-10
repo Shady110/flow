@@ -12,6 +12,13 @@ import { withRetry, hardQuotaMessage } from '@/lib/ai/retry'
 import { TOKENS_PER_IMAGE, type AiUsage } from '@/lib/ai/pricing'
 
 export const TEXT_MODEL = 'gemini-2.5-flash-lite'
+/**
+ * Listings get the bigger model: flash-lite writes generic filler, and this is
+ * the batch we cannot afford to be weak. gemini-2.5-flash was the original
+ * choice but is now closed to new API keys; 3.6/3.7/3.8-flash are the
+ * successors and all cost the same, so this takes the newest.
+ */
+export const LISTING_MODEL = 'gemini-3.8-flash'
 export const IMAGE_MODEL = 'gemini-2.5-flash-image'
 
 /** A call's payload plus what it cost us in tokens. */
@@ -62,57 +69,62 @@ function genai(apiKey?: string): GoogleGenAI {
 
 const imageKey = () => process.env.GEMINI_IMAGE_API_KEY || process.env.GEMINI_API_KEY
 
-export interface GenField {
+export interface SchemaField {
   key: string
-  label: string
-  description?: string
+  description: string
+  /** Closed list of accepted values. Becomes a schema enum, so the model
+   *  cannot emit an off-list value in the first place. */
+  enum?: string[]
+  /** Ask for several values (Bullet Point x5, Material x5) in one field. */
+  array?: boolean
 }
 
 /**
- * Generate a set of listing fields for one product row. Uses a structured JSON
- * response schema so the output maps cleanly onto the marketplace template.
+ * One structured-JSON call against a field spec.
+ *
+ * Amazon rejects free text where it publishes a closed list, so enums are
+ * enforced by the response schema rather than by asking nicely in the prompt.
  */
-export async function generateListingFields(
-  row: Record<string, unknown>,
-  fields: GenField[],
-  opts: { marketplace: string; instructions?: string },
-): Promise<Billed<Record<string, string>>> {
-  const properties: Record<string, { type: Type; description: string }> = {}
+export async function generateStructured(
+  prompt: string,
+  fields: SchemaField[],
+  opts: { systemInstruction: string; model?: string; temperature?: number },
+): Promise<Billed<Record<string, string | string[]>>> {
+  const model = opts.model ?? LISTING_MODEL
+  const properties: Record<string, Record<string, unknown>> = {}
   for (const f of fields) {
-    properties[f.key] = { type: Type.STRING, description: f.description ?? f.label }
+    const leaf: Record<string, unknown> = { type: Type.STRING }
+    if (f.enum?.length) leaf.enum = f.enum
+    properties[f.key] = f.array
+      ? { type: Type.ARRAY, description: f.description, items: leaf }
+      : { ...leaf, description: f.description }
   }
-
-  const systemInstruction =
-    `You are an expert e-commerce catalog specialist writing marketplace-compliant ` +
-    `listings for ${opts.marketplace}. Write clear, keyword-rich, policy-safe copy. ` +
-    `Normalize dimensions to centimetres and weight to kilograms where present. ` +
-    `Never invent specifications you cannot infer; leave a field empty if unknown. ` +
-    (opts.instructions ?? '')
 
   let res
   try {
     res = await withRetry(() =>
       genai().models.generateContent({
-        model: TEXT_MODEL,
-        contents: `Product source data (JSON):\n${JSON.stringify(row)}`,
+        model,
+        contents: prompt,
         config: {
-          systemInstruction,
+          systemInstruction: opts.systemInstruction,
           responseMimeType: 'application/json',
           responseSchema: { type: Type.OBJECT, properties, required: fields.map((f) => f.key) },
-          temperature: 0.4,
+          temperature: opts.temperature ?? 0.4,
         },
       }),
     )
   } catch (e) {
-    throw new Error(hardQuotaMessage(e) ?? (e instanceof Error ? e.message : 'Text generation failed'))
+    throw new Error(hardQuotaMessage(e) ?? (e instanceof Error ? e.message : 'Generation failed'))
   }
 
-  const usage = readUsage(res, TEXT_MODEL)
-  const text = res.text ?? '{}'
+  const usage = readUsage(res, model)
   try {
-    return { value: JSON.parse(text) as Record<string, string>, usage }
+    return { value: JSON.parse(res.text ?? '{}') as Record<string, string | string[]>, usage }
   } catch {
-    return { value: {}, usage }
+    // A truncated or non-JSON body is a failed row, not a silently empty one —
+    // an empty object here would write a blank listing and call it done.
+    throw new Error('The model returned a response that was not valid JSON.')
   }
 }
 

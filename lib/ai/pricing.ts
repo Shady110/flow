@@ -17,6 +17,12 @@ export interface ModelPrice {
 
 export const MODEL_PRICES: Record<string, ModelPrice> = {
   'gemini-2.5-flash-lite': { inputPerM: 0.1, outputPerM: 0.4 },
+  // Gemini 3.x Flash share one price. NOTE: $0.75/$3.75 is promotional through
+  // 2026-12-31 and doubles to $1.50/$7.50 on 2027-01-01 — update these then, or
+  // the ledger silently reports half of what the runs actually cost.
+  'gemini-3.8-flash': { inputPerM: 0.75, outputPerM: 3.75 },
+  'gemini-3.7-flash': { inputPerM: 0.75, outputPerM: 3.75 },
+  'gemini-3.6-flash': { inputPerM: 0.75, outputPerM: 3.75 },
   'gemini-2.5-flash-image': { inputPerM: 0.3, perImage: 0.039 },
 }
 

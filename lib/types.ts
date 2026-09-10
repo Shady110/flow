@@ -243,6 +243,20 @@ export type AutomationType = 'listing' | 'image'
 export type JobStatus = 'draft' | 'processing' | 'done' | 'failed'
 export type ItemStatus = 'queued' | 'processing' | 'done' | 'failed'
 
+/** Listing job stages. `full` runs collecting then Amazon in one pass;
+ *  `amazon` skips generation and consumes an edited collecting sheet. */
+export type ListingStage = 'collecting' | 'full' | 'amazon'
+
+export interface ListingJobParams {
+  stage: ListingStage
+  /** Uploaded Amazon flat file in automation-inputs, re-parsed per batch. */
+  templatePath?: string
+  productType?: string
+  /** Job-level answers keyed by CONSTANT_LABELS values. */
+  constants?: Record<string, string>
+  outputs?: { collecting?: string; amazon?: string }
+}
+
 export interface AutomationJob {
   id: string
   type: AutomationType
