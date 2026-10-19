@@ -21,6 +21,9 @@ const CHART_COLORS = [
   'var(--chart-5)',
 ]
 
+/** 92500 → "92.5K", so large money axes don't get clipped. */
+const compact = (v: number) => new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(v)
+
 export interface Slice {
   label: string
   value: number
@@ -42,9 +45,10 @@ export function StatusDonut({ data }: { data: Slice[] }) {
           data={data}
           dataKey="value"
           nameKey="label"
-          innerRadius={55}
-          outerRadius={80}
-          paddingAngle={2}
+          innerRadius={58}
+          outerRadius={82}
+          paddingAngle={4}
+          cornerRadius={8}
           stroke="none"
         >
           {data.map((_, i) => (
@@ -53,8 +57,9 @@ export function StatusDonut({ data }: { data: Slice[] }) {
         </Pie>
         <Tooltip
           contentStyle={{
-            borderRadius: 8,
-            border: '1px solid var(--border)',
+            borderRadius: 14,
+            border: 'none',
+            boxShadow: 'var(--shadow-md)',
             background: 'var(--popover)',
             color: 'var(--popover-foreground)',
             fontSize: 12,
@@ -86,22 +91,23 @@ export function GroupedBars({
   }
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} barGap={4}>
-        <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+      <BarChart data={data} barGap={6} barCategoryGap="28%">
+        <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="2 6" />
         <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} axisLine={false} tickLine={false} />
-        <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} axisLine={false} tickLine={false} width={28} />
+        <YAxis allowDecimals={false} tickFormatter={compact} tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} axisLine={false} tickLine={false} width={40} />
         <Tooltip
-          cursor={{ fill: 'var(--muted)' }}
+          cursor={{ fill: 'var(--muted)', radius: 12 }}
           contentStyle={{
-            borderRadius: 8,
-            border: '1px solid var(--border)',
+            borderRadius: 14,
+            border: 'none',
+            boxShadow: 'var(--shadow-md)',
             background: 'var(--popover)',
             color: 'var(--popover-foreground)',
             fontSize: 12,
           }}
         />
         {bars.map((b) => (
-          <Bar key={b.key} dataKey={b.key} name={b.label} fill={b.color} radius={[4, 4, 0, 0]} />
+          <Bar key={b.key} dataKey={b.key} name={b.label} fill={b.color} radius={[12, 12, 12, 12]} maxBarSize={18} />
         ))}
       </BarChart>
     </ResponsiveContainer>

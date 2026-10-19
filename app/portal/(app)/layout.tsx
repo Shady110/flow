@@ -28,9 +28,9 @@ export default async function PortalAppLayout({ children }: { children: React.Re
     .join('')
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <div className="h-1 w-full" style={{ background: accent }} />
-      <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
+      <header className="sticky top-0 z-10 border-b border-border/60 bg-card/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
           <div className="flex min-w-0 items-center gap-3">
             {client.logo_url ? (

@@ -5,7 +5,9 @@ import { requirePermission } from '@/lib/auth/session'
 import { getClients } from '@/lib/db/queries'
 import { getPlatforms } from '@/lib/db/flow-queries'
 import { getDeliverableProgress } from '@/lib/db/requirement-queries'
+import { Camera, AlertTriangle } from 'lucide-react'
 import { PageHeader } from '@/components/dashboard/PageHeader'
+import { StatCard } from '@/components/dashboard/StatCard'
 import { Card } from '@/components/ds/card'
 
 export default async function ContentQueuePage() {
@@ -20,10 +22,21 @@ export default async function ContentQueuePage() {
   const queue = platforms.filter((p) => p.stage === 'listing')
   const progress = await getDeliverableProgress(queue.map((p) => p.id))
   const client = new Map(clients.map((c) => [c.id, c]))
+  const ready = queue.filter((p) => {
+    const pr = progress.get(p.id)
+    return !!pr && pr.missing === 0
+  }).length
+  const blocked = queue.filter((p) => (progress.get(p.id)?.missing ?? 0) > 0).length
 
   return (
     <div className="space-y-6">
       <PageHeader title={t('title')} description={t('description')} />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+        <StatCard variant="hero" className="col-span-2 sm:col-span-1" icon={Camera} label={t('kpiQueue')} value={queue.length} />
+        <StatCard icon={CheckCircle2} label={t('kpiReady')} value={ready} tone={ready ? 'success' : 'default'} />
+        <StatCard icon={AlertTriangle} label={t('kpiBlocked')} value={blocked} tone={blocked ? 'warning' : 'default'} />
+      </div>
       {queue.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
           {t('empty')}

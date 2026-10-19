@@ -25,7 +25,7 @@ export function PortalTabBar({ showTickets }: { showTickets: boolean }) {
   return (
     <nav
       aria-label={t('overview')}
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-border/60 bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
     >
       <ul className="flex">
         {TABS.filter((i) => i.key !== 'tickets' || showTickets).map((item) => {

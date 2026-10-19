@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { LogOut, MessageSquare } from 'lucide-react'
+import { MobileNav } from './MobileNav'
+import { NavSearch } from './NavSearch'
+import type { PermissionKey } from '@/lib/types'
 import { signOut } from '@/lib/auth/actions'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import {
@@ -23,6 +26,7 @@ interface TopbarProps {
   email: string
   roleName: string | null
   canChat?: boolean
+  permissions: PermissionKey[]
 }
 
 function initials(name: string, email: string) {
@@ -34,16 +38,19 @@ function initials(name: string, email: string) {
     .join('')
 }
 
-export function Topbar({ name, email, roleName, canChat }: TopbarProps) {
+export function Topbar({ name, email, roleName, canChat, permissions }: TopbarProps) {
   const t = useTranslations('common')
   return (
-    <header className="flex h-16 items-center justify-end gap-3 border-b border-border bg-background/80 px-6 backdrop-blur">
+    <header className="flex h-16 items-center gap-3 rounded-2xl bg-card px-3 shadow-[var(--shadow-sm)] sm:px-4">
+      <MobileNav permissions={permissions} />
+      <NavSearch permissions={permissions} />
+      <div className="flex-1" />
       <LanguageSwitcher />
       {canChat && (
         <Link
           href="/inbox"
           aria-label="Inbox"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:text-foreground"
         >
           <MessageSquare className="h-5 w-5" />
         </Link>
@@ -56,7 +63,7 @@ export function Topbar({ name, email, roleName, canChat }: TopbarProps) {
               <p className="text-xs capitalize text-muted-foreground">{roleName}</p>
             )}
           </div>
-          <Avatar className="h-9 w-9">
+          <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-flow-green text-flow-bg text-xs font-semibold">
               {initials(name, email)}
             </AvatarFallback>

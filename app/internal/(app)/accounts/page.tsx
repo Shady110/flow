@@ -5,7 +5,9 @@ import { requirePermission } from '@/lib/auth/session'
 import { getClients, getTeam } from '@/lib/db/queries'
 import { getPlatforms } from '@/lib/db/flow-queries'
 import { getTickets } from '@/lib/db/ticket-queries'
+import { Briefcase, ShieldAlert, LifeBuoy } from 'lucide-react'
 import { PageHeader } from '@/components/dashboard/PageHeader'
+import { StatCard } from '@/components/dashboard/StatCard'
 import { AccountStatusBadge } from '@/components/tickets/TicketBits'
 import { Button } from '@/components/ds/button'
 import { Card } from '@/components/ds/card'
@@ -35,6 +37,9 @@ export default async function AccountsPage({
   const accounts = platforms
     .filter((p) => p.stage === 'pushing' || p.stage === 'managing')
     .filter((p) => mine !== '1' || p.account_manager_id === user.id)
+  const live = accounts.filter((p) => p.stage === 'managing').length
+  const atRisk = accounts.filter((p) => p.account_status === 'at_risk' || p.account_status === 'suspended').length
+  const openTotal = accounts.reduce((n, p) => n + (openByPlatform.get(p.id) ?? 0), 0)
   const canSeeAll = user.permissions.has('accounts.view_all') || user.permissions.has('clients.view')
 
   return (
@@ -55,6 +60,12 @@ export default async function AccountsPage({
           </>
         }
       />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+        <StatCard variant="hero" className="col-span-2 sm:col-span-1" icon={Briefcase} label={t('kpiLive')} value={live} />
+        <StatCard icon={ShieldAlert} label={t('kpiAtRisk')} value={atRisk} tone={atRisk ? 'danger' : 'default'} />
+        <StatCard icon={LifeBuoy} label={t('kpiTickets')} value={openTotal} tone={openTotal ? 'warning' : 'default'} href="/accounts/tickets" />
+      </div>
 
       {accounts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">

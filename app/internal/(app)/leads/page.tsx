@@ -68,8 +68,8 @@ export default async function LeadsPage({
 
       <LeadCapBanner info={cap} />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label={t('statNew')} value={counts.new} icon={UserPlus} href="/leads" />
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <StatCard variant="hero" label={t('statNew')} value={counts.new} icon={UserPlus} href="/leads" />
         <StatCard label={t('statPipeline')} value={inPlay} icon={PhoneCall} />
         <StatCard label={t('statWon')} value={counts.won} icon={Trophy} tone={counts.won ? 'success' : 'default'} />
         <StatCard label={t('statLost')} value={counts.lost} icon={Trophy} tone={counts.lost ? 'danger' : 'default'} />

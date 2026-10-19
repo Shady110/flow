@@ -385,9 +385,11 @@ body {
    palette. Used by the dashboard & client-portal UI.
    ───────────────────────────────────────────────────────────── */
 :root {
-  --radius: 0.625rem;
+  /* Rounder than stock shadcn: cards (rounded-xl) land at ~20px, inputs at ~14px. */
+  --radius: 1rem;
 
-  --background: #FBFBF7;
+  /* Soft grey-green canvas — white panels float on it (Donezo-style shell). */
+  --background: #EDF1EA;
   --foreground: #10231A;
   --card: #FFFFFF;
   --card-foreground: #10231A;
@@ -397,7 +399,7 @@ body {
   --primary-foreground: #FBFBF7;
   --secondary: #EAF1DE;
   --secondary-foreground: #143C28;
-  --muted: #F4F7EC;
+  --muted: #F2F5EE;
   --muted-foreground: #55685C;
   --accent: #C4F075;
   --accent-foreground: #143C28;
@@ -405,8 +407,8 @@ body {
   --destructive-foreground: #FBFBF7;
   --success: #2E6B45;
   --warning: #C98A1B;
-  --border: #DEE9D0;
-  --input: #DEE9D0;
+  --border: #E3EADB;
+  --input: #DCE5D2;
   --ring: #2E6B45;
 
   --chart-1: #2E6B45;
@@ -518,6 +520,24 @@ body {
 .print-exact {
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
+}
+
+/* "Not done yet" pattern: diagonal stripes. Solid green = done, lime = current,
+   hatched = pending/blocked. `currentColor`-free so it works on white and on
+   the dark hero panel (.hatch-on-dark). */
+.hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(20, 60, 40, 0.30) 0 1.5px,
+    transparent 1.5px 6px
+  );
+}
+.hatch-on-dark {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.34) 0 1.5px,
+    transparent 1.5px 6px
+  );
 }
 
 /* Print: strip the dashboard chrome so only the invoice document prints. */

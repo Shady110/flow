@@ -383,16 +383,66 @@
     },
     "overview": {
       "title": "Business overview",
-      "description": "Live snapshot across every client and every active task.",
+      "description": "Here is where everything stands.",
       "activeClients": "Active clients",
       "openTasks": "Open tasks",
       "overdue": "Overdue",
       "dueSoon": "Due soon",
       "taskStatus": "Task status",
       "needsAttention": "Needs attention",
-      "allClear": "Nothing overdue or due soon. 🎉",
+      "allClear": "All clear — nothing is stuck right now.",
       "clients": "Clients",
-      "noClients": "No clients yet. Add your first client to start tracking work."
+      "noClients": "No clients yet. Add your first client to start tracking work.",
+      "greeting": "Good to see you, {name}",
+      "newContract": "New contract",
+      "openPipeline": "Open pipeline",
+      "kpiActive": "Active clients",
+      "kpiNewMonth": "+{count} this month",
+      "kpiCap": "New clients this month",
+      "kpiCapFull": "Limit reached",
+      "kpiCapLeft": "{count} left",
+      "kpiLive": "Accounts live",
+      "kpiAtRisk": "{count} at risk",
+      "kpiHealthy": "All healthy",
+      "kpiTickets": "Open tickets",
+      "kpiUrgent": "{count} urgent",
+      "pipelineTitle": "Pipeline",
+      "pipelineDescription": "Every lead, client and marketplace account by stage.",
+      "openBoard": "Open board",
+      "pipelineEmpty": "Nothing in the pipeline yet.",
+      "attentionTitle": "Needs attention",
+      "attentionDescription": "What is stuck or waiting on you, worst first.",
+      "age": "{days, plural, =0 {today} one {1 day} other {# days}}",
+      "attention": {
+        "contract_unsigned": "{client}: contract sent, not signed yet",
+        "documents_to_review": "{client}: {count, plural, one {1 document waiting} other {# documents waiting}} for your review",
+        "listing_stuck": "{client}: {count, plural, one {1 deliverable} other {# deliverables}} still missing at Listing",
+        "ticket_urgent": "{client}: urgent ticket {detail}",
+        "ticket_unassigned": "{client}: ticket {detail} has no owner",
+        "invoice_overdue": "{client}: invoice {detail} is overdue",
+        "task_overdue": "{client}: task “{detail}” is overdue"
+      },
+      "moneyTitle": "Money",
+      "moneyDescription": "Cash in, cash owed and what clients are budgeting.",
+      "revenueMonth": "Revenue this month",
+      "outstanding": "Outstanding",
+      "budgetVsCost": "Client budgets vs expected cost",
+      "margin": "{pct}% margin",
+      "estCost": "Cost {amount}",
+      "budget": "Budget {amount}",
+      "revenue": "Revenue",
+      "expenses": "Expenses",
+      "workloadTitle": "Team workload",
+      "workloadDescription": "What each person is carrying right now.",
+      "wLeads": "{count, plural, one {1 lead} other {# leads}}",
+      "wContent": "{count, plural, one {1 in content queue} other {# in content queue}}",
+      "wAccounts": "{count, plural, one {1 account} other {# accounts}}",
+      "wTickets": "{count, plural, one {1 ticket} other {# tickets}}",
+      "wTasks": "{count, plural, one {1 task} other {# tasks}}",
+      "wNothing": "Nothing assigned",
+      "activityTitle": "Recent activity",
+      "activityDescription": "The latest stage moves across the company.",
+      "activityEmpty": "No stage changes yet."
     },
     "clients": {
       "title": "Clients",
@@ -778,7 +828,8 @@
         "platform_creation": "Platform creation",
         "listing": "Listing / photography",
         "pushing": "Pushing to platform",
-        "managing": "Managing account"
+        "managing": "Managing account",
+        "onboarded": "Onboarded"
       },
       "stageLabel": "Stage",
       "cannotMoveThere": "That card can't move to that column.",
@@ -951,7 +1002,10 @@
       "push": "Push to platform",
       "confirmPush": "Push this account to the platform? It will leave your queue and move on to account management.",
       "pushed": "Pushed — the account is now with account management",
-      "missingBlock": "{count} required file(s) still missing. You can push once they're all in."
+      "missingBlock": "{count} required file(s) still missing. You can push once they're all in.",
+      "kpiQueue": "In the queue",
+      "kpiReady": "Ready to push",
+      "kpiBlocked": "Missing files"
     },
     "accounts": {
       "title": "Accounts",
@@ -986,7 +1040,10 @@
       "startManaging": "Mark live — start managing",
       "confirmStartManaging": "Is this account live on the platform? It will move to account management and the client can open tickets.",
       "nowManaging": "Account is now being managed",
-      "lastChecked": "Last updated {when}"
+      "lastChecked": "Last updated {when}",
+      "kpiLive": "Accounts live",
+      "kpiAtRisk": "At risk",
+      "kpiTickets": "Open tickets"
     },
     "tickets": {
       "you": "You",
@@ -1047,6 +1104,14 @@
       "portalIntro": "Need something changed on your marketplace account? Open a ticket and your account manager will take it from here.",
       "portalEmpty": "No tickets yet.",
       "portalBack": "All tickets"
+    },
+    "shell": {
+      "search": "Jump to a page…",
+      "noResults": "No matching page",
+      "openMenu": "Open menu",
+      "capTitle": "New clients this month",
+      "capFull": "Limit reached",
+      "capLeft": "{count} left this month"
     }
   },
   "portal": {

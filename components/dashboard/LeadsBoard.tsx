@@ -90,20 +90,20 @@ export function LeadsBoard({
               setDragging(null)
             }}
             className={cn(
-              'flex w-64 shrink-0 flex-col rounded-xl border border-border bg-muted/30 p-3 transition-colors',
-              over === status && 'border-flow-green bg-flow-lime/20',
+              'flex w-64 shrink-0 flex-col rounded-2xl bg-card/60 p-3 transition-colors',
+              over === status && 'bg-flow-lime/25 ring-2 ring-flow-green/60',
             )}
           >
             <div className="mb-3 flex items-center justify-between gap-2">
               <p className="text-sm font-semibold">{ts(status)}</p>
-              <span className="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">
+              <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                 {column.length}
               </span>
             </div>
 
             <div className="space-y-2">
               {column.length === 0 && (
-                <p className="py-6 text-center text-xs text-muted-foreground">—</p>
+                <div className="hatch h-16 rounded-xl opacity-50" aria-hidden />
               )}
               {column.map((lead) => (
                 <div
@@ -119,7 +119,7 @@ export function LeadsBoard({
                     setOver(null)
                   }}
                   className={cn(
-                    'space-y-2 rounded-lg border border-border bg-background p-3 shadow-[var(--shadow-sm)]',
+                    'space-y-2 rounded-xl border border-border/60 bg-card p-3 shadow-[var(--shadow-sm)]',
                     canEdit && 'cursor-grab active:cursor-grabbing',
                     dragging === lead.id && 'opacity-50',
                   )}

@@ -383,16 +383,66 @@
     },
     "overview": {
       "title": "نظرة عامة على الأعمال",
-      "description": "لقطة حيّة لكل عميل وكل مهمة نشطة.",
+      "description": "هذا هو وضع كل شيء الآن.",
       "activeClients": "العملاء النشطون",
       "openTasks": "المهام المفتوحة",
       "overdue": "متأخرة",
       "dueSoon": "قريبة الاستحقاق",
       "taskStatus": "حالة المهام",
       "needsAttention": "يحتاج إلى انتباه",
-      "allClear": "لا شيء متأخر أو قريب الاستحقاق. 🎉",
+      "allClear": "كل شيء على ما يرام — لا شيء متعثر الآن.",
       "clients": "العملاء",
-      "noClients": "لا يوجد عملاء بعد. أضف أول عميل لبدء تتبّع العمل."
+      "noClients": "لا يوجد عملاء بعد. أضف أول عميل لبدء تتبّع العمل.",
+      "greeting": "سعدنا برؤيتك يا {name}",
+      "newContract": "عقد جديد",
+      "openPipeline": "فتح مسار العمل",
+      "kpiActive": "العملاء النشطون",
+      "kpiNewMonth": "+{count} هذا الشهر",
+      "kpiCap": "عملاء جدد هذا الشهر",
+      "kpiCapFull": "تم بلوغ الحد",
+      "kpiCapLeft": "المتبقي {count}",
+      "kpiLive": "حسابات مباشرة",
+      "kpiAtRisk": "{count} معرّضة للخطر",
+      "kpiHealthy": "كلها سليمة",
+      "kpiTickets": "تذاكر مفتوحة",
+      "kpiUrgent": "{count} عاجلة",
+      "pipelineTitle": "مسار العمل",
+      "pipelineDescription": "كل العملاء المحتملين والعملاء وحسابات المنصات حسب المرحلة.",
+      "openBoard": "فتح اللوحة",
+      "pipelineEmpty": "لا شيء في المسار بعد.",
+      "attentionTitle": "يحتاج انتباهك",
+      "attentionDescription": "ما هو متعثر أو ينتظرك، الأهم أولًا.",
+      "age": "{days, plural, =0 {اليوم} one {يوم واحد} other {# أيام}}",
+      "attention": {
+        "contract_unsigned": "{client}: العقد أُرسل ولم يُوقّع بعد",
+        "documents_to_review": "{client}: {count, plural, one {مستند واحد ينتظر} other {# مستندات تنتظر}} مراجعتك",
+        "listing_stuck": "{client}: {count, plural, one {مخرج واحد ناقص} other {# مخرجات ناقصة}} في مرحلة الليستنج",
+        "ticket_urgent": "{client}: تذكرة عاجلة {detail}",
+        "ticket_unassigned": "{client}: التذكرة {detail} بلا مسؤول",
+        "invoice_overdue": "{client}: الفاتورة {detail} متأخرة",
+        "task_overdue": "{client}: المهمة «{detail}» متأخرة"
+      },
+      "moneyTitle": "المال",
+      "moneyDescription": "ما دخل وما هو مستحق وما يخصصه العملاء من ميزانيات.",
+      "revenueMonth": "إيرادات هذا الشهر",
+      "outstanding": "مستحقات",
+      "budgetVsCost": "ميزانيات العملاء مقابل التكلفة المتوقعة",
+      "margin": "هامش {pct}%",
+      "estCost": "التكلفة {amount}",
+      "budget": "الميزانية {amount}",
+      "revenue": "الإيرادات",
+      "expenses": "المصروفات",
+      "workloadTitle": "أحمال الفريق",
+      "workloadDescription": "ما يحمله كل شخص الآن.",
+      "wLeads": "{count, plural, one {عميل محتمل} other {# عملاء محتملين}}",
+      "wContent": "{count, plural, one {واحد في قائمة المحتوى} other {# في قائمة المحتوى}}",
+      "wAccounts": "{count, plural, one {حساب} other {# حسابات}}",
+      "wTickets": "{count, plural, one {تذكرة} other {# تذاكر}}",
+      "wTasks": "{count, plural, one {مهمة} other {# مهام}}",
+      "wNothing": "لا شيء مُسند",
+      "activityTitle": "آخر النشاطات",
+      "activityDescription": "أحدث انتقالات المراحل في الشركة.",
+      "activityEmpty": "لا توجد تغييرات في المراحل بعد."
     },
     "clients": {
       "title": "العملاء",
@@ -778,7 +828,8 @@
         "platform_creation": "إنشاء المنصة",
         "listing": "الليستنج / التصوير",
         "pushing": "الرفع على المنصة",
-        "managing": "إدارة الحساب"
+        "managing": "إدارة الحساب",
+        "onboarded": "تم الانضمام"
       },
       "stageLabel": "المرحلة",
       "cannotMoveThere": "لا يمكن نقل هذه البطاقة إلى هذا العمود.",
@@ -951,7 +1002,10 @@
       "push": "الدفع إلى المنصة",
       "confirmPush": "دفع هذا الحساب إلى المنصة؟ سيغادر قائمتك وينتقل إلى إدارة الحساب.",
       "pushed": "تم الدفع — الحساب الآن لدى إدارة الحسابات",
-      "missingBlock": "لا يزال {count} ملف(ات) مطلوبة ناقصة. يمكنك الدفع بعد اكتمالها."
+      "missingBlock": "لا يزال {count} ملف(ات) مطلوبة ناقصة. يمكنك الدفع بعد اكتمالها.",
+      "kpiQueue": "في القائمة",
+      "kpiReady": "جاهزة للدفع",
+      "kpiBlocked": "ملفات ناقصة"
     },
     "accounts": {
       "title": "الحسابات",
@@ -986,7 +1040,10 @@
       "startManaging": "الحساب مباشر — ابدأ الإدارة",
       "confirmStartManaging": "هل الحساب مباشر على المنصة؟ سينتقل إلى إدارة الحساب ويستطيع العميل فتح تذاكر.",
       "nowManaging": "الحساب الآن قيد الإدارة",
-      "lastChecked": "آخر تحديث {when}"
+      "lastChecked": "آخر تحديث {when}",
+      "kpiLive": "حسابات مباشرة",
+      "kpiAtRisk": "معرّضة للخطر",
+      "kpiTickets": "تذاكر مفتوحة"
     },
     "tickets": {
       "you": "أنت",
@@ -1047,6 +1104,14 @@
       "portalIntro": "تحتاج تغييرًا في حسابك على المنصة؟ افتح تذكرة وسيتولى مدير حسابك الأمر.",
       "portalEmpty": "لا توجد تذاكر بعد.",
       "portalBack": "كل التذاكر"
+    },
+    "shell": {
+      "search": "انتقل إلى صفحة…",
+      "noResults": "لا توجد صفحة مطابقة",
+      "openMenu": "فتح القائمة",
+      "capTitle": "عملاء جدد هذا الشهر",
+      "capFull": "تم بلوغ الحد",
+      "capLeft": "المتبقي هذا الشهر: {count}"
     }
   },
   "portal": {
