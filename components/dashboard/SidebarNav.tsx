@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { INTERNAL_NAV } from './nav'
+import { INTERNAL_NAV, canSee } from './nav'
 import type { PermissionKey } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -22,12 +22,14 @@ export function SidebarNav({
   const pathname = usePathname()
   const t = useTranslations('internal.nav')
   const permSet = new Set(permissions)
-  const items = INTERNAL_NAV.filter((i) => !i.permission || permSet.has(i.permission))
+  const items = INTERNAL_NAV.filter((i) => canSee(i, permSet))
 
   return (
     <nav className="space-y-0.5">
       {items.map((item, i) => {
         const heading = item.section && item.section !== items[i - 1]?.section
+        // Settings stands alone below the groups, set off by a thin rule.
+        const divider = !item.section && !!items[i - 1]?.section
         // The most specific item wins, so /accounts/tickets doesn't also light up /accounts.
         const active =
           item.href === '/'
@@ -37,6 +39,7 @@ export function SidebarNav({
         const Icon = item.icon
         return (
           <div key={item.href}>
+            {divider && <div className="mx-3 my-3 border-t border-border/70" />}
             {heading && (
               <p className="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 {t(`sections.${item.section}`)}

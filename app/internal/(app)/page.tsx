@@ -86,7 +86,7 @@ export default async function OverviewPage() {
           <AttentionFeed items={data.attention} clientNames={data.clientNames} />
         </div>
         <div className="xl:col-span-6">
-          <WorkloadPanel rows={data.workload} />
+          <WorkloadPanel rows={data.workload} teamHref={viewer?.permissions.has('team.view') ? '/team' : undefined} />
         </div>
         <div className="xl:col-span-6">
           <ActivityFeed events={data.events} />

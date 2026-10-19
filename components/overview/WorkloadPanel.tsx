@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import type { WorkloadRow } from '@/lib/overview'
 import { Panel } from '@/components/dashboard/Panel'
@@ -8,11 +9,22 @@ const pretty = (role: string | null) =>
   role ? role.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()) : ''
 
 /** What each person is carrying right now; the bar is relative to the busiest. */
-export async function WorkloadPanel({ rows }: { rows: WorkloadRow[] }) {
+export async function WorkloadPanel({ rows, teamHref }: { rows: WorkloadRow[]; teamHref?: string }) {
   const t = await getTranslations('internal.overview')
   const max = Math.max(1, ...rows.map((r) => r.total))
   return (
-    <Panel title={t('workloadTitle')} description={t('workloadDescription')} className="h-full">
+    <Panel
+      title={t('workloadTitle')}
+      description={t('workloadDescription')}
+      className="h-full"
+      action={
+        teamHref ? (
+          <Link href={teamHref} className="shrink-0 whitespace-nowrap rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">
+            {t('viewTeam')}
+          </Link>
+        ) : undefined
+      }
+    >
       <ul className="space-y-4">
         {rows.map((r) => {
           const parts = [

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Search } from 'lucide-react'
-import { INTERNAL_NAV } from './nav'
+import { INTERNAL_NAV, SEARCH_ONLY, canSee } from './nav'
 import type { PermissionKey } from '@/lib/types'
 
 /**
@@ -33,7 +33,8 @@ export function NavSearch({ permissions }: { permissions: PermissionKey[] }) {
   const perms = new Set(permissions)
   const term = q.trim().toLowerCase()
   const matches = term
-    ? INTERNAL_NAV.filter((i) => !i.soon && (!i.permission || perms.has(i.permission)))
+    ? [...INTERNAL_NAV, ...SEARCH_ONLY]
+        .filter((i) => !i.soon && canSee(i, perms))
         .filter((i) => t(i.key).toLowerCase().includes(term))
         .slice(0, 6)
     : []

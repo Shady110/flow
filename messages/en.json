@@ -300,17 +300,17 @@
       "pipeline": "Pipeline",
       "company": "Company",
       "sections": {
-        "ceo": "Company",
-        "sales": "Sales",
-        "content": "Content",
-        "accounts": "Accounts",
-        "settings": "Settings"
+        "clients": "Clients & sales",
+        "delivery": "Delivery",
+        "business": "Business"
       },
       "requirements": "Requirements",
       "contracts": "Contracts",
       "content": "Content queue",
       "accounts": "Accounts",
-      "tickets": "Tickets"
+      "tickets": "Tickets",
+      "settings": "Settings",
+      "contractTemplates": "Contract templates"
     },
     "topbar": {
       "inbox": "Inbox"
@@ -442,7 +442,8 @@
       "wNothing": "Nothing assigned",
       "activityTitle": "Recent activity",
       "activityDescription": "The latest stage moves across the company.",
-      "activityEmpty": "No stage changes yet."
+      "activityEmpty": "No stage changes yet.",
+      "viewTeam": "Team analytics"
     },
     "clients": {
       "title": "Clients",
@@ -634,7 +635,8 @@
       "dealLength": "Contract length: {months} months",
       "dealEmpty": "No terms yet — fill in the marketplaces and packages they're considering.",
       "saveDeal": "Save deal",
-      "dealSaved": "Deal saved"
+      "dealSaved": "Deal saved",
+      "visitorsLink": "Visitors"
     },
     "taskDetail": {
       "backToTasks": "Back to tasks",
@@ -1112,6 +1114,15 @@
       "capTitle": "New clients this month",
       "capFull": "Limit reached",
       "capLeft": "{count} left this month"
+    },
+    "settingsHub": {
+      "title": "Settings",
+      "description": "Company rules, templates and access — the things you set once and rarely change.",
+      "company": "Monthly client limit and other company-wide rules.",
+      "requirements": "Checklists of documents and deliverables per platform.",
+      "contractTemplates": "Reusable contract text with placeholders, in English and Arabic.",
+      "landing": "Edit the public website's wording in English and Arabic.",
+      "roles": "Who can do and see what, and the team's accounts."
     }
   },
   "portal": {

@@ -1,4 +1,6 @@
+import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
+import { Button } from '@/components/ds/button'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
 import { getLeads, getLeadCapInfo } from '@/lib/db/lead-queries'
 import { LeadCapBanner } from '@/components/leads/LeadCapBanner'
@@ -63,7 +65,14 @@ export default async function LeadsPage({
       <PageHeader
         title={t('title')}
         description={t('description')}
-        actions={canCreate ? <LeadDialog team={teamOptions} /> : undefined}
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href="/visitors">{t('visitorsLink')}</Link>
+            </Button>
+            {canCreate && <LeadDialog team={teamOptions} />}
+          </>
+        }
       />
 
       <LeadCapBanner info={cap} />
