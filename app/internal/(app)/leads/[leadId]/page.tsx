@@ -3,7 +3,11 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
-import { getLead } from '@/lib/db/lead-queries'
+import { getLead, getLeadActivities, getLeadCapInfo } from '@/lib/db/lead-queries'
+import { LeadDealCard } from '@/components/leads/LeadDealCard'
+import { LeadActivityList } from '@/components/leads/LeadActivityList'
+import { LeadCapBanner } from '@/components/leads/LeadCapBanner'
+import { LogContactDialog } from '@/components/leads/LogContactDialog'
 import { getLeadJourney } from '@/lib/db/visitor-queries'
 import { getClient, getTeam } from '@/lib/db/queries'
 import { LeadDialog } from '@/components/dashboard/LeadDialog'
@@ -31,14 +35,17 @@ export default async function LeadDetailPage({
 }) {
   await requirePermission('leads.view')
   const { leadId } = await params
-  const [lead, team, user, t, tc] = await Promise.all([
+  const [lead, team, user, t, tc, activities] = await Promise.all([
     getLead(leadId),
     getTeam(),
     getCurrentUser(),
     getTranslations('internal.leads'),
     getTranslations('internal.common'),
+    getLeadActivities(leadId),
   ])
   if (!lead) notFound()
+  const cap = await getLeadCapInfo(!!user?.permissions.has('pipeline.manage'))
+  const convertBlocked = cap.blocked && lead.status !== 'won'
 
   // Anonymous browsing session, if this lead came from the website.
   const journey = await getLeadJourney(leadId)
@@ -51,6 +58,7 @@ export default async function LeadDetailPage({
   const canEdit = !!user?.permissions.has('leads.edit')
   const canDelete = !!user?.permissions.has('leads.delete')
   const canConvert = !!user?.permissions.has('leads.convert')
+  const names = Object.fromEntries(team.map((m) => [m.id, m.full_name ?? '—']))
 
   return (
     <div className="space-y-6">
@@ -62,7 +70,8 @@ export default async function LeadDetailPage({
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('backToLeads')}
         </Link>
         <div className="flex flex-wrap items-center gap-2">
-          {canEdit && <LeadStatusSelect leadId={lead.id} status={lead.status} />}
+          {canEdit && <LogContactDialog leadId={lead.id} status={lead.status} />}
+          {canEdit && <LeadStatusSelect leadId={lead.id} status={lead.status} capBlocked={cap.blocked} />}
           {canEdit && (
             <LeadDialog
               team={teamOptions}
@@ -70,7 +79,7 @@ export default async function LeadDetailPage({
               trigger={<Button variant="outline">{tc('edit')}</Button>}
             />
           )}
-          {canConvert && !client && <ConvertLeadDialog lead={lead} />}
+          {canConvert && !lead.converted_client_id && !convertBlocked && <ConvertLeadDialog lead={lead} />}
           {canDelete && (
             <ConfirmDelete
               action={deleteLeadAction}
@@ -84,7 +93,10 @@ export default async function LeadDetailPage({
         </div>
       </div>
 
+      <LeadCapBanner info={cap} />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-6">
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -137,6 +149,10 @@ export default async function LeadDetailPage({
             )}
           </CardContent>
         </Card>
+
+        <LeadDealCard leadId={lead.id} deal={lead.deal} canEdit={canEdit} />
+        <LeadActivityList activities={activities} names={names} />
+        </div>
 
         {/* What they did on the site before getting in touch. Only present when
             they accepted cookies — see supabase/migrations/0011_site_visitors.sql. */}
@@ -192,6 +208,9 @@ export default async function LeadDetailPage({
                 </Link>
                 <p className="text-xs text-muted-foreground">{client.slug}.flow…</p>
               </>
+            ) : lead.converted_client_id ? (
+              // Sales can't open client rows (RLS), but must still see that it converted.
+              <p className="text-muted-foreground">{t('convertedNote')}</p>
             ) : (
               <p className="text-muted-foreground">{t('notConvertedNote')}</p>
             )}

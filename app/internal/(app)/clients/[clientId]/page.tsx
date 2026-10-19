@@ -3,6 +3,12 @@ import { notFound } from 'next/navigation'
 import { ArrowUpRight, FileText } from 'lucide-react'
 import { getClient, getTasks, getTeam } from '@/lib/db/queries'
 import { getInvoices } from '@/lib/db/finance-queries'
+import { getPlatforms, getStageEvents } from '@/lib/db/flow-queries'
+import { ClientFlowCard } from '@/components/flow/ClientFlowCard'
+import { getContracts } from '@/lib/db/contract-queries'
+import { ContractStatusBadge } from '@/components/contracts/ContractStatusBadge'
+import { ClientRequirementsCard } from '@/components/flow/ClientRequirementsCard'
+import { getRequirements, getTemplates } from '@/lib/db/requirement-queries'
 import { getTranslations } from 'next-intl/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
@@ -40,7 +46,8 @@ export default async function ClientDetailPage({
 }) {
   const { clientId } = await params
   const supabase = await createClient()
-  const [client, tasks, team, user, t, tt, tc, { data: products }, { data: clientUsers }] = await Promise.all([
+  const tct = await getTranslations('internal.contracts')
+  const [client, tasks, team, user, t, tt, tc, { data: products }, { data: clientUsers }, platforms, stageEvents, requirements, templates] = await Promise.all([
     getClient(clientId),
     getTasks(clientId, { parentOnly: true }),
     getTeam(),
@@ -50,9 +57,14 @@ export default async function ClientDetailPage({
     getTranslations('internal.common'),
     supabase.from('products').select('*').eq('client_id', clientId).order('updated_at', { ascending: false }),
     supabase.from('client_users').select('*').eq('client_id', clientId).order('created_at'),
+    getPlatforms(clientId),
+    getStageEvents(clientId),
+    getRequirements(clientId),
+    getTemplates(),
   ])
   if (!client) notFound()
 
+  const contracts = user?.permissions.has('contracts.manage') ? await getContracts(clientId) : []
   const invoices = user?.permissions.has('finance.view') ? await getInvoices(clientId) : []
 
   const productList = (products as Product[]) ?? []
@@ -157,6 +169,42 @@ export default async function ClientDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <ClientFlowCard
+        client={client}
+        platforms={platforms}
+        events={stageEvents}
+        team={teamOptions}
+        canManage={!!user?.permissions.has('pipeline.manage')}
+      />
+
+      <ClientRequirementsCard
+        clientId={client.id}
+        requirements={requirements}
+        platforms={platforms}
+        templates={templates}
+        canManage={!!user?.permissions.has('requirements.manage')}
+      />
+
+      {user?.permissions.has('contracts.manage') && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t('contracts')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {contracts.length === 0 && <p className="text-sm text-muted-foreground">{t('noContracts')}</p>}
+            {contracts.map((c) => (
+              <div key={c.id} className="flex flex-wrap items-center justify-between gap-2">
+                <Link href={`/contracts/${c.id}`} className="text-sm font-medium hover:underline">{c.title}</Link>
+                <ContractStatusBadge status={c.status} label={tct(`status_${c.status}`)} />
+              </div>
+            ))}
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/contracts/new?client=${client.id}`}>{t('newContract')}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

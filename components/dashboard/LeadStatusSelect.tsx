@@ -15,7 +15,16 @@ import {
 import { LEAD_STATUSES } from '@/lib/constants'
 import type { LeadStatus } from '@/lib/types'
 
-export function LeadStatusSelect({ leadId, status }: { leadId: string; status: LeadStatus }) {
+export function LeadStatusSelect({
+  leadId,
+  status,
+  capBlocked = false,
+}: {
+  leadId: string
+  status: LeadStatus
+  /** The monthly client cap is reached: "won" can't be chosen. */
+  capBlocked?: boolean
+}) {
   const router = useRouter()
   const t = useTranslations('internal.leadStatus')
   const [pending, startTransition] = useTransition()
@@ -40,7 +49,7 @@ export function LeadStatusSelect({ leadId, status }: { leadId: string; status: L
         </SelectTrigger>
         <SelectContent>
           {LEAD_STATUSES.map((s) => (
-            <SelectItem key={s} value={s} className="text-sm">
+            <SelectItem key={s} value={s} className="text-sm" disabled={capBlocked && s === 'won' && status !== 'won'}>
               {t(s)}
             </SelectItem>
           ))}

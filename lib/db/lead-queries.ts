@@ -1,7 +1,8 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import { UNASSIGNED_OWNER } from '@/lib/constants'
-import type { Lead, LeadStatus } from '@/lib/types'
+import { getMonthlyClientCap } from '@/lib/db/flow-queries'
+import type { Lead, LeadActivity, LeadStatus } from '@/lib/types'
 
 export interface LeadFilters {
   ownerId?: string
@@ -31,4 +32,32 @@ export async function getLead(id: string): Promise<Lead | null> {
   const supabase = await createClient()
   const { data } = await supabase.from('leads').select('*').eq('id', id).maybeSingle()
   return (data as Lead) ?? null
+}
+
+export async function getLeadActivities(leadId: string): Promise<LeadActivity[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('lead_activities')
+    .select('*')
+    .eq('lead_id', leadId)
+    .order('created_at', { ascending: false })
+  return (data as LeadActivity[]) ?? []
+}
+
+export interface LeadCapInfo {
+  cap: number
+  won: number
+  /** True when the viewer can't close more leads this month (the CEO never is). */
+  blocked: boolean
+}
+
+/** This month's wins against the CEO's monthly cap, from the viewer's point of view. */
+export async function getLeadCapInfo(exempt: boolean): Promise<LeadCapInfo> {
+  const supabase = await createClient()
+  const [cap, { data: won }] = await Promise.all([
+    getMonthlyClientCap(),
+    supabase.rpc('leads_won_this_month'),
+  ])
+  const wonCount = typeof won === 'number' ? won : 0
+  return { cap, won: wonCount, blocked: !exempt && wonCount >= cap }
 }

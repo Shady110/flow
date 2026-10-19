@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { ListTree } from 'lucide-react'
 import { getClients, getTasks, getTeam } from '@/lib/db/queries'
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser, requirePermission } from '@/lib/auth/session'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { TaskDialog } from '@/components/dashboard/TaskDialog'
 import { TaskStatusSelect } from '@/components/dashboard/TaskStatusSelect'
@@ -18,6 +18,7 @@ import {
 } from '@/components/ds/table'
 
 export default async function TasksPage() {
+  await requirePermission('tasks.view')
   const [clients, tasks, team, user, tr, tc] = await Promise.all([
     getClients(),
     // Subtasks are rolled up onto their parent rather than listed separately.

@@ -18,7 +18,7 @@ export function InvoiceDocument({
 }) {
   const { currency } = invoice
   return (
-    <div className="print-invoice mx-auto max-w-3xl rounded-2xl border border-flow-border bg-white p-8 text-flow-text shadow-sm sm:p-10">
+    <div className="print-invoice mx-auto max-w-3xl rounded-2xl border border-flow-border bg-white p-5 text-flow-text shadow-sm sm:p-10">
       {/* Header */}
       <div className="flex flex-col justify-between gap-6 border-b border-flow-border pb-6 sm:flex-row sm:items-start">
         <div>

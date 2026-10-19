@@ -1,10 +1,12 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { Users, UserPlus, ListChecks, AlertTriangle, Clock } from 'lucide-react'
 import { getClients, getTasks, getTeam } from '@/lib/db/queries'
 import { getLeads } from '@/lib/db/lead-queries'
 import { getCurrentUser } from '@/lib/auth/session'
 import { deadlineState } from '@/lib/deadlines'
+import { homePathFor } from '@/lib/home'
 import type { TaskStatus } from '@/lib/types'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { StatCard } from '@/components/dashboard/StatCard'
@@ -13,6 +15,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
 import { ClientStatusBadge, DeadlineIndicator } from '@/components/dashboard/indicators'
 
 export default async function OverviewPage() {
+  // The company overview is the CEO's; everyone else lands on their own section.
+  const viewer = await getCurrentUser()
+  if (viewer && !viewer.permissions.has('ops.overview')) {
+    const home = homePathFor(viewer.permissions)
+    if (home !== '/') redirect(home)
+  }
+
   const [clients, tasks, team, user, t, ts, tc] = await Promise.all([
     getClients(),
     getTasks(),

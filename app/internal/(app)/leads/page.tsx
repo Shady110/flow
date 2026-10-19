@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
-import { getLeads } from '@/lib/db/lead-queries'
+import { getLeads, getLeadCapInfo } from '@/lib/db/lead-queries'
+import { LeadCapBanner } from '@/components/leads/LeadCapBanner'
 import { getTeam } from '@/lib/db/queries'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { LeadDialog } from '@/components/dashboard/LeadDialog'
@@ -45,6 +46,7 @@ export default async function LeadsPage({
     getTranslations('internal.common'),
   ])
 
+  const cap = await getLeadCapInfo(!!user?.permissions.has('pipeline.manage'))
   const teamOptions = team.map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
   const ownerName = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
   const canCreate = !!user?.permissions.has('leads.create')
@@ -64,6 +66,8 @@ export default async function LeadsPage({
         actions={canCreate ? <LeadDialog team={teamOptions} /> : undefined}
       />
 
+      <LeadCapBanner info={cap} />
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label={t('statNew')} value={counts.new} icon={UserPlus} href="/leads" />
         <StatCard label={t('statPipeline')} value={inPlay} icon={PhoneCall} />
@@ -78,6 +82,7 @@ export default async function LeadsPage({
           leads={leads}
           ownerNames={Object.fromEntries(ownerName)}
           canEdit={canEdit}
+          capBlocked={cap.blocked}
         />
       ) : (
       <Card className="p-0">

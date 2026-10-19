@@ -26,10 +26,13 @@ export function LeadsBoard({
   leads,
   ownerNames,
   canEdit,
+  capBlocked = false,
 }: {
   leads: Lead[]
   ownerNames: Record<string, string>
   canEdit: boolean
+  /** The monthly client cap is reached: nothing can be dropped on "won". */
+  capBlocked?: boolean
 }) {
   const router = useRouter()
   const t = useTranslations('internal.leads')
@@ -46,6 +49,10 @@ export function LeadsBoard({
   function move(leadId: string, status: LeadStatus) {
     const lead = leads.find((l) => l.id === leadId)
     if (!lead || statusOf(lead) === status) return
+    if (capBlocked && status === 'won') {
+      toast.error(t('capReached'))
+      return
+    }
     setMoved((m) => ({ ...m, [leadId]: status }))
     startTransition(async () => {
       const res = await updateLeadAction(leadId, { status })

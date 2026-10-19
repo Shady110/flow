@@ -25,13 +25,23 @@ export function Sidebar({ permissions }: { permissions: PermissionKey[] }) {
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {items.map((item) => {
+        {items.map((item, i) => {
+          const heading = item.section && item.section !== items[i - 1]?.section
+          // The most specific item wins, so /accounts/tickets doesn't also light up /accounts.
           const active =
-            item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+            item.href === '/'
+              ? pathname === '/'
+              : pathname.startsWith(item.href) &&
+                !items.some((o) => o.href.length > item.href.length && pathname.startsWith(o.href))
           const Icon = item.icon
           return (
+            <div key={item.href}>
+              {heading && (
+                <p className="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                  {t(`sections.${item.section}`)}
+                </p>
+              )}
             <Link
-              key={item.href}
               href={item.href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
@@ -48,6 +58,7 @@ export function Sidebar({ permissions }: { permissions: PermissionKey[] }) {
                 </span>
               )}
             </Link>
+            </div>
           )
         })}
       </nav>
