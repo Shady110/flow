@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Trash2, Lock } from 'lucide-react'
@@ -9,11 +10,9 @@ import {
   deleteRoleAction,
   setRolePermissionsAction,
   assignRoleAction,
-  createAdminAction,
 } from '@/lib/db/role-actions'
 import type { Permission, PermissionKey } from '@/lib/types'
 import { Button } from '@/components/ds/button'
-import { CredentialsCard } from '@/components/dashboard/CredentialsCard'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
 import { Checkbox } from '@/components/ds/checkbox'
@@ -297,7 +296,7 @@ function TeamPanel({
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">Admin accounts</CardTitle>
-        <AddAdminDialog roles={roles} onDone={onChange} />
+        <Link href="/team" className="text-sm font-medium text-flow-green hover:underline">Add people on the Team page</Link>
       </CardHeader>
       <CardContent className="space-y-2">
         {team.length === 0 && (
@@ -356,95 +355,5 @@ function RoleAssign({
         ))}
       </SelectContent>
     </Select>
-  )
-}
-
-function AddAdminDialog({ roles, onDone }: { roles: RoleVM[]; onDone: () => void }) {
-  const [open, setOpen] = useState(false)
-  const [email, setEmail] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [roleId, setRoleId] = useState(roles.find((r) => r.name === 'admin')?.id ?? roles[0]?.id ?? '')
-  const [pending, startTransition] = useTransition()
-  const [tempPassword, setTempPassword] = useState<string | null>(null)
-  const [signInUrl, setSignInUrl] = useState<string | undefined>()
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault()
-    startTransition(async () => {
-      const res = await createAdminAction({ email, roleId, fullName })
-      if (!res.ok) {
-        toast.error(res.error)
-        return
-      }
-      setTempPassword(res.tempPassword ?? null)
-      setSignInUrl(res.signInUrl)
-      toast.success('Admin account created')
-      onDone()
-    })
-  }
-
-  function close() {
-    setOpen(false)
-    setEmail('')
-    setFullName('')
-    setTempPassword(null)
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => (o ? setOpen(true) : close())}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-4 w-4" /> Add admin
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add admin</DialogTitle>
-          <DialogDescription>
-            Creates an account and a one-time password to share securely.
-          </DialogDescription>
-        </DialogHeader>
-
-        {tempPassword ? (
-          <div className="space-y-3">
-            <CredentialsCard kind="staff" signInUrl={signInUrl} email={email} password={tempPassword} />
-            <DialogFooter>
-              <Button onClick={close}>Done</Button>
-            </DialogFooter>
-          </div>
-        ) : (
-          <form onSubmit={submit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="a-name">Full name</Label>
-              <Input id="a-name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="a-email">Email</Label>
-              <Input id="a-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <Select value={roleId} onValueChange={setRoleId}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => (
-                    <SelectItem key={r.id} value={r.id} className="capitalize">
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
-              <Button type="submit" disabled={pending}>
-                {pending ? 'Creating…' : 'Create account'}
-              </Button>
-            </DialogFooter>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
   )
 }

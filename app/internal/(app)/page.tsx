@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { FileSignature, Users, Briefcase, LifeBuoy } from 'lucide-react'
 import { getCurrentUser } from '@/lib/auth/session'
 import { getCeoOverview } from '@/lib/db/overview-queries'
+import { getDepartments } from '@/lib/db/queries'
 import { homePathFor } from '@/lib/home'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { StatCard } from '@/components/dashboard/StatCard'
@@ -14,11 +15,14 @@ import { MoneyPanel } from '@/components/overview/MoneyPanel'
 import { WorkloadPanel } from '@/components/overview/WorkloadPanel'
 import { ActivityFeed } from '@/components/overview/ActivityFeed'
 
-export default async function OverviewPage() {
-  // The company overview is the CEO's; everyone else lands on their own section.
-  const viewer = await getCurrentUser()
-  if (viewer && !viewer.permissions.has('ops.overview')) {
-    const home = homePathFor(viewer.permissions)
+export default async function OverviewPage({ searchParams }: { searchParams: Promise<{ start?: string }> }) {
+  // The company overview is for whoever holds it; everyone else lands on their department's workspace.
+  // Right after signing in (?start=1) everyone starts in their own department workspace.
+  const [viewer, { start }] = await Promise.all([getCurrentUser(), searchParams])
+  if (viewer && (!viewer.permissions.has('ops.overview') || start === '1')) {
+    const departments = await getDepartments()
+    const dept = departments.find((d) => d.key === viewer.department_key)
+    const home = homePathFor(viewer.permissions, dept?.home_path)
     if (home !== '/') redirect(home)
   }
 

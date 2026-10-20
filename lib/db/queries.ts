@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
-import type { Client, Task, TaskRow, TaskActivity, Profile } from '@/lib/types'
+import type { Client, Task, TaskRow, TaskActivity, Profile, Department } from '@/lib/types'
 
 /** All clients, newest first. */
 export async function getClients(): Promise<Client[]> {
@@ -97,6 +97,26 @@ export async function getTask(id: string): Promise<
 }
 
 /** Internal team profiles (for assignment + analytics), with role name. */
+export async function getDepartments(): Promise<Department[]> {
+  const supabase = await createClient()
+  const { data } = await supabase.from('departments').select('*').order('sort')
+  return (data as Department[]) ?? []
+}
+
+/** Latest successful sign-in per user (visible to anyone holding users.manage; empty otherwise). */
+export async function getLastSignIns(): Promise<Record<string, string>> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('auth_events')
+    .select('user_id, created_at')
+    .eq('event', 'sign_in')
+    .order('created_at', { ascending: false })
+    .limit(1000)
+  const out: Record<string, string> = {}
+  for (const r of data ?? []) if (r.user_id && !out[r.user_id]) out[r.user_id] = r.created_at
+  return out
+}
+
 export async function getTeam(): Promise<(Profile & { role_name: string | null })[]> {
   const supabase = await createClient()
   const { data } = await supabase

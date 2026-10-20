@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils'
  * link) skips the current password; a voluntary change asks for it. Rules show
  * live and are enforced again on the server.
  */
-export function ChangePasswordForm({ email, forced, big }: { email: string; forced: boolean; big?: boolean }) {
+export function ChangePasswordForm({ email, forced, big, afterPath = '/' }: { email: string; forced: boolean; big?: boolean; afterPath?: string }) {
   const t = useTranslations('auth.change')
   const router = useRouter()
   const [current, setCurrent] = useState('')
@@ -41,7 +41,7 @@ export function ChangePasswordForm({ email, forced, big }: { email: string; forc
       const res = await changePasswordAction({ current: forced ? undefined : current, next })
       if (res.ok) {
         toast.success(t('saved'))
-        router.replace('/')
+        router.replace(afterPath)
         router.refresh()
       } else setError(res.error === 'weak' ? t('weak') : res.error === 'wrongCurrent' ? t('wrongCurrent') : t('generic'))
     })

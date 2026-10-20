@@ -82,6 +82,8 @@ export async function setRolePermissionsAction(
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Name is required'),
   status: z.enum(['invited', 'active', 'disabled']),
+  department_key: z.string().min(1).optional(),
+  level: z.enum(['member', 'lead', 'head']).optional(),
 })
 
 /**
@@ -127,11 +129,19 @@ export async function createAdminAction(input: {
   email: string
   roleId: string
   fullName?: string
+  departmentKey: string
+  level: 'member' | 'lead' | 'head'
 }): Promise<ActionResult & { tempPassword?: string; signInUrl?: string }> {
   const parsed = z
-    .object({ email: z.string().email(), roleId: z.string().uuid(), fullName: z.string().optional() })
+    .object({
+      email: z.string().email(),
+      roleId: z.string().uuid(),
+      fullName: z.string().optional(),
+      departmentKey: z.string().min(1),
+      level: z.enum(['member', 'lead', 'head']),
+    })
     .safeParse(input)
-  if (!parsed.success) return { ok: false, error: 'Enter a valid email and role.' }
+  if (!parsed.success) return { ok: false, error: 'Enter a valid email, role, department and level.' }
   const denied = await lacks('users.invite')
   if (denied) return denied
 
@@ -149,7 +159,7 @@ export async function createAdminAction(input: {
 
   // 2. Provision the auth user with a temporary password.
   const tempPassword = randomBytes(9).toString('base64url')
-  const { error: userErr } = await admin.auth.admin.createUser({
+  const { data: created, error: userErr } = await admin.auth.admin.createUser({
     email: parsed.data.email.toLowerCase(),
     password: tempPassword,
     email_confirm: true,
@@ -157,8 +167,15 @@ export async function createAdminAction(input: {
     // Tagged so the proxy knows this is a team login; the one-time password must be replaced at first sign-in.
     app_metadata: { kind: 'staff', must_change_password: true },
   })
-  if (userErr) return { ok: false, error: userErr.message }
+  if (userErr || !created?.user) return { ok: false, error: userErr?.message ?? 'Could not create the account.' }
+
+  // The new-user trigger made the profile; place it in its department and level.
+  await admin
+    .from('profiles')
+    .update({ department_key: parsed.data.departmentKey, level: parsed.data.level })
+    .eq('id', created.user.id)
 
   revalidatePath(REVALIDATE)
+  revalidatePath('/team')
   return { ok: true, tempPassword, signInUrl: portalOrigin('internal', process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000') }
 }

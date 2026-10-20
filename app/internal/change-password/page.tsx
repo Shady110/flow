@@ -18,7 +18,7 @@ export default async function ChangePasswordPage() {
         <h1 className="font-display text-3xl font-bold tracking-tight text-flow-green">{forced ? t('firstTitle') : t('title')}</h1>
         {forced && <p className="mt-2 text-base text-muted-foreground">{t('firstIntro')}</p>}
       </div>
-      <ChangePasswordForm email={user.email} forced={forced} big={false} />
+      <ChangePasswordForm email={user.email} forced={forced} big={false} afterPath="/?start=1" />
     </TeamAuthLayout>
   )
 }

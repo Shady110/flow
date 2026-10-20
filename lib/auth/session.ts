@@ -43,6 +43,9 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
           ),
         )
 
+  // Kept separate (and tolerant) so the app keeps working before migration 0021 is applied.
+  const { data: org } = await supabase.from('profiles').select('department_key, level').eq('id', user.id).maybeSingle()
+
   return {
     id: profile.id,
     email: user.email ?? '',
@@ -51,6 +54,8 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     status: profile.status,
     role: role ? { id: role.id, name: role.name, is_system: role.is_system } : null,
     permissions,
+    department_key: org?.department_key ?? null,
+    level: org?.level ?? null,
   }
 })
 

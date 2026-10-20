@@ -68,6 +68,16 @@ export interface Profile {
   avatar_url: string | null
   status: ProfileStatus
   created_at: string
+  department_key: string | null
+  level: 'member' | 'lead' | 'head' | null
+}
+
+export interface Department {
+  key: string
+  name_en: string
+  name_ar: string
+  home_path: string
+  sort: number
 }
 
 /** Profile enriched with its role + resolved permission set (server-computed). */
@@ -79,6 +89,8 @@ export interface CurrentUser {
   status: ProfileStatus
   role: Pick<Role, 'id' | 'name' | 'is_system'> | null
   permissions: Set<PermissionKey>
+  department_key: string | null
+  level: 'member' | 'lead' | 'head' | null
 }
 
 export interface Client {

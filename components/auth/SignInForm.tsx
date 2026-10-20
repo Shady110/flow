@@ -29,7 +29,7 @@ export function SignInForm({ variant, helpHref }: { variant: 'team' | 'client'; 
     start(async () => {
       const res = await signInAction({ email, password })
       if (res.ok) {
-        router.replace(res.mustChange ? '/change-password' : '/')
+        router.replace(res.mustChange ? '/change-password' : variant === 'team' ? '/?start=1' : '/')
         router.refresh()
         return
       }
