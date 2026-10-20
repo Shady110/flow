@@ -1,4 +1,5 @@
-import { LogOut, MessageCircle } from 'lucide-react'
+import Link from 'next/link'
+import { LogOut, MessageCircle, UserRound } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { requireClientContext } from '@/lib/auth/client-session'
 import { signOut } from '@/lib/auth/actions'
@@ -20,9 +21,10 @@ import { Avatar, AvatarFallback } from '@/components/ds/avatar'
 
 export default async function PortalAppLayout({ children }: { children: React.ReactNode }) {
   const { client, clientUser, email } = await requireClientContext()
-  const [t, tp, settings] = await Promise.all([
+  const [t, tp, ta, settings] = await Promise.all([
     getTranslations('common'),
     getTranslations('portal.common'),
+    getTranslations('auth.account'),
     getPortalSettings(),
   ])
   const brand = normalizeHex(client.brand_color)
@@ -82,6 +84,11 @@ export default async function PortalAppLayout({ children }: { children: React.Re
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="cursor-pointer py-3">
+                  <Link href="/account">
+                    <UserRound className="me-2 h-4 w-4" /> {ta('title')}
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild className="cursor-pointer py-3">
                   <form action={signOut}>
                     <button type="submit" className="flex w-full items-center">

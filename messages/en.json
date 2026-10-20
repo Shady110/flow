@@ -1533,5 +1533,92 @@
     "send": "Send",
     "sendFailed": "We could not send your message. Please try again.",
     "openFailed": "We could not open your messages. Please try again in a moment."
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "forgot": "Forgot your password?",
+    "backToSignIn": "Back to sign in",
+    "help": "Need help? Message us on WhatsApp",
+    "helpText": "Hello, I need help signing in.",
+    "team": {
+      "title": "Team sign in",
+      "subtitle": "Use the email your CEO set up for you.",
+      "headline": "Run the agency in one place.",
+      "clientNote": "Client? Sign in at {address}"
+    },
+    "client": {
+      "title": "Welcome back",
+      "subtitle": "Everything about your store, in one place.",
+      "features": "Products · Payments · Messages · Requests"
+    },
+    "errors": {
+      "invalid": "That email or password is not right. Please check and try again.",
+      "disabled": "This account is turned off. Please contact us.",
+      "generic": "We could not sign you in. Please try again in a moment.",
+      "wrongAddress": "That account belongs to {product}. Open {address} to sign in."
+    },
+    "forgotPage": {
+      "title": "Forgot your password?",
+      "intro": "Write your email and we will send a link to choose a new password.",
+      "send": "Send the link",
+      "sending": "Sending...",
+      "sentTitle": "Check your email",
+      "sentHelp": "If that email has an account, a link is on its way. It works once and expires soon.",
+      "expired": "That link has expired or was already used. Ask for a new one."
+    },
+    "change": {
+      "firstTitle": "Choose your own password",
+      "firstIntro": "To protect your account, pick a password only you know. The one-time password will stop working.",
+      "title": "Change password",
+      "current": "Current password",
+      "new": "New password",
+      "again": "Type it again",
+      "save": "Save password",
+      "saving": "Saving...",
+      "mismatch": "The two passwords are not the same.",
+      "weak": "That password does not meet the rules below.",
+      "wrongCurrent": "The current password is not right.",
+      "generic": "We could not save it. Please try again.",
+      "saved": "Password saved",
+      "rules": {
+        "long": "10 characters or more",
+        "mix": "Letters and numbers",
+        "notEmail": "Not your email",
+        "notCommon": "Not a common password"
+      }
+    },
+    "wrong": {
+      "staffOnClient": {
+        "title": "This is the client dashboard",
+        "text": "Your account is a team account, so it works on the team dashboard."
+      },
+      "clientOnStaff": {
+        "title": "This is the team dashboard",
+        "text": "Your account is a client account, so it works on the client dashboard."
+      },
+      "open": "Open {product}",
+      "signOut": "Sign out"
+    },
+    "account": {
+      "title": "My account",
+      "password": "Password",
+      "changePassword": "Change password",
+      "recent": "Recent sign-ins",
+      "none": "No activity yet.",
+      "events": {
+        "sign_in": "Signed in",
+        "sign_in_failed": "Failed sign-in",
+        "wrong_address": "Wrong address",
+        "sign_out": "Signed out",
+        "password_changed": "Password changed",
+        "reset_requested": "Reset link requested",
+        "reset_by_admin": "Password reset by admin"
+      }
+    }
   }
 }

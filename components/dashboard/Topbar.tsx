@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { LogOut, MessageSquare } from 'lucide-react'
+import { LogOut, MessageSquare, UserRound } from 'lucide-react'
 import { MobileNav } from './MobileNav'
 import { NavSearch } from './NavSearch'
 import type { PermissionKey } from '@/lib/types'
@@ -40,6 +40,7 @@ function initials(name: string, email: string) {
 
 export function Topbar({ name, email, roleName, canChat, permissions }: TopbarProps) {
   const t = useTranslations('common')
+  const ta = useTranslations('auth.account')
   return (
     <header className="flex h-16 items-center gap-3 rounded-2xl bg-card px-3 shadow-[var(--shadow-sm)] sm:px-4">
       <MobileNav permissions={permissions} />
@@ -72,6 +73,11 @@ export function Topbar({ name, email, roleName, canChat, permissions }: TopbarPr
         <DropdownMenuContent align="end" className="w-52">
           <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link href="/account">
+              <UserRound className="me-2 h-4 w-4" /> {ta('title')}
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem asChild className="cursor-pointer">
             <form action={signOut}>
               <button type="submit" className="flex w-full items-center">
