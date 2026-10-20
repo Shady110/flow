@@ -1,5 +1,5 @@
 import 'server-only'
-import { headers } from 'next/headers'
+import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { Client, ClientUser } from '@/lib/types'
@@ -11,40 +11,32 @@ export interface ClientContext {
 }
 
 /**
- * Resolve the current client-portal user for the tenant of the current
- * subdomain. Returns null if not signed in, not a client user, or if the
- * signed-in user belongs to a *different* client than the subdomain (a hard
- * security boundary — no cross-tenant access).
+ * The signed-in client-portal user and their client, found from the login alone
+ * (no client name in the address). One joined query; null if not signed in, not a
+ * client user, or disabled. Cached for the duration of a request so the layout
+ * and the page share one lookup.
  */
-export async function getClientContext(): Promise<ClientContext | null> {
-  const tenantSlug = (await headers()).get('x-tenant-slug')
-  if (!tenantSlug) return null
-
+export const getClientContext = cache(async (): Promise<ClientContext | null> => {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: clientUser } = await supabase
+  const { data } = await supabase
     .from('client_users')
-    .select('*')
+    .select('*, client:clients(*)')
     .eq('user_id', user.id)
+    .eq('status', 'active')
     .maybeSingle()
-  if (!clientUser) return null
+  if (!data) return null
 
-  const { data: client } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('id', clientUser.client_id)
-    .maybeSingle()
-  if (!client) return null
+  const { client, ...clientUser } = data as ClientUser & { client: Client | Client[] | null }
+  const c = Array.isArray(client) ? client[0] : client
+  if (!c) return null
 
-  // Enforce that the session's client matches the requested subdomain.
-  if (client.slug !== tenantSlug) return null
-
-  return { email: user.email ?? '', clientUser, client }
-}
+  return { email: user.email ?? '', clientUser: clientUser as ClientUser, client: c }
+})
 
 export async function requireClientContext(): Promise<ClientContext> {
   const ctx = await getClientContext()

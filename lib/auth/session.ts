@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ALL_PERMISSION_KEYS } from '@/lib/constants'
@@ -9,7 +10,7 @@ import type { CurrentUser, PermissionKey } from '@/lib/types'
  * fully-expanded permission set. Returns null if not signed in OR the signed-in
  * user has no internal profile (e.g. a client-portal user).
  */
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createClient()
   const {
     data: { user },
@@ -51,7 +52,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     role: role ? { id: role.id, name: role.name, is_system: role.is_system } : null,
     permissions,
   }
-}
+})
 
 /** Require an internal session; redirect to the login page otherwise. */
 export async function requireUser(): Promise<CurrentUser> {

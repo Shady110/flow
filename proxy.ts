@@ -1,26 +1,33 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { resolvePortal } from '@/lib/tenant'
+import { resolvePortal, portalOrigin } from '@/lib/tenant'
+import { guard, type AccountKind } from '@/lib/auth/route-guard'
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000'
 
 /**
- * Multi-tenant proxy (Next.js 16 middleware convention).
+ * Proxy (Next.js 16 middleware convention).
  *
- *  1. Refreshes the Supabase auth session cookie on every request.
- *  2. Resolves the portal (marketing / internal / client) from the host.
- *  3. Rewrites into the matching route segment and injects tenant headers.
- *  4. Gates the internal & client portals behind an authenticated session.
+ *  1. Refreshes the Supabase session cookie and reads the account's claims
+ *     locally (no database call).
+ *  2. Resolves the portal from the host: app.<root> = team, portal.<root> =
+ *     clients (one shared address, no client name), apex = marketing.
+ *  3. Asks the route guard what to do (allow, sign in, change password, or the
+ *     friendly wrong-address page) and rewrites into the portal's segment.
  *
- * URL-facing behaviour (rewrites are invisible to the user):
- *   app.flow.com/clients        ->  /internal/clients
- *   acme.flow.com/products      ->  /portal/products     (x-tenant-slug: acme)
- *   flow.com/                   ->  (marketing) unchanged
+ *   app.flow.com/clients     ->  /internal/clients
+ *   portal.flow.com/invoices ->  /portal/invoices      (x-portal: client)
+ *   acme.flow.com/anything   ->  redirect to portal.flow.com/anything (old links)
  */
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
   const host = request.headers.get('host')
-  const { portal, tenant } = resolvePortal(host, ROOT_DOMAIN)
+  const { portal, legacyClient } = resolvePortal(host, ROOT_DOMAIN)
+
+  // Old per-client addresses: send them to the shared client address.
+  if (legacyClient) {
+    return NextResponse.redirect(`${portalOrigin('client', ROOT_DOMAIN)}${pathname}${search}`, 308)
+  }
 
   // Response we can attach refreshed auth cookies to.
   let response = NextResponse.next({ request })
@@ -36,23 +43,20 @@ export async function proxy(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
-          )
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
         },
       },
     },
   )
 
-  // IMPORTANT: getUser() also refreshes the session and writes cookies above.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Verifies the token locally and refreshes the session cookie when needed.
+  const { data } = await supabase.auth.getClaims()
+  const claims = data?.claims as
+    | { sub?: string; app_metadata?: { kind?: AccountKind; must_change_password?: boolean } }
+    | undefined
 
-  // API routes manage their own auth/clients — never rewrite them.
-  if (pathname.startsWith('/api')) {
-    return response
-  }
+  // API routes manage their own auth: never rewrite them.
+  if (pathname.startsWith('/api')) return response
 
   // ---- Marketing: block private segments, otherwise pass through ----------
   if (portal === 'marketing') {
@@ -63,48 +67,40 @@ export async function proxy(request: NextRequest) {
   }
 
   const prefix = portal === 'internal' ? '/internal' : '/portal'
-  const isLogin = pathname === '/login' || pathname === `${prefix}/login`
+  // Strip an already-applied prefix so the guard sees the public path.
+  const publicPath = pathname.startsWith(`${prefix}/`) ? pathname.slice(prefix.length) : pathname === prefix ? '/' : pathname
 
-  // ---- Auth gate ----------------------------------------------------------
-  if (!user && !isLogin) {
-    const url = request.nextUrl.clone()
-    if (host) url.host = host // keep the tenant/app subdomain
-    url.pathname = '/login'
-    return redirectPreservingCookies(url, response)
-  }
-  if (user && isLogin) {
+  const decision = guard({
+    portal,
+    signedIn: !!claims?.sub,
+    kind: claims?.app_metadata?.kind,
+    mustChange: claims?.app_metadata?.must_change_password === true,
+    path: publicPath,
+  })
+
+  if (decision.type === 'redirect') {
     const url = request.nextUrl.clone()
     if (host) url.host = host
-    url.pathname = '/'
+    url.pathname = decision.to
+    url.search = ''
     return redirectPreservingCookies(url, response)
   }
 
-  // ---- Rewrite into the portal's route segment ----------------------------
-  // Avoid double-prefixing if the rewrite target is already applied.
-  const targetPath = pathname.startsWith(prefix) ? pathname : `${prefix}${pathname === '/' ? '' : pathname}`
-  const rewriteResponse = rewrite(request, `${targetPath}${search}`, response, {
+  const target = decision.type === 'wrong-address' ? '/wrong-address' : publicPath
+  return rewrite(request, `${prefix}${target === '/' ? '' : target}${decision.type === 'wrong-address' ? '' : search}`, response, {
     'x-portal': portal,
-    ...(tenant ? { 'x-tenant-slug': tenant } : {}),
   })
-  return rewriteResponse
 }
 
 /** Rewrite while carrying over auth cookies and optional request headers. */
-function rewrite(
-  request: NextRequest,
-  destination: string,
-  cookieSource: NextResponse,
-  extraHeaders?: Record<string, string>,
-) {
+function rewrite(request: NextRequest, destination: string, cookieSource: NextResponse, extraHeaders?: Record<string, string>) {
   const url = request.nextUrl.clone()
   const [path, qs] = destination.split('?')
-  url.pathname = path
-  url.search = qs ? `?${qs}` : url.search
+  url.pathname = path || '/'
+  url.search = qs ? `?${qs}` : ''
 
   const requestHeaders = new Headers(request.headers)
-  if (extraHeaders) {
-    for (const [k, v] of Object.entries(extraHeaders)) requestHeaders.set(k, v)
-  }
+  if (extraHeaders) for (const [k, v] of Object.entries(extraHeaders)) requestHeaders.set(k, v)
 
   const res = NextResponse.rewrite(url, { request: { headers: requestHeaders } })
   cookieSource.cookies.getAll().forEach((c) => res.cookies.set(c))

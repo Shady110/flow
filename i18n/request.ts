@@ -9,8 +9,8 @@ import { defaultLocale, isLocale, LOCALE_COOKIE } from './config'
 export default getRequestConfig(async () => {
   const cookieStore = await cookies()
   const cookieValue = cookieStore.get(LOCALE_COOKIE)?.value
-  // A client-portal visitor (tenant subdomain) with no saved choice gets Arabic.
-  const onPortal = !!(await headers()).get('x-tenant-slug')
+  // A client-portal visitor with no saved choice gets Arabic.
+  const onPortal = (await headers()).get('x-portal') === 'client'
   const locale = isLocale(cookieValue) ? cookieValue : onPortal ? 'ar' : defaultLocale
 
   return {
