@@ -96,7 +96,8 @@ async function PortalHomeBody({ client }: { client: Client }) {
     <div className="space-y-6 sm:space-y-8">
       <NextStepCard step={step} allSetHelp={allSetHelp} />
 
-      <section aria-label={t('sectionsLabel')} className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+      <h2 className="font-display text-xl font-bold tracking-tight sm:text-2xl">{t('whatToday')}</h2>
+      <section aria-label={t('sectionsLabel')} className="-mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         <SectionCard
           href="/contract"
           icon={FileSignature}

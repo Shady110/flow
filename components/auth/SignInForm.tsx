@@ -11,6 +11,7 @@ import { Button } from '@/components/ds/button'
 import { ShimmerButton } from '@/components/ds/shimmer-button'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
+import { FlowLoader } from '@/components/brand/FlowLoader'
 import { PasswordField } from '@/components/auth/PasswordField'
 
 /** The one sign-in form for both dashboards. `client` is the big, calm look. */
@@ -22,6 +23,7 @@ export function SignInForm({ variant, helpHref }: { variant: 'team' | 'client'; 
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, start] = useTransition()
+  const [signedIn, setSignedIn] = useState(false)
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -29,6 +31,7 @@ export function SignInForm({ variant, helpHref }: { variant: 'team' | 'client'; 
     start(async () => {
       const res = await signInAction({ email, password })
       if (res.ok) {
+        setSignedIn(true)
         router.replace(res.mustChange ? '/change-password' : variant === 'team' ? '/?start=1' : '/')
         router.refresh()
         return
@@ -41,6 +44,13 @@ export function SignInForm({ variant, helpHref }: { variant: 'team' | 'client'; 
   }
 
   return (
+    <>
+    {/* After a good sign-in the next screen takes a moment: cover the form with the loader. */}
+    {signedIn && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+        <FlowLoader delay={0} label={t('signingIn')} />
+      </div>
+    )}
     <form onSubmit={submit} className="space-y-5">
       <div className="space-y-2">
         <Label htmlFor="email" className={big ? 'text-base' : undefined}>{t('email')}</Label>
@@ -89,5 +99,6 @@ export function SignInForm({ variant, helpHref }: { variant: 'team' | 'client'; 
         )}
       </div>
     </form>
+    </>
   )
 }

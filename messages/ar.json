@@ -1289,6 +1289,7 @@
     "home": {
       "hello": "مرحبًا {name}",
       "intro": "هذا ما يحدث في حسابك.",
+      "whatToday": "ماذا تريد أن تفعل اليوم؟",
       "sectionsLabel": "حسابك",
       "nowLabel": "المطلوب الآن",
       "nowLabelDone": "الآن",

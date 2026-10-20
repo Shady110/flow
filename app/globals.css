@@ -43,6 +43,9 @@ html[lang="ar"] body {
 }
 
 :root {
+  /* One look for every client: the portal always uses Flow green. */
+  --brand: #143C28;
+  --brand-ink: #143C28;
   --color-bg: #FBFBF7;
   --color-bg-soft: #F4F7EC;
   --color-bg-muted: #EAF1DE;

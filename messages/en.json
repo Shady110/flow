@@ -1289,6 +1289,7 @@
     "home": {
       "hello": "Hello, {name}",
       "intro": "Here is what is happening with your account.",
+      "whatToday": "What do you want to do today?",
       "sectionsLabel": "Your account",
       "nowLabel": "What to do now",
       "nowLabelDone": "Right now",

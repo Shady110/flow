@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getLocale, getTranslations } from 'next-intl/server'
@@ -14,6 +15,9 @@ import { AttentionFeed } from '@/components/overview/AttentionFeed'
 import { MoneyPanel } from '@/components/overview/MoneyPanel'
 import { WorkloadPanel } from '@/components/overview/WorkloadPanel'
 import { ActivityFeed } from '@/components/overview/ActivityFeed'
+import { CapRingTile } from '@/components/overview/CapRingTile'
+import { Skeleton } from '@/components/ds/skeleton'
+import type { CurrentUser } from '@/lib/types'
 
 export default async function OverviewPage({ searchParams }: { searchParams: Promise<{ start?: string }> }) {
   // The company overview is for whoever holds it; everyone else lands on their department's workspace.
@@ -26,11 +30,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
     if (home !== '/') redirect(home)
   }
 
-  const [data, t, locale] = await Promise.all([getCeoOverview(), getTranslations('internal.overview'), getLocale()])
-  const { kpis } = data
+  const [t, locale] = await Promise.all([getTranslations('internal.overview'), getLocale()])
   const first = (viewer?.full_name ?? '').trim().split(/\s+/)[0]
   const today = new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
-  const canSeeMoney = !!viewer?.permissions.has('finance.view')
 
   return (
     <div className="space-y-6">
@@ -48,8 +50,32 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           </>
         }
       />
+      {/* The header paints at once; the numbers stream in behind it. */}
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4" aria-busy="true">
+            <Skeleton className="col-span-2 h-36 rounded-2xl" />
+            <Skeleton className="h-36 rounded-2xl" />
+            <Skeleton className="h-36 rounded-2xl" />
+          </div>
+        }
+      >
+        <OverviewBody viewer={viewer} />
+      </Suspense>
+    </div>
+  )
+}
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+async function OverviewBody({ viewer }: { viewer: CurrentUser | null }) {
+  const [data, t] = await Promise.all([getCeoOverview(), getTranslations('internal.overview')])
+  const { kpis } = data
+  const canSeeMoney = !!viewer?.permissions.has('finance.view')
+  const capFull = kpis.cap.won >= kpis.cap.cap
+
+  // A bento: wide hero + ring up top, the pipeline across, then money / attention, then people / activity.
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      <div className="col-span-2">
         <StatCard
           variant="hero"
           icon={Users}
@@ -58,43 +84,47 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           chip={kpis.newClientsThisMonth ? { text: t('kpiNewMonth', { count: kpis.newClientsThisMonth }), tone: 'good' } : undefined}
           href="/clients"
         />
-        <StatCard
-          label={t('kpiCap')}
-          value={`${kpis.cap.won} / ${kpis.cap.cap}`}
-          chip={{ text: kpis.cap.won >= kpis.cap.cap ? t('kpiCapFull') : t('kpiCapLeft', { count: kpis.cap.cap - kpis.cap.won }), tone: kpis.cap.won >= kpis.cap.cap ? 'warn' : 'neutral' }}
-          href="/leads"
-        />
-        <StatCard
-          icon={Briefcase}
-          label={t('kpiLive')}
-          value={kpis.accountsLive}
-          chip={kpis.accountsAtRisk ? { text: t('kpiAtRisk', { count: kpis.accountsAtRisk }), tone: 'bad' } : { text: t('kpiHealthy'), tone: 'good' }}
-          href="/accounts"
-        />
-        <StatCard
-          icon={LifeBuoy}
-          label={t('kpiTickets')}
-          value={kpis.openTickets}
-          tone={kpis.urgentTickets ? 'danger' : 'default'}
-          chip={kpis.urgentTickets ? { text: t('kpiUrgent', { count: kpis.urgentTickets }), tone: 'bad' } : undefined}
-          href="/accounts/tickets"
-        />
       </div>
-
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <div className="space-y-4 xl:col-span-8">
-          <PipelineStrip counts={data.pipeline} />
-          {canSeeMoney && <MoneyPanel finance={data.finance} budget={data.budget} />}
+      <Link href="/leads" className="col-span-2 block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:col-span-1">
+        <CapRingTile
+          label={t('kpiCap')}
+          won={kpis.cap.won}
+          cap={kpis.cap.cap}
+          full={capFull}
+          note={capFull ? t('kpiCapFull') : t('kpiCapLeft', { count: kpis.cap.cap - kpis.cap.won })}
+        />
+      </Link>
+      <StatCard
+        icon={Briefcase}
+        label={t('kpiLive')}
+        value={kpis.accountsLive}
+        chip={kpis.accountsAtRisk ? { text: t('kpiAtRisk', { count: kpis.accountsAtRisk }), tone: 'bad' } : { text: t('kpiHealthy'), tone: 'good' }}
+        href="/accounts"
+      />
+      <StatCard
+        icon={LifeBuoy}
+        label={t('kpiTickets')}
+        value={kpis.openTickets}
+        tone={kpis.urgentTickets ? 'danger' : 'default'}
+        chip={kpis.urgentTickets ? { text: t('kpiUrgent', { count: kpis.urgentTickets }), tone: 'bad' } : undefined}
+        href="/accounts/tickets"
+      />
+      <div className="col-span-2 xl:col-span-3">
+        <PipelineStrip counts={data.pipeline} />
+      </div>
+      {canSeeMoney && (
+        <div className="col-span-2">
+          <MoneyPanel finance={data.finance} budget={data.budget} />
         </div>
-        <div className="xl:col-span-4">
-          <AttentionFeed items={data.attention} clientNames={data.clientNames} />
-        </div>
-        <div className="xl:col-span-6">
-          <WorkloadPanel rows={data.workload} teamHref={viewer?.permissions.has('team.view') ? '/team' : undefined} />
-        </div>
-        <div className="xl:col-span-6">
-          <ActivityFeed events={data.events} />
-        </div>
+      )}
+      <div className={canSeeMoney ? 'col-span-2' : 'col-span-2 xl:col-span-4'}>
+        <AttentionFeed items={data.attention} clientNames={data.clientNames} />
+      </div>
+      <div className="col-span-2">
+        <WorkloadPanel rows={data.workload} teamHref={viewer?.permissions.has('team.view') ? '/team' : undefined} />
+      </div>
+      <div className="col-span-2">
+        <ActivityFeed events={data.events} />
       </div>
     </div>
   )
