@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { ClipboardCheck, FileSignature, LifeBuoy, MessageCircle, Package, Wallet } from 'lucide-react'
 import { requireClientContext } from '@/lib/auth/client-session'
@@ -18,9 +19,34 @@ import { SectionCard } from '@/components/portal/SectionCard'
 import { JourneyCard } from '@/components/portal/JourneyCard'
 import { LatestUpdates } from '@/components/portal/LatestUpdates'
 import { TalkToUs } from '@/components/portal/TalkToUs'
+import { Skeleton } from '@/components/ds/skeleton'
+import type { Client } from '@/lib/types'
 
+/** The greeting paints at once; the cards stream in behind it. */
 export default async function PortalHome() {
   const { client, clientUser } = await requireClientContext()
+  const t = await getTranslations('portal.home')
+  return (
+    <div className="space-y-6 sm:space-y-8">
+      <div>
+        <h1 className="font-display text-3xl font-bold tracking-tight">{t('hello', { name: clientUser.full_name.split(' ')[0] })}</h1>
+        <p className="mt-1 text-base text-muted-foreground">{t('intro')}</p>
+      </div>
+      <Suspense
+        fallback={
+          <div className="space-y-6" aria-busy="true">
+            <Skeleton className="h-40 w-full rounded-3xl" />
+            <Skeleton className="h-32 w-full rounded-2xl" />
+          </div>
+        }
+      >
+        <PortalHomeBody client={client} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function PortalHomeBody({ client }: { client: Client }) {
   const supabase = await createClient()
   const [t, to, tm] = await Promise.all([
     getTranslations('portal.home'),
@@ -68,11 +94,6 @@ export default async function PortalHome() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">{t('hello', { name: clientUser.full_name.split(' ')[0] })}</h1>
-        <p className="mt-1 text-base text-muted-foreground">{t('intro')}</p>
-      </div>
-
       <NextStepCard step={step} allSetHelp={allSetHelp} />
 
       <section aria-label={t('sectionsLabel')} className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">

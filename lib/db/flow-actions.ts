@@ -1,9 +1,10 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth/session'
+import { PORTAL_SETTINGS_TAG } from '@/lib/db/portal-settings'
 import { ACCOUNT_STATUSES, CLIENT_STAGES, MARKETPLACES, PLATFORM_STAGES } from '@/lib/constants'
 import type { ActionResult } from '@/lib/db/client-actions'
 
@@ -190,6 +191,7 @@ export async function saveCompanySettingsAction(input: unknown): Promise<ActionR
   ])
   if (error) return { ok: false, error: error.message }
   revalidatePath('/settings/company')
+  revalidateTag(PORTAL_SETTINGS_TAG, 'max')
   revalidatePath('/leads')
   return { ok: true }
 }

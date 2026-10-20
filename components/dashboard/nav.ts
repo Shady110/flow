@@ -79,6 +79,18 @@ export const INTERNAL_NAV: NavItem[] = [
   { key: 'settings', label: 'Settings', href: '/settings', icon: Settings, anyOf: SETTINGS_PAGES.map((p) => p.permission!) },
 ]
 
+/**
+ * What each department works in daily. These lead the sidebar; everything else
+ * the viewer may see folds into "Other areas". Management (and anyone without a
+ * department) gets the full grouped menu.
+ */
+export const DEPARTMENT_NAV: Record<string, string[]> = {
+  sales: ['leads', 'pipeline', 'clients', 'contracts'],
+  content: ['content', 'social', 'tasks'],
+  accounts: ['accounts', 'clients', 'contracts', 'tasks'],
+  finance: ['finance', 'clients'],
+}
+
 /** Pages that are searchable but not in the sidebar. */
 export const SEARCH_ONLY: NavItem[] = [
   { key: 'tickets', label: 'Tickets', href: '/accounts/tickets', icon: LifeBuoy, permission: 'tickets.manage' },

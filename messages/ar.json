@@ -301,6 +301,14 @@
       "social": "السوشيال",
       "pipeline": "مسار العمل",
       "company": "الشركة",
+      "otherAreas": "مجالات أخرى",
+      "departments": {
+        "management": "الإدارة",
+        "sales": "المبيعات",
+        "content": "المحتوى",
+        "accounts": "الحسابات",
+        "finance": "المالية"
+      },
       "sections": {
         "clients": "العملاء والمبيعات",
         "delivery": "التنفيذ",
@@ -1123,6 +1131,8 @@
     "shell": {
       "search": "انتقل إلى صفحة…",
       "noResults": "لا توجد صفحة مطابقة",
+      "expandMenu": "توسيع القائمة",
+      "collapseMenu": "طيّ القائمة",
       "openMenu": "فتح القائمة",
       "capTitle": "عملاء جدد هذا الشهر",
       "capFull": "تم بلوغ الحد",

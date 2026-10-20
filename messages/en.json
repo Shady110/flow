@@ -301,6 +301,14 @@
       "social": "Social",
       "pipeline": "Pipeline",
       "company": "Company",
+      "otherAreas": "Other areas",
+      "departments": {
+        "management": "Management",
+        "sales": "Sales",
+        "content": "Content",
+        "accounts": "Accounts",
+        "finance": "Finance"
+      },
       "sections": {
         "clients": "Clients & sales",
         "delivery": "Delivery",
@@ -1123,6 +1131,8 @@
     "shell": {
       "search": "Jump to a page…",
       "noResults": "No matching page",
+      "expandMenu": "Expand menu",
+      "collapseMenu": "Collapse menu",
       "openMenu": "Open menu",
       "capTitle": "New clients this month",
       "capFull": "Limit reached",

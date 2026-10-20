@@ -27,6 +27,7 @@ interface TopbarProps {
   roleName: string | null
   canChat?: boolean
   permissions: PermissionKey[]
+  department?: string | null
 }
 
 function initials(name: string, email: string) {
@@ -38,12 +39,12 @@ function initials(name: string, email: string) {
     .join('')
 }
 
-export function Topbar({ name, email, roleName, canChat, permissions }: TopbarProps) {
+export function Topbar({ name, email, roleName, canChat, permissions, department }: TopbarProps) {
   const t = useTranslations('common')
   const ta = useTranslations('auth.account')
   return (
     <header className="flex h-16 items-center gap-3 rounded-2xl bg-card px-3 shadow-[var(--shadow-sm)] sm:px-4">
-      <MobileNav permissions={permissions} />
+      <MobileNav permissions={permissions} department={department} />
       <NavSearch permissions={permissions} />
       <div className="flex-1" />
       <LanguageSwitcher />

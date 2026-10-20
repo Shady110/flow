@@ -9,7 +9,7 @@ import { Brand } from './Brand'
 import type { PermissionKey } from '@/lib/types'
 
 /** Hamburger + drawer with the full menu, for screens too narrow for the sidebar. */
-export function MobileNav({ permissions }: { permissions: PermissionKey[] }) {
+export function MobileNav({ permissions, department }: { permissions: PermissionKey[]; department?: string | null }) {
   const [open, setOpen] = useState(false)
   const t = useTranslations('internal.shell')
   // The drawer opens from the reading-start edge.
@@ -31,7 +31,7 @@ export function MobileNav({ permissions }: { permissions: PermissionKey[] }) {
           <Brand />
         </div>
         <div className="flex-1 overflow-y-auto">
-          <SidebarNav permissions={permissions} onNavigate={() => setOpen(false)} />
+          <SidebarNav permissions={permissions} department={department} onNavigate={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>

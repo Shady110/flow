@@ -1,5 +1,9 @@
 import 'server-only'
+import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+
+/** Cache tag; saving company settings revalidates it. */
+export const PORTAL_SETTINGS_TAG = 'portal-settings'
 
 export interface PortalSettings {
   /** Raw support WhatsApp number as typed in Company settings; build links with lib/contact.ts. */
@@ -13,7 +17,7 @@ export interface PortalSettings {
  * RLS (it also holds the sales cap), so this reads an explicit allow-list with
  * the admin client instead of opening the table to clients.
  */
-export async function getPortalSettings(): Promise<PortalSettings> {
+async function loadPortalSettings(): Promise<PortalSettings> {
   const { data } = await createAdminClient()
     .from('app_settings')
     .select('key, value')
@@ -26,3 +30,8 @@ export async function getPortalSettings(): Promise<PortalSettings> {
     paymentInstructions: { en: pay.en ?? '', ar: pay.ar ?? '' },
   }
 }
+
+export const getPortalSettings = unstable_cache(loadPortalSettings, ['portal-settings'], {
+  tags: [PORTAL_SETTINGS_TAG],
+  revalidate: 300,
+})

@@ -635,3 +635,12 @@ body {
     padding: 0 !important;
   }
 }
+/* Flow loader: the mark fills from the bottom; static and full when motion is reduced. */
+@keyframes flow-loader-fill {
+  0% { transform: translateY(100%); }
+  70%, 100% { transform: translateY(0); }
+}
+.flow-loader-fill { animation: flow-loader-fill 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .flow-loader-fill { animation: none; transform: translateY(0); }
+}

@@ -3,7 +3,7 @@ import { LogOut, MessageCircle, UserRound } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { requireClientContext } from '@/lib/auth/client-session'
 import { signOut } from '@/lib/auth/actions'
-import { brandCss, normalizeHex, readableOn } from '@/lib/brand'
+import { PRODUCT } from '@/lib/product'
 import { whatsappUrl } from '@/lib/contact'
 import { getPortalSettings } from '@/lib/db/portal-settings'
 import { PortalNav } from '@/components/portal/PortalNav'
@@ -27,7 +27,6 @@ export default async function PortalAppLayout({ children }: { children: React.Re
     getTranslations('auth.account'),
     getPortalSettings(),
   ])
-  const brand = normalizeHex(client.brand_color)
   const wa = whatsappUrl(settings.whatsapp)
   const initials = clientUser.full_name
     .split(/\s+/)
@@ -37,24 +36,13 @@ export default async function PortalAppLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen bg-background">
-      {/* The client's colour re-themes every button, tab and ring in the portal. */}
-      <style dangerouslySetInnerHTML={{ __html: brandCss(client.brand_color) }} />
-
       <header className="sticky top-0 z-10 border-b border-border/60 bg-card/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4">
           <div className="flex min-w-0 items-center gap-3">
-            {client.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={client.logo_url} alt="" className="h-10 w-10 shrink-0 rounded-xl object-contain" />
-            ) : (
-              <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-base font-bold"
-                style={{ background: brand, color: readableOn(brand) }}
-              >
-                {client.name[0]?.toUpperCase()}
-              </span>
-            )}
-            <span className="truncate font-display text-lg font-bold tracking-tight">{client.name}</span>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-flow-green font-display text-base font-bold text-flow-lime">
+              F
+            </span>
+            <span className="truncate font-display text-lg font-bold tracking-tight">{PRODUCT.client.name}</span>
           </div>
 
           <PortalNav />
@@ -82,7 +70,10 @@ export default async function PortalAppLayout({ children }: { children: React.Re
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
+                <DropdownMenuLabel className="space-y-0.5">
+                  <span className="block truncate font-semibold">{client.name}</span>
+                  <span className="block truncate text-xs font-normal text-muted-foreground">{email}</span>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="cursor-pointer py-3">
                   <Link href="/account">
