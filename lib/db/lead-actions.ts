@@ -7,7 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/auth/session'
 import { provisionClientUser } from '@/lib/db/client-user-provision'
 import { parseDeal } from '@/lib/deals'
-import { slugRe } from '@/lib/slug'
+import { makeSlug } from '@/lib/slug'
 import type { ActionResult } from '@/lib/db/client-actions'
 import { CONTACT_METHODS, LEAD_STATUSES, MARKETPLACES } from '@/lib/constants'
 import type { LeadStatus } from '@/lib/types'
@@ -140,7 +140,6 @@ export async function updateLeadDealAction(leadId: string, deal: unknown): Promi
 
 const convertSchema = z.object({
   leadId: z.string().uuid(),
-  slug: z.string().min(2).regex(slugRe, 'Use lowercase letters, numbers and hyphens (subdomain-safe)'),
   /** Company name for the client record; defaults to the lead's company/name. */
   name: z.string().min(2, 'Client name is required'),
   /** Portal login. Omit to create the client without portal access for now. */
@@ -158,11 +157,11 @@ const convertSchema = z.object({
  */
 export async function convertLeadAction(
   input: unknown,
-): Promise<ActionResult & { clientId?: string; tempPassword?: string }> {
+): Promise<ActionResult & { clientId?: string; tempPassword?: string; signInUrl?: string }> {
   const user = await requirePermission('leads.convert')
   const parsed = convertSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message }
-  const { leadId, slug, name, contactEmail, contactName } = parsed.data
+  const { leadId, name, contactEmail, contactName } = parsed.data
 
   const supabase = await createClient()
   const { data: lead } = await supabase.from('leads').select('*').eq('id', leadId).maybeSingle()
@@ -197,7 +196,7 @@ export async function convertLeadAction(
     .from('clients')
     .insert({
       name,
-      slug,
+      slug: makeSlug(name),
       status: 'active',
       notes: contactBlock || null,
       deal: deal ?? null,
@@ -205,12 +204,7 @@ export async function convertLeadAction(
     })
     .select('id')
     .single()
-  if (clientErr) {
-    return {
-      ok: false,
-      error: clientErr.code === '23505' ? 'That subdomain is already taken.' : clientErr.message,
-    }
-  }
+  if (clientErr) return { ok: false, error: clientErr.message }
 
   // One platform account per marketplace in the deal; the CEO tailors stages and managers later.
   const platforms = (deal?.platforms ?? []).filter((p) => (MARKETPLACES as string[]).includes(p))
@@ -224,6 +218,7 @@ export async function convertLeadAction(
 
   // Portal login (optional — the client record alone is enough to start).
   let tempPassword: string | undefined
+  let signInUrl: string | undefined
   if (contactEmail) {
     const res = await provisionClientUser(
       { clientId: client.id, email: contactEmail, fullName: contactName || lead.name },
@@ -237,6 +232,7 @@ export async function convertLeadAction(
       }
     }
     tempPassword = res.tempPassword
+    signInUrl = res.signInUrl
   }
 
   revalidatePath(`/leads/${leadId}`)
@@ -244,5 +240,5 @@ export async function convertLeadAction(
   revalidatePath('/clients')
   revalidatePath('/pipeline')
   revalidatePath('/')
-  return { ok: true, clientId: client.id, tempPassword }
+  return { ok: true, clientId: client.id, tempPassword, signInUrl }
 }

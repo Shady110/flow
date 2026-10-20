@@ -1,4 +1,5 @@
 import 'server-only'
+import { CLIENT_SUBDOMAIN } from '../tenant'
 import { kashier } from './kashier'
 import { mock } from './mock'
 import type { PaymentProvider } from './types'
@@ -32,6 +33,6 @@ const root = () => process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000'
 /** Public URL the gateway calls with results. */
 export const webhookUrl = () => `${protocol(root())}://${root()}/api/payments/webhook`
 
-/** Where the browser lands after paying: the client's own portal address. */
-export const returnUrl = (slug: string, merchantOrderId: string) =>
-  `${protocol(root())}://${slug}.${root()}/payments/return?o=${encodeURIComponent(merchantOrderId)}`
+/** Where the browser lands after paying: the shared client dashboard (no client name in the address). */
+export const returnUrl = (merchantOrderId: string) =>
+  `${protocol(root())}://${CLIENT_SUBDOMAIN}.${root()}/payments/return?o=${encodeURIComponent(merchantOrderId)}`

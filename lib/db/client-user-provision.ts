@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto'
 import { z } from 'zod'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { portalOrigin } from '@/lib/tenant'
 import type { ActionResult } from '@/lib/db/client-actions'
 
 export const clientUserSchema = z.object({
@@ -20,7 +21,7 @@ export const clientUserSchema = z.object({
 export async function provisionClientUser(
   input: z.infer<typeof clientUserSchema>,
   db: SupabaseClient,
-): Promise<ActionResult & { tempPassword?: string }> {
+): Promise<ActionResult & { tempPassword?: string; signInUrl?: string }> {
   const { clientId, email, fullName, roleAtCompany } = input
 
   // 1. Create the client_users row.
@@ -50,6 +51,8 @@ export async function provisionClientUser(
     password: tempPassword,
     email_confirm: true,
     user_metadata: { full_name: fullName, client_user: true },
+    // Tagged so the proxy knows this is a client login; the one-time password must be replaced at first sign-in.
+    app_metadata: { kind: 'client', must_change_password: true },
   })
   if (userErr || !created.user) {
     // Roll back the orphaned client_users row.
@@ -64,6 +67,6 @@ export async function provisionClientUser(
     .eq('id', row.id)
   if (linkErr) return { ok: false, error: linkErr.message }
 
-  return { ok: true, tempPassword }
+  return { ok: true, tempPassword, signInUrl: portalOrigin('client', process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000') }
 }
 

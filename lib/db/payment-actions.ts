@@ -67,7 +67,7 @@ export async function startCheckoutAction(input: unknown): Promise<ActionResult 
       currency: invoice.currency,
       customerReference: ctx.client.id,
       description: `Invoice ${invoice.number}`,
-      redirectUrl: returnUrl(ctx.client.slug, merchantOrderId),
+      redirectUrl: returnUrl(merchantOrderId),
       webhookUrl: webhookUrl(),
       locale: (await getLocale()) === 'ar' ? 'ar' : 'en',
       saveCard: !!billable,

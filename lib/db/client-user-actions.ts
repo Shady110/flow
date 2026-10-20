@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { setBanned } from '@/lib/auth/account'
 import { provisionClientUser, clientUserSchema } from '@/lib/db/client-user-provision'
 import type { ActionResult } from '@/lib/db/client-actions'
 
@@ -13,7 +14,7 @@ import type { ActionResult } from '@/lib/db/client-actions'
  */
 export async function createClientUserAction(
   input: unknown,
-): Promise<ActionResult & { tempPassword?: string }> {
+): Promise<ActionResult & { tempPassword?: string; signInUrl?: string }> {
   const parsed = clientUserSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message }
   // The client_users row goes through RLS (clients.edit).
@@ -47,6 +48,10 @@ export async function updateClientUserAction(
     })
     .eq('id', id)
   if (error) return { ok: false, error: error.message }
+
+  // Disabled portal users can't sign in at all; re-enabling lets them back in.
+  const { data: row } = await supabase.from('client_users').select('user_id').eq('id', id).maybeSingle()
+  if (row?.user_id) await setBanned(row.user_id, parsed.data.status === 'disabled')
 
   revalidatePath(`/clients/${clientId}`)
   return { ok: true }

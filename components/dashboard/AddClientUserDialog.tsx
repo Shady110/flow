@@ -6,6 +6,7 @@ import { UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClientUserAction } from '@/lib/db/client-user-actions'
 import { Button } from '@/components/ds/button'
+import { CredentialsCard } from '@/components/dashboard/CredentialsCard'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
 import {
@@ -26,6 +27,7 @@ export function AddClientUserDialog({ clientId }: { clientId: string }) {
   const [email, setEmail] = useState('')
   const [roleAtCompany, setRoleAtCompany] = useState('')
   const [tempPassword, setTempPassword] = useState<string | null>(null)
+  const [signInUrl, setSignInUrl] = useState<string | undefined>()
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -37,6 +39,7 @@ export function AddClientUserDialog({ clientId }: { clientId: string }) {
       return
     }
     setTempPassword(res.tempPassword ?? null)
+    setSignInUrl(res.signInUrl)
     toast.success('Client user created')
     router.refresh()
   }
@@ -66,9 +69,7 @@ export function AddClientUserDialog({ clientId }: { clientId: string }) {
 
         {tempPassword ? (
           <div className="space-y-3">
-            <p className="text-sm">Share this one-time password with {email}:</p>
-            <code className="block rounded-md bg-muted px-3 py-2 font-mono text-sm">{tempPassword}</code>
-            <p className="text-xs text-muted-foreground">They can change it after signing in.</p>
+            <CredentialsCard kind="client" signInUrl={signInUrl} email={email} password={tempPassword} />
             <DialogFooter>
               <Button onClick={close}>Done</Button>
             </DialogFooter>

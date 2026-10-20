@@ -22,7 +22,6 @@ export default async function ClientsPage() {
     return {
       id: c.id,
       name: c.name,
-      slug: c.slug,
       status: c.status,
       open: ct.filter((t) => t.status !== 'done').length,
       overdue: ct.filter((t) => deadlineState(t) === 'overdue').length,

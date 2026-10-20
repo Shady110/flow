@@ -206,7 +206,6 @@ export default async function LeadDetailPage({
                 >
                   {client.name} <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>
-                <p className="text-xs text-muted-foreground">{client.slug}.flow…</p>
               </>
             ) : lead.converted_client_id ? (
               // Sales can't open client rows (RLS), but must still see that it converted.

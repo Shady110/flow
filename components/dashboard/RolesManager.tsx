@@ -13,6 +13,7 @@ import {
 } from '@/lib/db/role-actions'
 import type { Permission, PermissionKey } from '@/lib/types'
 import { Button } from '@/components/ds/button'
+import { CredentialsCard } from '@/components/dashboard/CredentialsCard'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
 import { Checkbox } from '@/components/ds/checkbox'
@@ -365,6 +366,7 @@ function AddAdminDialog({ roles, onDone }: { roles: RoleVM[]; onDone: () => void
   const [roleId, setRoleId] = useState(roles.find((r) => r.name === 'admin')?.id ?? roles[0]?.id ?? '')
   const [pending, startTransition] = useTransition()
   const [tempPassword, setTempPassword] = useState<string | null>(null)
+  const [signInUrl, setSignInUrl] = useState<string | undefined>()
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -375,6 +377,7 @@ function AddAdminDialog({ roles, onDone }: { roles: RoleVM[]; onDone: () => void
         return
       }
       setTempPassword(res.tempPassword ?? null)
+      setSignInUrl(res.signInUrl)
       toast.success('Admin account created')
       onDone()
     })
@@ -404,11 +407,7 @@ function AddAdminDialog({ roles, onDone }: { roles: RoleVM[]; onDone: () => void
 
         {tempPassword ? (
           <div className="space-y-3">
-            <p className="text-sm">Share this one-time password with {email}:</p>
-            <code className="block rounded-md bg-muted px-3 py-2 font-mono text-sm">{tempPassword}</code>
-            <p className="text-xs text-muted-foreground">
-              They should change it after signing in. It won&apos;t be shown again.
-            </p>
+            <CredentialsCard kind="staff" signInUrl={signInUrl} email={email} password={tempPassword} />
             <DialogFooter>
               <Button onClick={close}>Done</Button>
             </DialogFooter>

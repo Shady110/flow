@@ -15,6 +15,7 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { deadlineState } from '@/lib/deadlines'
 import { formatMoney } from '@/lib/money'
+import { portalOrigin } from '@/lib/tenant'
 import type { Product, ClientUser } from '@/lib/types'
 import { deleteClientAction } from '@/lib/db/client-actions'
 import { deleteTaskAction } from '@/lib/db/task-actions'
@@ -90,9 +91,7 @@ export default async function ClientDetailPage({
     .filter((i) => i.balance > 0 && i.status !== 'void')
     .map((i) => ({ id: i.id, client_id: i.client_id, label: `${i.number} · ${formatMoney(i.balance, i.currency)} due` }))
 
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000'
-  const portalProtocol = rootDomain.includes('localhost') ? 'http' : 'https'
-  const portalUrl = `${portalProtocol}://${client.slug}.${rootDomain}`
+  const portalUrl = portalOrigin('client', process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000')
 
   const open = tasks.filter((task) => task.status !== 'done')
   const overdue = open.filter((task) => deadlineState(task) === 'overdue').length
@@ -103,7 +102,6 @@ export default async function ClientDetailPage({
     <div className="space-y-6">
       <PageHeader
         title={client.name}
-        description={`${client.slug}.flow…`}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {canIssueInvoice && (
