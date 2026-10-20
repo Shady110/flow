@@ -3,6 +3,8 @@ import { TrendingUp, Calendar, AlertCircle, PiggyBank } from 'lucide-react'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
 import { getClients } from '@/lib/db/queries'
 import { getFinanceSummary, getInvoices, getPayments, getExpenses } from '@/lib/db/finance-queries'
+import { getRecentCheckouts } from '@/lib/db/payment-queries'
+import { OnlinePaymentsPanel } from '@/components/finance/OnlinePaymentsPanel'
 import { deletePaymentAction, deleteExpenseAction } from '@/lib/db/finance-actions'
 import { formatMoney } from '@/lib/money'
 import { PageHeader } from '@/components/dashboard/PageHeader'
@@ -27,7 +29,7 @@ import {
 
 export default async function FinancePage() {
   await requirePermission('finance.view')
-  const [summary, invoices, payments, expenses, clients, user, t] = await Promise.all([
+  const [summary, invoices, payments, expenses, clients, user, t, checkouts] = await Promise.all([
     getFinanceSummary(),
     getInvoices(),
     getPayments(),
@@ -35,6 +37,7 @@ export default async function FinancePage() {
     getClients(),
     getCurrentUser(),
     getTranslations('internal.finance'),
+    getRecentCheckouts(),
   ])
 
   const canIssue = !!user?.permissions.has('invoices.issue')
@@ -122,7 +125,10 @@ export default async function FinancePage() {
               )}
               {invoices.map((i) => (
                 <LinkedTableRow key={i.id} href={`/finance/invoices/${i.id}`}>
-                  <TableCell className="font-medium">{i.number}</TableCell>
+                  <TableCell className="font-medium">
+                    {i.number}
+                    {i.source === 'auto' && <span className="ms-2 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">Auto</span>}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{i.client_name}</TableCell>
                   <TableCell>
                     <InvoiceStatusBadge status={i.status} />
@@ -188,6 +194,8 @@ export default async function FinancePage() {
           )}
         </CardContent>
       </Card>
+
+      <OnlinePaymentsPanel rows={checkouts} />
 
       <Card>
         <CardHeader>

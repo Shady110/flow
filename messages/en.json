@@ -1408,7 +1408,34 @@
       "sendReceipt": "Send us the receipt",
       "close": "Close",
       "receiptText": "Hello, I paid invoice {number}. Here is my receipt.",
-      "receiptTextGeneral": "Hello, I paid. Here is my receipt."
+      "receiptTextGeneral": "Hello, I paid. Here is my receipt.",
+      "payNow": "Pay {amount} now",
+      "autoTick": "Pay automatically every month",
+      "payFailed": "We could not open the payment page. Please try again.",
+      "payOr": "Or pay by bank transfer",
+      "result": {
+        "ok": {
+          "title": "Payment received",
+          "help": "Thank you! Your invoice is marked as paid."
+        },
+        "pending": {
+          "title": "We are confirming your payment",
+          "help": "This can take a minute. Refresh this page shortly."
+        },
+        "failed": {
+          "title": "The payment did not go through",
+          "help": "No money was taken. You can try again, or pay another way."
+        }
+      },
+      "auto": {
+        "on": "Automatic payments are on",
+        "off": "Automatic payments are off",
+        "failed": "Automatic payment needs attention",
+        "failedHelp": "The last automatic payment did not go through. Pay the invoice below once to fix it.",
+        "turnOff": "Turn off",
+        "turnOn": "Turn on",
+        "removeCard": "Remove my card"
+      }
     },
     "requests": {
       "title": "Requests",

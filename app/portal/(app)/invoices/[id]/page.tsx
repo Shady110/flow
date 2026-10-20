@@ -10,15 +10,18 @@ import { formatMoney } from '@/lib/money'
 import { InvoiceDocument } from '@/components/finance/InvoiceDocument'
 import { PrintButton } from '@/components/dashboard/PrintButton'
 import { HowToPay } from '@/components/portal/HowToPay'
+import { PayOnlineButton } from '@/components/portal/PayOnlineButton'
+import { getPortalPayments } from '@/lib/db/payment-queries'
 
 export default async function PortalInvoiceDetail({ params }: { params: Promise<{ id: string }> }) {
   const { client } = await requireClientContext()
   const { id } = await params
-  const [invoice, t, locale, settings] = await Promise.all([
+  const [invoice, t, locale, settings, pays] = await Promise.all([
     getInvoice(id),
     getTranslations('portal.payments'),
     getLocale(),
     getPortalSettings(),
+    getPortalPayments(client.id),
   ])
   // RLS already scopes to the tenant, but double-check ownership defensively.
   if (!invoice || invoice.client_id !== client.id || invoice.status === 'draft') notFound()
@@ -34,13 +37,17 @@ export default async function PortalInvoiceDetail({ params }: { params: Promise<
         <PrintButton />
       </div>
       {invoice.balance > 0 && (
-        <div className="no-print">
+        <div className="no-print flex flex-col gap-3 sm:flex-row sm:items-start">
+          {pays.online && invoice.status === 'sent' && (
+            <PayOnlineButton invoiceId={invoice.id} amountText={formatMoney(invoice.balance, invoice.currency, 0, locale)} className="h-14 w-full text-base sm:w-auto sm:px-10" />
+          )}
           <HowToPay
             amountText={formatMoney(invoice.balance, invoice.currency, 0, locale)}
             reference={invoice.number}
             instructions={instructions}
             receiptHref={whatsappUrl(settings.whatsapp, t('receiptText', { number: invoice.number }))}
-            label={t('howToPay')}
+            label={pays.online ? t('payOr') : t('howToPay')}
+            variant={pays.online ? 'outline' : 'default'}
             className="h-14 w-full text-base sm:w-auto sm:px-10"
           />
         </div>

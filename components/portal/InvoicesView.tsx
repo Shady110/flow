@@ -7,6 +7,10 @@ import { invoiceState, type InvoiceState } from '@/lib/invoice-state'
 import { whatsappUrl } from '@/lib/contact'
 import type { InvoiceWithMeta } from '@/lib/db/finance-queries'
 import { HowToPay } from '@/components/portal/HowToPay'
+import { PayOnlineButton } from '@/components/portal/PayOnlineButton'
+import { PayResultBanner } from '@/components/portal/PayResultBanner'
+import { AutoPayCard } from '@/components/portal/AutoPayCard'
+import type { ClientBillingPublic } from '@/lib/types'
 import { Button } from '@/components/ds/button'
 import { cn } from '@/lib/utils'
 
@@ -21,10 +25,20 @@ export async function InvoicesView({
   invoices,
   whatsapp,
   paymentInstructions,
+  online = false,
+  offerAuto = false,
+  billing = null,
+  payResult,
 }: {
   invoices: InvoiceWithMeta[]
   whatsapp: string | null
   paymentInstructions: { en: string; ar: string }
+  /** Online payment is switched on. */
+  online?: boolean
+  /** Automatic monthly payments are switched on (and this client has a contract to base them on). */
+  offerAuto?: boolean
+  billing?: ClientBillingPublic | null
+  payResult?: 'ok' | 'failed' | 'pending'
 }) {
   const [t, locale] = await Promise.all([getTranslations('portal.payments'), getLocale()])
   const instructions = locale === 'ar' ? paymentInstructions.ar || paymentInstructions.en : paymentInstructions.en || paymentInstructions.ar
@@ -49,13 +63,17 @@ export async function InvoicesView({
       </div>
       <p className="font-display text-3xl font-bold tracking-tight">{money(state === 'paid' ? i.total : i.balance, i.currency)}</p>
       <div className="flex flex-col gap-3 sm:flex-row">
+        {state !== 'paid' && online && (
+          <PayOnlineButton invoiceId={i.id} amountText={money(i.balance, i.currency)} offerAuto={offerAuto && billing?.status !== 'active'} className="h-14 w-full text-base sm:w-auto sm:px-8" />
+        )}
         {state !== 'paid' && (
           <HowToPay
             amountText={money(i.balance, i.currency)}
             reference={i.number}
             instructions={instructions}
             receiptHref={whatsappUrl(whatsapp, t('receiptText', { number: i.number }))}
-            label={t('howToPay')}
+            label={online ? t('payOr') : t('howToPay')}
+            variant={online ? 'outline' : 'default'}
             className="h-12 w-full text-base sm:w-auto sm:px-8"
           />
         )}
@@ -74,6 +92,9 @@ export async function InvoicesView({
         <h1 className="font-display text-3xl font-bold tracking-tight">{t('title')}</h1>
         <p className="mt-1 text-base text-muted-foreground">{t('intro')}</p>
       </div>
+
+      {payResult && <PayResultBanner result={payResult} />}
+      {online && billing && billing.status !== 'none' && <AutoPayCard billing={billing} />}
 
       {invoices.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-border bg-card p-10 text-center">

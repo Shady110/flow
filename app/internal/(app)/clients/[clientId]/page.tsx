@@ -29,6 +29,7 @@ import { EditClientUserDialog } from '@/components/dashboard/EditClientUserDialo
 import { deleteClientUserAction } from '@/lib/db/client-user-actions'
 import { MessageClientUserButton } from '@/components/dashboard/MessageClientUserButton'
 import { NewInvoiceDialog } from '@/components/dashboard/NewInvoiceDialog'
+import { GenerateInvoiceButton } from '@/components/finance/GenerateInvoiceButton'
 import { RecordPaymentDialog } from '@/components/dashboard/RecordPaymentDialog'
 import {
   ClientStatusBadge,
@@ -369,6 +370,7 @@ export default async function ClientDetailPage({
                   }
                 />
               )}
+              {canIssueInvoice && <GenerateInvoiceButton clientId={client.id} />}
               {canIssueInvoice && (
                 <NewInvoiceDialog
                   clients={[{ id: client.id, label: client.name }]}
