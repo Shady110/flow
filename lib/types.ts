@@ -266,6 +266,9 @@ export interface Invoice {
   issue_date: string
   due_date: string | null
   notes: string | null
+  /** First day of the month an auto-created invoice bills; null for manual invoices. */
+  billing_period: string | null
+  source: 'manual' | 'auto'
   created_by: string | null
   created_at: string
   updated_at: string
@@ -288,6 +291,9 @@ export interface Payment {
   method: string | null
   paid_at: string
   notes: string | null
+  /** 'kashier' | 'mock' when paid online; null for manual payments. */
+  gateway: string | null
+  gateway_ref: string | null
   created_by: string | null
   created_at: string
 }
@@ -525,4 +531,35 @@ export interface TicketMessage {
   sender_client_user_id: string | null
   body: string
   created_at: string
+}
+
+export type CheckoutStatus = 'created' | 'paid' | 'failed' | 'expired'
+
+export interface CheckoutSession {
+  id: string
+  invoice_id: string
+  client_id: string
+  provider: string
+  provider_session_id: string | null
+  merchant_order_id: string
+  amount: number
+  currency: string
+  status: CheckoutStatus
+  save_card: boolean
+  session_url: string | null
+  failure_reason: string | null
+  created_at: string
+  paid_at: string | null
+}
+
+/** What a browser may know about a client's saved card (never the token). */
+export interface ClientBillingPublic {
+  client_id: string
+  auto_renew: boolean
+  provider: string | null
+  card_brand: string | null
+  card_last4: string | null
+  status: 'none' | 'active' | 'failed' | 'canceled'
+  failure_count: number
+  last_charge_at: string | null
 }
