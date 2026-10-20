@@ -4,6 +4,7 @@ import { ArrowUpRight, FileText } from 'lucide-react'
 import { getClient, getTasks, getTeam } from '@/lib/db/queries'
 import { getInvoices } from '@/lib/db/finance-queries'
 import { getPlatforms, getStageEvents } from '@/lib/db/flow-queries'
+import { PageTabs } from '@/components/dashboard/PageTabs'
 import { ClientFlowCard } from '@/components/flow/ClientFlowCard'
 import { getContracts } from '@/lib/db/contract-queries'
 import { ContractStatusBadge } from '@/components/contracts/ContractStatusBadge'
@@ -134,6 +135,10 @@ export default async function ClientDetailPage({
         }
       />
 
+      <PageTabs
+        tabs={[
+          { value: 'overview', label: t('tabOverview'), content: (
+            <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <CardContent className="p-4">
@@ -178,6 +183,10 @@ export default async function ClientDetailPage({
         canManage={!!user?.permissions.has('pipeline.manage')}
       />
 
+            </div>
+          ) },
+          { value: 'papers', label: t('tabPapers'), content: (
+            <div className="space-y-6">
       <ClientRequirementsCard
         clientId={client.id}
         requirements={requirements}
@@ -206,6 +215,10 @@ export default async function ClientDetailPage({
         </Card>
       )}
 
+            </div>
+          ) },
+          { value: 'work', label: t('tabWork'), content: (
+            <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{t('actionsAndTasks')}</CardTitle>
@@ -326,6 +339,10 @@ export default async function ClientDetailPage({
         </CardContent>
       </Card>
 
+            </div>
+          ) },
+          ...(canViewFinance ? [{ value: 'money', label: t('tabMoney'), content: (
+            <div className="space-y-6">
       {/* Finance */}
       {canViewFinance && (
         <Card>
@@ -391,6 +408,10 @@ export default async function ClientDetailPage({
         </Card>
       )}
 
+            </div>
+          ) }] : []),
+          { value: 'people', label: t('tabPeople'), content: (
+            <div className="space-y-6">
       {/* Portal users */}
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
@@ -448,6 +469,10 @@ export default async function ClientDetailPage({
           })}
         </CardContent>
       </Card>
+            </div>
+          ) },
+        ]}
+      />
     </div>
   )
 }

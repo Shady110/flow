@@ -6,7 +6,9 @@
     "switchToArabic": "التبديل إلى العربية",
     "switchToEnglish": "Switch to English",
     "signOut": "Sign out",
-    "download": "Download"
+    "download": "Save a copy",
+    "uploadTooBig": "That file is too big. Please send one under {mb} MB.",
+    "uploadFailed": "We could not send that file. Please try again."
   },
   "marketing": {
     "nav": {
@@ -715,7 +717,12 @@
       "productDeleted": "Product deleted",
       "contracts": "Contracts",
       "noContracts": "No contract yet.",
-      "newContract": "New contract"
+      "newContract": "New contract",
+      "tabOverview": "Overview",
+      "tabPapers": "Papers & contract",
+      "tabWork": "Work & products",
+      "tabMoney": "Money",
+      "tabPeople": "People"
     },
     "visitors": {
       "title": "Website visitors",
@@ -857,11 +864,17 @@
     },
     "company": {
       "title": "Company settings",
-      "description": "Rules that apply to the whole company.",
+      "description": "Rules and contact details that apply to the whole company.",
       "cap": "New clients per month",
       "capHint": "Sales can't mark more leads as won than this each calendar month. You can always raise it.",
       "save": "Save",
-      "saved": "Saved"
+      "saved": "Saved",
+      "whatsapp": "Support WhatsApp number",
+      "whatsappHint": "Clients see a one-tap Message-us-on-WhatsApp button that opens this number. Local (01...) or international (+20...) both work.",
+      "payment": "How clients pay",
+      "paymentHint": "Shown on each invoice until online payment is turned on: bank details, InstaPay handle, who to send the receipt to.",
+      "paymentEn": "Instructions (English)",
+      "paymentAr": "Instructions (Arabic)"
     },
     "marketplace": {
       "amazon": "Amazon",
@@ -1134,7 +1147,13 @@
       "chat": "Chat",
       "documents": "Documents",
       "contract": "Contract",
-      "tickets": "Support"
+      "tickets": "Support",
+      "home": "Home",
+      "papers": "Papers",
+      "messages": "Messages",
+      "requests": "Requests",
+      "payments": "Payments",
+      "menu": "Main menu"
     },
     "overview": {
       "welcome": "Welcome back, {name}",
@@ -1183,7 +1202,8 @@
       "sku": "SKU",
       "marketplace": "Marketplace",
       "status": "Status",
-      "noProducts": "No products yet."
+      "noProducts": "No products yet.",
+      "summary": "{live} of {total} are live on the marketplace."
     },
     "tasks": {
       "title": "Tasks",
@@ -1231,13 +1251,260 @@
     },
     "contract": {
       "title": "Contract",
-      "none": "There's no contract for you to review yet.",
+      "none": "There is no contract for you to review yet.",
       "readAndAccept": "Please read the contract, then accept it at the bottom.",
       "signed": "You've accepted this contract. You can save a copy as a PDF.",
       "fullName": "Your full name",
-      "agree": "I have read this contract and agree to it.",
-      "accept": "Accept contract",
-      "thanks": "Thank you — the contract is accepted."
+      "agree": "I have read the contract and I agree.",
+      "accept": "Sign now",
+      "thanks": "Thank you! Your contract is signed.",
+      "readHelp": "Read it all the way down, then tap Sign.",
+      "signedHelp": "You have signed this contract. You can save a copy.",
+      "signButton": "Sign the contract",
+      "sheetTitle": "Sign your contract",
+      "sheetHelp": "Type your full name and confirm. That is your signature.",
+      "signing": "Signing...",
+      "signedTitle": "Contract signed",
+      "signedBy": "Signed by {name} on {date}",
+      "nextPapers": "Next: send your papers"
+    },
+    "common": {
+      "whatsapp": "Message us on WhatsApp",
+      "account": "Your account",
+      "errorTitle": "Something went wrong",
+      "errorHelp": "It's not you, and nothing is lost. Please try again, or message us if it keeps happening.",
+      "retry": "Try again",
+      "talkToUs": "Talk to us"
+    },
+    "home": {
+      "hello": "Hello, {name}",
+      "intro": "Here is what is happening with your account.",
+      "sectionsLabel": "Your account",
+      "nowLabel": "What to do now",
+      "nowLabelDone": "Right now",
+      "step": {
+        "sign_contract": {
+          "title": "Sign your contract",
+          "body": "Read it and tap Sign. It takes about two minutes.",
+          "cta": "Read and sign"
+        },
+        "fix_papers": {
+          "title": "{count, plural, one {1 paper must be sent again} other {# papers must be sent again}}",
+          "body": "We could not accept it. Open it to see why, then send a clearer copy.",
+          "cta": "Fix it now"
+        },
+        "upload_papers": {
+          "title": "Send us your papers",
+          "body": "{count, plural, one {1 paper is still needed.} other {# papers are still needed.}} A photo from your phone is fine.",
+          "cta": "Send papers"
+        },
+        "pay_invoice": {
+          "title": "{count, plural, one {You have 1 payment due} other {You have # payments due}}",
+          "body": "See how to pay. It only takes a minute.",
+          "cta": "See payments"
+        },
+        "reply_request": {
+          "title": "We replied to your request",
+          "body": "Your request is waiting for your answer.",
+          "cta": "Open request"
+        },
+        "all_set": {
+          "title": "You are all set",
+          "body": "",
+          "cta": ""
+        }
+      },
+      "allSetFallback": "Nothing is needed from you right now. We will tell you here when that changes.",
+      "sectionContract": "Contract",
+      "sectionPapers": "Papers",
+      "sectionRequests": "Requests",
+      "sectionPayments": "Payments",
+      "sectionMessages": "Messages",
+      "sectionProducts": "My products",
+      "contractSign": "Needs your signature",
+      "contractDone": "Signed. Thank you",
+      "contractNone": "Nothing to sign yet",
+      "papersHint": "{done} of {total} sent",
+      "papersNone": "Nothing needed",
+      "requestsHint": "Ask us for a change",
+      "requestsLocked": "Opens when your account is live",
+      "paymentsDue": "{amount} due",
+      "paymentsPaid": "All paid",
+      "paymentsNone": "No invoices yet",
+      "messagesHint": "Talk to your team",
+      "productsHint": "{count, plural, one {1 product} other {# products}}",
+      "badgeSign": "Sign",
+      "badgeSigned": "Signed",
+      "badgeSend": "{count} to send",
+      "badgeDue": "{count} due",
+      "badgeReply": "Reply",
+      "journeyTitle": "Your journey",
+      "journeyHelp": "{percent}% done. We update this as we go.",
+      "updatesTitle": "Latest updates",
+      "seeWork": "What we are doing",
+      "updatesEmpty": "Nothing yet. We will post here as we move forward.",
+      "updatePlatform": "Your {platform} account: {stage}",
+      "updateClient": "Your setup: {stage}",
+      "talkTitle": "Need help?",
+      "talkHelp": "We are here. Message us any time.",
+      "whatsapp": "Message us on WhatsApp",
+      "openChat": "Open chat"
+    },
+    "papers": {
+      "title": "Papers",
+      "intro": "Everything we need from you, in one place. A photo from your phone is fine.",
+      "contractTitle": "Your contract",
+      "contractSign": "Needs your signature",
+      "contractSigned": "Signed. Tap to read it again",
+      "contractBadge": "Sign",
+      "empty": "Nothing is needed from you right now.",
+      "progressTitle": "{done} of {total} papers sent",
+      "progressTodo": "{count, plural, one {1 paper still to send.} other {# papers still to send.}}",
+      "progressDone": "All sent. We will check them and tell you here.",
+      "groupTodo": "To do",
+      "groupReview": "We are checking",
+      "groupDone": "Done",
+      "optional": "Optional",
+      "upload": "Send a photo or file",
+      "replace": "Send a new copy",
+      "view": "View",
+      "sentFile": "Sent: {name}",
+      "uploaded": "Sent. Thank you!",
+      "formatHint": "Photo or PDF, up to 20 MB.",
+      "rejectedNoNote": "We could not accept this one. Please send a clearer copy.",
+      "status": {
+        "pending": "Not sent yet",
+        "submitted": "Received. We are checking it",
+        "approved": "Approved",
+        "rejected": "Please send again",
+        "waived": "Not needed"
+      }
+    },
+    "payments": {
+      "title": "Payments",
+      "intro": "Your invoices and how to pay them.",
+      "empty": "No invoices yet. They will appear here.",
+      "youOwe": "You owe",
+      "acrossInvoices": "{count, plural, one {on 1 invoice} other {across # invoices}}",
+      "howToPay": "How to pay",
+      "allPaidTitle": "All paid",
+      "allPaidHelp": "You have nothing to pay right now. Thank you!",
+      "toPay": "To pay",
+      "paidSection": "Paid",
+      "dueOn": "Due {date}",
+      "issuedOn": "Issued {date}",
+      "state": {
+        "paid": "Paid",
+        "due": "To pay",
+        "overdue": "Overdue"
+      },
+      "viewInvoice": "View invoice",
+      "viewReceipt": "View receipt",
+      "backToPayments": "All payments",
+      "howTitle": "How to pay",
+      "amountToPay": "Amount to pay",
+      "reference": "Write {number} in the transfer notes.",
+      "noInstructions": "Message us and we will tell you the easiest way to pay.",
+      "sendReceipt": "Send us the receipt",
+      "close": "Close",
+      "receiptText": "Hello, I paid invoice {number}. Here is my receipt.",
+      "receiptTextGeneral": "Hello, I paid. Here is my receipt."
+    },
+    "requests": {
+      "title": "Requests",
+      "intro": "Need something changed on your marketplace account? Ask here and we take care of it.",
+      "newRequest": "Ask us for something",
+      "sheetTitle": "What do you need?",
+      "whichAccount": "Which account",
+      "whatAbout": "What is it about?",
+      "tellUs": "Tell us in your own words",
+      "tellUsHint": "For example: please change the price of product X to 250.",
+      "send": "Send request",
+      "sent": "Sent. We will get back to you.",
+      "fillBoth": "Pick what it is about and write a few words.",
+      "empty": "No requests yet. When you need something, ask here.",
+      "groupReply": "Waiting for your reply",
+      "groupActive": "We are working on it",
+      "groupDone": "Done",
+      "lockedTitle": "Opens when your account is live",
+      "lockedHelp": "Once your marketplace account is live, you can ask us for changes here. Until then, message us any time.",
+      "lockedCta": "Message us",
+      "status": {
+        "open": "We received it",
+        "in_progress": "We are on it",
+        "waiting_client": "Waiting for you",
+        "resolved": "Done",
+        "closed": "Closed"
+      },
+      "back": "All requests",
+      "yourRequest": "Your request",
+      "waitingHelp": "We replied and we are waiting for your answer below."
+    },
+    "plain": {
+      "product": {
+        "draft": "Being prepared",
+        "in_progress": "Being prepared",
+        "review": "Under review",
+        "live": "Live",
+        "rejected": "Needs a fix",
+        "paused": "Paused"
+      },
+      "task": {
+        "todo": "Planned",
+        "in_progress": "In progress",
+        "blocked": "On hold",
+        "review": "Almost done",
+        "done": "Done"
+      },
+      "dueOn": "Due {date}",
+      "stepsDone": "{done} of {total} steps done",
+      "groupActive": "In progress",
+      "groupDone": "Done",
+      "nextStepLabel": "Next step"
+    },
+    "login": {
+      "welcome": "Welcome",
+      "welcomeNamed": "Welcome, {name}",
+      "subtitle": "Sign in to follow your account.",
+      "email": "Email",
+      "password": "Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "signIn": "Sign in",
+      "signingIn": "Signing in...",
+      "wrongCredentials": "That email or password is not right. Please check and try again.",
+      "genericError": "We could not sign you in. Please try again in a moment.",
+      "help": "Need help signing in? Message us",
+      "helpText": "Hello, I need help signing in to my portal."
     }
+  },
+  "invoiceDoc": {
+    "tagline": "FLOW Agency · E-commerce content & marketplace management",
+    "invoice": "Invoice",
+    "billedTo": "Billed to",
+    "issued": "Issued",
+    "due": "Due",
+    "status": "Status",
+    "description": "Description",
+    "qty": "Qty",
+    "unit": "Unit",
+    "amount": "Amount",
+    "subtotal": "Subtotal",
+    "paid": "Paid",
+    "balanceDue": "Balance due",
+    "notes": "Notes",
+    "thanks": "Thank you for working with FLOW."
+  },
+  "chat": {
+    "title": "Messages",
+    "subtitle": "A private line to your account team.",
+    "whatsapp": "WhatsApp",
+    "team": "FLOW team",
+    "client": "Client",
+    "empty": "No messages yet. Say hello!",
+    "placeholder": "Write a message...",
+    "send": "Send",
+    "sendFailed": "We could not send your message. Please try again.",
+    "openFailed": "We could not open your messages. Please try again in a moment."
   }
 }

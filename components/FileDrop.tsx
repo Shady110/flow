@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Loader2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ds/button'
@@ -17,27 +18,32 @@ export function FileDrop({
   accept = 'image/*,application/pdf',
   disabled,
   variant = 'outline',
+  size = 'sm',
+  className,
 }: {
   label: string
   onFile: (file: File) => Promise<void>
   accept?: string
   disabled?: boolean
   variant?: 'outline' | 'default' | 'secondary'
+  size?: 'sm' | 'default' | 'lg'
+  className?: string
 }) {
+  const t = useTranslations('common')
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
 
   async function pick(file: File | undefined) {
     if (!file) return
     if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
-      toast.error(`Files can be at most ${MAX_UPLOAD_MB} MB.`)
+      toast.error(t('uploadTooBig', { mb: MAX_UPLOAD_MB }))
       return
     }
     setBusy(true)
     try {
       await onFile(file)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Upload failed')
+      toast.error(e instanceof Error ? e.message : t('uploadFailed'))
     } finally {
       setBusy(false)
       if (input.current) input.current.value = ''
@@ -55,12 +61,13 @@ export function FileDrop({
       />
       <Button
         type="button"
-        size="sm"
+        size={size}
+        className={className}
         variant={variant}
         disabled={disabled || busy}
         onClick={() => input.current?.click()}
       >
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+        {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
         {label}
       </Button>
     </>

@@ -12,15 +12,19 @@ export function RequirementUpload({
   requirementId,
   label,
   done,
+  large,
 }: {
   requirementId: string
   label: string
   done?: string
+  /** Full-width 56px button, for the client portal. */
+  large?: boolean
 }) {
   const router = useRouter()
   return (
     <FileDrop
       label={label}
+      {...(large ? { size: 'lg' as const, variant: 'default' as const, className: 'h-14 w-full text-base' } : {})}
       onFile={async (file) => {
         const urlRes = await getRequirementUploadUrlAction(requirementId, file.name, file.size)
         if (!urlRes.ok) throw new Error(urlRes.error)

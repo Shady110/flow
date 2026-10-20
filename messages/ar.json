@@ -6,7 +6,9 @@
     "switchToArabic": "التبديل إلى العربية",
     "switchToEnglish": "Switch to English",
     "signOut": "تسجيل الخروج",
-    "download": "تنزيل"
+    "download": "حفظ نسخة",
+    "uploadTooBig": "الملف كبير جدًا. أرسل ملفًا أقل من {mb} ميجابايت.",
+    "uploadFailed": "لم نتمكن من إرسال الملف. حاول مرة أخرى."
   },
   "marketing": {
     "nav": {
@@ -715,7 +717,12 @@
       "productDeleted": "تم حذف المنتج",
       "contracts": "العقود",
       "noContracts": "لا يوجد عقد بعد.",
-      "newContract": "عقد جديد"
+      "newContract": "عقد جديد",
+      "tabOverview": "نظرة عامة",
+      "tabPapers": "الأوراق والعقد",
+      "tabWork": "العمل والمنتجات",
+      "tabMoney": "المال",
+      "tabPeople": "الأشخاص"
     },
     "visitors": {
       "title": "زوّار الموقع",
@@ -857,11 +864,17 @@
     },
     "company": {
       "title": "إعدادات الشركة",
-      "description": "قواعد تنطبق على الشركة كلها.",
+      "description": "قواعد وبيانات تواصل تنطبق على الشركة كلها.",
       "cap": "عدد العملاء الجدد شهريًا",
       "capHint": "لا يستطيع فريق المبيعات إغلاق عملاء أكثر من هذا العدد في الشهر الميلادي. يمكنك رفعه دائمًا.",
       "save": "حفظ",
-      "saved": "تم الحفظ"
+      "saved": "تم الحفظ",
+      "whatsapp": "رقم واتساب للدعم",
+      "whatsappHint": "يرى العملاء زر راسلنا على واتساب يفتح هذا الرقم بضغطة واحدة. يصلح الرقم المحلي (01...) أو الدولي (+20...).",
+      "payment": "كيف يدفع العملاء",
+      "paymentHint": "تظهر على كل فاتورة إلى أن يُفعَّل الدفع الإلكتروني: بيانات البنك وحساب إنستاباي ولمن يُرسل الإيصال.",
+      "paymentEn": "التعليمات (إنجليزي)",
+      "paymentAr": "التعليمات (عربي)"
     },
     "marketplace": {
       "amazon": "أمازون",
@@ -1134,7 +1147,13 @@
       "chat": "المحادثة",
       "documents": "المستندات",
       "contract": "العقد",
-      "tickets": "الدعم"
+      "tickets": "الدعم",
+      "home": "الرئيسية",
+      "papers": "الأوراق",
+      "messages": "الرسائل",
+      "requests": "الطلبات",
+      "payments": "المدفوعات",
+      "menu": "القائمة الرئيسية"
     },
     "overview": {
       "welcome": "مرحبًا بعودتك، {name}",
@@ -1183,7 +1202,8 @@
       "sku": "SKU",
       "marketplace": "المتجر",
       "status": "الحالة",
-      "noProducts": "لا توجد منتجات بعد."
+      "noProducts": "لا توجد منتجات بعد.",
+      "summary": "{live} من {total} مباشرة على المنصة."
     },
     "tasks": {
       "title": "المهام",
@@ -1235,9 +1255,256 @@
       "readAndAccept": "يرجى قراءة العقد ثم الموافقة عليه في الأسفل.",
       "signed": "لقد وافقت على هذا العقد. يمكنك حفظ نسخة PDF.",
       "fullName": "اسمك الكامل",
-      "agree": "لقد قرأت هذا العقد وأوافق عليه.",
-      "accept": "الموافقة على العقد",
-      "thanks": "شكرًا لك — تمت الموافقة على العقد."
+      "agree": "قرأت العقد وأوافق عليه.",
+      "accept": "وقّع الآن",
+      "thanks": "شكرًا لك! تم توقيع عقدك.",
+      "readHelp": "اقرأه حتى النهاية ثم اضغط توقيع.",
+      "signedHelp": "لقد وقّعت هذا العقد. يمكنك حفظ نسخة.",
+      "signButton": "وقّع العقد",
+      "sheetTitle": "وقّع عقدك",
+      "sheetHelp": "اكتب اسمك الكامل وأكّد. هذا هو توقيعك.",
+      "signing": "جارٍ التوقيع...",
+      "signedTitle": "تم توقيع العقد",
+      "signedBy": "وقّع {name} بتاريخ {date}",
+      "nextPapers": "التالي: أرسل أوراقك"
+    },
+    "common": {
+      "whatsapp": "راسلنا على واتساب",
+      "account": "حسابك",
+      "errorTitle": "حدث خطأ ما",
+      "errorHelp": "ليس خطأك ولم يضع شيء. حاول مرة أخرى، أو راسلنا إن تكرر الأمر.",
+      "retry": "حاول مرة أخرى",
+      "talkToUs": "تواصل معنا"
+    },
+    "home": {
+      "hello": "مرحبًا {name}",
+      "intro": "هذا ما يحدث في حسابك.",
+      "sectionsLabel": "حسابك",
+      "nowLabel": "المطلوب الآن",
+      "nowLabelDone": "الآن",
+      "step": {
+        "sign_contract": {
+          "title": "وقّع عقدك",
+          "body": "اقرأه ثم اضغط توقيع. يستغرق دقيقتين تقريبًا.",
+          "cta": "اقرأ ووقّع"
+        },
+        "fix_papers": {
+          "title": "{count, plural, one {ورقة واحدة يجب إعادة إرسالها} other {# أوراق يجب إعادة إرسالها}}",
+          "body": "لم نتمكن من قبولها. افتحها لترى السبب ثم أرسل نسخة أوضح.",
+          "cta": "أصلحها الآن"
+        },
+        "upload_papers": {
+          "title": "أرسل لنا أوراقك",
+          "body": "{count, plural, one {ما زلنا نحتاج ورقة واحدة.} other {ما زلنا نحتاج # أوراق.}} صورة من هاتفك تكفي.",
+          "cta": "أرسل الأوراق"
+        },
+        "pay_invoice": {
+          "title": "{count, plural, one {عليك دفعة واحدة مستحقة} other {عليك # دفعات مستحقة}}",
+          "body": "اعرف طريقة الدفع. تستغرق دقيقة.",
+          "cta": "عرض المدفوعات"
+        },
+        "reply_request": {
+          "title": "رددنا على طلبك",
+          "body": "طلبك ينتظر ردك.",
+          "cta": "افتح الطلب"
+        },
+        "all_set": {
+          "title": "كل شيء جاهز",
+          "body": "",
+          "cta": ""
+        }
+      },
+      "allSetFallback": "لا نحتاج منك شيئًا الآن. سنخبرك هنا عندما يتغير ذلك.",
+      "sectionContract": "العقد",
+      "sectionPapers": "الأوراق",
+      "sectionRequests": "الطلبات",
+      "sectionPayments": "المدفوعات",
+      "sectionMessages": "الرسائل",
+      "sectionProducts": "منتجاتي",
+      "contractSign": "يحتاج توقيعك",
+      "contractDone": "تم التوقيع. شكرًا",
+      "contractNone": "لا شيء للتوقيع الآن",
+      "papersHint": "تم إرسال {done} من {total}",
+      "papersNone": "لا شيء مطلوب",
+      "requestsHint": "اطلب منا أي تغيير",
+      "requestsLocked": "يُفتح عندما يصبح حسابك مباشرًا",
+      "paymentsDue": "مستحق {amount}",
+      "paymentsPaid": "تم سداد كل شيء",
+      "paymentsNone": "لا توجد فواتير بعد",
+      "messagesHint": "تحدث مع فريقك",
+      "productsHint": "{count, plural, one {منتج واحد} other {# منتجات}}",
+      "badgeSign": "وقّع",
+      "badgeSigned": "تم",
+      "badgeSend": "{count} للإرسال",
+      "badgeDue": "{count} مستحقة",
+      "badgeReply": "رد",
+      "journeyTitle": "رحلتك",
+      "journeyHelp": "اكتمل {percent}%. نحدّث هذا أولًا بأول.",
+      "updatesTitle": "آخر التحديثات",
+      "seeWork": "ماذا نفعل",
+      "updatesEmpty": "لا شيء بعد. سننشر هنا مع تقدمنا.",
+      "updatePlatform": "حسابك على {platform}: {stage}",
+      "updateClient": "إعدادك: {stage}",
+      "talkTitle": "تحتاج مساعدة؟",
+      "talkHelp": "نحن هنا. راسلنا في أي وقت.",
+      "whatsapp": "راسلنا على واتساب",
+      "openChat": "افتح المحادثة"
+    },
+    "papers": {
+      "title": "الأوراق",
+      "intro": "كل ما نحتاجه منك في مكان واحد. صورة من هاتفك تكفي.",
+      "contractTitle": "عقدك",
+      "contractSign": "يحتاج توقيعك",
+      "contractSigned": "تم التوقيع. اضغط لقراءته مرة أخرى",
+      "contractBadge": "وقّع",
+      "empty": "لا نحتاج منك شيئًا الآن.",
+      "progressTitle": "تم إرسال {done} من {total} أوراق",
+      "progressTodo": "{count, plural, one {ما زالت ورقة واحدة للإرسال.} other {ما زالت # أوراق للإرسال.}}",
+      "progressDone": "تم إرسال كل شيء. سنراجعها ونخبرك هنا.",
+      "groupTodo": "المطلوب منك",
+      "groupReview": "نراجعها الآن",
+      "groupDone": "تم",
+      "optional": "اختياري",
+      "upload": "أرسل صورة أو ملفًا",
+      "replace": "أرسل نسخة جديدة",
+      "view": "عرض",
+      "sentFile": "تم إرسال: {name}",
+      "uploaded": "تم الإرسال. شكرًا لك!",
+      "formatHint": "صورة أو ملف PDF حتى 20 ميجابايت.",
+      "rejectedNoNote": "لم نتمكن من قبول هذه الورقة. أرسل نسخة أوضح.",
+      "status": {
+        "pending": "لم تُرسل بعد",
+        "submitted": "استلمناها ونراجعها",
+        "approved": "تمت الموافقة",
+        "rejected": "يرجى إرسالها مرة أخرى",
+        "waived": "غير مطلوبة"
+      }
+    },
+    "payments": {
+      "title": "المدفوعات",
+      "intro": "فواتيرك وطريقة سدادها.",
+      "empty": "لا توجد فواتير بعد. ستظهر هنا.",
+      "youOwe": "المستحق عليك",
+      "acrossInvoices": "{count, plural, one {عن فاتورة واحدة} other {عن # فواتير}}",
+      "howToPay": "طريقة الدفع",
+      "allPaidTitle": "تم سداد كل شيء",
+      "allPaidHelp": "لا شيء مستحق عليك الآن. شكرًا لك!",
+      "toPay": "للسداد",
+      "paidSection": "مدفوعة",
+      "dueOn": "تستحق {date}",
+      "issuedOn": "صدرت {date}",
+      "state": {
+        "paid": "مدفوعة",
+        "due": "للسداد",
+        "overdue": "متأخرة"
+      },
+      "viewInvoice": "عرض الفاتورة",
+      "viewReceipt": "عرض الإيصال",
+      "backToPayments": "كل المدفوعات",
+      "howTitle": "طريقة الدفع",
+      "amountToPay": "المبلغ المطلوب",
+      "reference": "اكتب {number} في ملاحظات التحويل.",
+      "noInstructions": "راسلنا وسنخبرك بأسهل طريقة للدفع.",
+      "sendReceipt": "أرسل لنا الإيصال",
+      "close": "إغلاق",
+      "receiptText": "مرحبًا، لقد دفعت الفاتورة {number}. هذا هو الإيصال.",
+      "receiptTextGeneral": "مرحبًا، لقد دفعت. هذا هو الإيصال."
+    },
+    "requests": {
+      "title": "الطلبات",
+      "intro": "تحتاج تغييرًا في حسابك على المنصة؟ اطلبه هنا ونتولى الأمر.",
+      "newRequest": "اطلب منا شيئًا",
+      "sheetTitle": "ماذا تحتاج؟",
+      "whichAccount": "أي حساب",
+      "whatAbout": "بخصوص ماذا؟",
+      "tellUs": "اشرح لنا بكلماتك",
+      "tellUsHint": "مثال: من فضلك غيّر سعر المنتج س إلى 250.",
+      "send": "أرسل الطلب",
+      "sent": "تم الإرسال. سنرد عليك.",
+      "fillBoth": "اختر موضوع الطلب واكتب بضع كلمات.",
+      "empty": "لا توجد طلبات بعد. عندما تحتاج شيئًا اطلبه هنا.",
+      "groupReply": "في انتظار ردك",
+      "groupActive": "نعمل عليها",
+      "groupDone": "تم",
+      "lockedTitle": "يُفتح عندما يصبح حسابك مباشرًا",
+      "lockedHelp": "عندما يصبح حسابك على المنصة مباشرًا تستطيع طلب التغييرات من هنا. حتى ذلك الحين راسلنا في أي وقت.",
+      "lockedCta": "راسلنا",
+      "status": {
+        "open": "استلمنا طلبك",
+        "in_progress": "نعمل عليه",
+        "waiting_client": "بانتظارك",
+        "resolved": "تم",
+        "closed": "مغلق"
+      },
+      "back": "كل الطلبات",
+      "yourRequest": "طلبك",
+      "waitingHelp": "رددنا وننتظر إجابتك في الأسفل."
+    },
+    "plain": {
+      "product": {
+        "draft": "قيد التجهيز",
+        "in_progress": "قيد التجهيز",
+        "review": "قيد المراجعة",
+        "live": "مباشر",
+        "rejected": "يحتاج إصلاحًا",
+        "paused": "متوقف مؤقتًا"
+      },
+      "task": {
+        "todo": "مخطط",
+        "in_progress": "قيد التنفيذ",
+        "blocked": "متوقف مؤقتًا",
+        "review": "على وشك الانتهاء",
+        "done": "تم"
+      },
+      "dueOn": "الموعد {date}",
+      "stepsDone": "تم {done} من {total} خطوات",
+      "groupActive": "قيد التنفيذ",
+      "groupDone": "تم",
+      "nextStepLabel": "الخطوة التالية"
+    },
+    "login": {
+      "welcome": "أهلًا بك",
+      "welcomeNamed": "أهلًا بك يا {name}",
+      "subtitle": "سجّل الدخول لتتابع حسابك.",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
+      "signIn": "تسجيل الدخول",
+      "signingIn": "جارٍ الدخول...",
+      "wrongCredentials": "البريد أو كلمة المرور غير صحيحة. تأكد وحاول مرة أخرى.",
+      "genericError": "لم نتمكن من تسجيل دخولك. حاول بعد قليل.",
+      "help": "تحتاج مساعدة في الدخول؟ راسلنا",
+      "helpText": "مرحبًا، أحتاج مساعدة في الدخول إلى بوابتي."
     }
+  },
+  "invoiceDoc": {
+    "tagline": "وكالة FLOW · محتوى التجارة الإلكترونية وإدارة المتاجر",
+    "invoice": "فاتورة",
+    "billedTo": "صادرة إلى",
+    "issued": "تاريخ الإصدار",
+    "due": "تاريخ الاستحقاق",
+    "status": "الحالة",
+    "description": "البيان",
+    "qty": "الكمية",
+    "unit": "السعر",
+    "amount": "المبلغ",
+    "subtotal": "الإجمالي الفرعي",
+    "paid": "المدفوع",
+    "balanceDue": "المتبقي",
+    "notes": "ملاحظات",
+    "thanks": "شكرًا لتعاملكم مع FLOW."
+  },
+  "chat": {
+    "title": "الرسائل",
+    "subtitle": "خط خاص مع فريق حسابك.",
+    "whatsapp": "واتساب",
+    "team": "فريق فلو",
+    "client": "العميل",
+    "empty": "لا توجد رسائل بعد. ابدأ بالسلام!",
+    "placeholder": "اكتب رسالة...",
+    "send": "إرسال",
+    "sendFailed": "لم نتمكن من إرسال رسالتك. حاول مرة أخرى.",
+    "openFailed": "لم نتمكن من فتح رسائلك. حاول بعد قليل."
   }
 }

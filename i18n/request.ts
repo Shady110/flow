@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { getRequestConfig } from 'next-intl/server'
 import { defaultLocale, isLocale, LOCALE_COOKIE } from './config'
 
@@ -9,7 +9,9 @@ import { defaultLocale, isLocale, LOCALE_COOKIE } from './config'
 export default getRequestConfig(async () => {
   const cookieStore = await cookies()
   const cookieValue = cookieStore.get(LOCALE_COOKIE)?.value
-  const locale = isLocale(cookieValue) ? cookieValue : defaultLocale
+  // A client-portal visitor (tenant subdomain) with no saved choice gets Arabic.
+  const onPortal = !!(await headers()).get('x-tenant-slug')
+  const locale = isLocale(cookieValue) ? cookieValue : onPortal ? 'ar' : defaultLocale
 
   return {
     locale,

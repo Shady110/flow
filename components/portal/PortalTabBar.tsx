@@ -3,46 +3,40 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { LayoutDashboard, ClipboardCheck, LifeBuoy, FileText, MessageSquare, type LucideIcon } from 'lucide-react'
+import { type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const TABS: { key: string; href: string; icon: LucideIcon }[] = [
-  { key: 'overview', href: '/', icon: LayoutDashboard },
-  { key: 'documents', href: '/documents', icon: ClipboardCheck },
-  { key: 'tickets', href: '/tickets', icon: LifeBuoy },
-  { key: 'invoices', href: '/invoices', icon: FileText },
-  { key: 'chat', href: '/chat', icon: MessageSquare },
-]
+import { PORTAL_TABS } from './tabs'
 
 /**
- * Phone navigation: the five things a client reaches for, thumb-high at the
- * bottom of the screen. Hidden from `sm` up, where the header nav takes over.
- * Support only appears once an account is live.
+ * Phone navigation: the same five tabs everywhere, always. Big icons, readable
+ * labels, 64px tall so a thumb finds them. From `sm` up the header nav takes over.
  */
-export function PortalTabBar({ showTickets }: { showTickets: boolean }) {
+export function PortalTabBar() {
   const pathname = usePathname()
   const t = useTranslations('portal.nav')
   return (
     <nav
-      aria-label={t('overview')}
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-border/60 bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+      aria-label={t('menu')}
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-border/60 bg-card/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(8,23,14,0.06)] backdrop-blur sm:hidden"
     >
       <ul className="flex">
-        {TABS.filter((i) => i.key !== 'tickets' || showTickets).map((item) => {
-          const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
-          const Icon = item.icon
+        {PORTAL_TABS.map((item) => {
+          const active = isActive(pathname, item.match)
+          const Icon: LucideIcon = item.icon
           return (
-            <li key={item.href} className="flex-1">
+            <li key={item.key} className="flex-1">
               <Link
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-[11px] font-medium transition-colors',
-                  active ? 'text-flow-green' : 'text-muted-foreground',
+                  'flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-xs font-medium transition-colors',
+                  active ? 'text-[var(--brand-ink)]' : 'text-muted-foreground',
                 )}
               >
-                <Icon className={cn('h-5 w-5', active && 'stroke-[2.5]')} />
-                <span className="truncate">{t(item.key)}</span>
+                <span className={cn('flex h-8 w-14 items-center justify-center rounded-full transition-colors', active && 'bg-[var(--brand)]/12')}>
+                  <Icon className="h-6 w-6" />
+                </span>
+                <span className="max-w-full truncate">{t(item.key)}</span>
               </Link>
             </li>
           )
@@ -50,4 +44,8 @@ export function PortalTabBar({ showTickets }: { showTickets: boolean }) {
       </ul>
     </nav>
   )
+}
+
+function isActive(pathname: string, match: string[]) {
+  return match.some((m) => (m === '/' ? pathname === '/' : pathname === m || pathname.startsWith(`${m}/`)))
 }

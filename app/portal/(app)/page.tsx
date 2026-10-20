@@ -1,186 +1,119 @@
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import {
-  Package, ListChecks, CheckCircle2, FileSignature, ClipboardCheck, FileText, ChevronRight, PartyPopper,
-  type LucideIcon,
-} from 'lucide-react'
+import { ClipboardCheck, FileSignature, LifeBuoy, MessageCircle, Package, Wallet } from 'lucide-react'
 import { requireClientContext } from '@/lib/auth/client-session'
 import { createClient } from '@/lib/supabase/server'
 import { getPlatforms } from '@/lib/db/flow-queries'
 import { getContracts } from '@/lib/db/contract-queries'
 import { getRequirements } from '@/lib/db/requirement-queries'
 import { getInvoices } from '@/lib/db/finance-queries'
+import { getTickets } from '@/lib/db/ticket-queries'
+import { getPortalSettings } from '@/lib/db/portal-settings'
 import { CLIENT_STAGES } from '@/lib/constants'
-import type { Product, Task } from '@/lib/types'
-import { StatCard } from '@/components/dashboard/StatCard'
-import { ProgressSteps } from '@/components/portal/ProgressSteps'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
-import { ProductStatusBadge } from '@/components/dashboard/indicators'
+import { journeyPercent, nextStep } from '@/lib/portal-next-step'
+import { whatsappUrl } from '@/lib/contact'
+import { formatMoney } from '@/lib/money'
+import type { StageEvent } from '@/lib/types'
+import { NextStepCard } from '@/components/portal/NextStepCard'
+import { SectionCard } from '@/components/portal/SectionCard'
+import { JourneyCard } from '@/components/portal/JourneyCard'
+import { LatestUpdates } from '@/components/portal/LatestUpdates'
+import { TalkToUs } from '@/components/portal/TalkToUs'
 
-interface Todo { href: string; icon: LucideIcon; text: string; urgent?: boolean }
-
-export default async function PortalOverview() {
+export default async function PortalHome() {
   const { client, clientUser } = await requireClientContext()
-  const [t, tm] = await Promise.all([getTranslations('portal.overview'), getTranslations('internal.marketplace')])
   const supabase = await createClient()
+  const [t, to, tm] = await Promise.all([
+    getTranslations('portal.home'),
+    getTranslations('portal.overview'),
+    getTranslations('internal.marketplace'),
+  ])
 
-  const [{ data: products }, { data: tasks }, platforms, contracts, docs, invoices] = await Promise.all([
-    supabase.from('products').select('*').eq('client_id', client.id).order('updated_at', { ascending: false }),
-    supabase.from('tasks').select('*').eq('client_id', client.id),
+  const [platforms, contracts, papers, invoices, tickets, settings, eventsRes, productsRes] = await Promise.all([
     getPlatforms(client.id),
     getContracts(client.id),
     getRequirements(client.id, { kind: 'client_document' }),
     getInvoices(client.id),
+    getTickets({ clientId: client.id }),
+    getPortalSettings(),
+    supabase.from('stage_events').select('*').eq('client_id', client.id).order('created_at', { ascending: false }).limit(5),
+    supabase.from('products').select('id', { count: 'exact', head: true }).eq('client_id', client.id),
   ])
 
-  const productList = (products as Product[]) ?? []
-  const taskList = (tasks as Task[]) ?? []
-  const openTasks = taskList.filter((t) => t.status !== 'done')
-  const live = productList.filter((p) => p.status === 'live').length
-
-  // What the client themselves has to do — the whole point of this page.
-  const todos: Todo[] = []
-  if (contracts.some((c) => c.status === 'sent')) {
-    todos.push({ href: '/contract', icon: FileSignature, text: t('todoContract'), urgent: true })
-  }
-  const docsOpen = docs.filter((d) => d.required && (d.status === 'pending' || d.status === 'rejected'))
-  const rejected = docsOpen.filter((d) => d.status === 'rejected').length
-  if (docsOpen.length) {
-    todos.push({
-      href: '/documents',
-      icon: ClipboardCheck,
-      text: rejected ? t('todoDocumentsRejected', { count: docsOpen.length, rejected }) : t('todoDocuments', { count: docsOpen.length }),
-      urgent: rejected > 0,
-    })
-  }
   const due = invoices.filter((i) => i.status === 'sent' && i.balance > 0)
-  if (due.length) todos.push({ href: '/invoices', icon: FileText, text: t('todoInvoices', { count: due.length }) })
+  const amountDue = due.reduce((s, i) => s + i.balance, 0)
+  const contractWaiting = contracts.some((c) => c.status === 'sent')
+  const contractSigned = contracts.some((c) => c.status === 'accepted')
+  const waiting = tickets.filter((x) => x.status === 'waiting_client').length
+  const requiredPapers = papers.filter((p) => p.required && p.status !== 'waived')
+  const sentPapers = requiredPapers.filter((p) => p.status === 'submitted' || p.status === 'approved').length
+  const toSend = requiredPapers.length - sentPapers
+  const live = platforms.some((p) => p.stage === 'managing')
+  const productCount = productsRes.count ?? 0
 
-  const stageLabel = (s: string) => t(`stage.${s}`)
-  const stageHelp = (s: string) => t(`stageHelp.${s}`)
+  const step = nextStep({ contractWaiting, papers, invoicesDue: due.length, requestsWaiting: waiting })
+  const percent = journeyPercent({ clientStage: client.stage, platforms })
+
+  const stage = (s: string) => ({ id: s, label: to(`stage.${s}`), help: to(`stageHelp.${s}`) })
+  const tracks =
+    client.stage !== 'onboarded'
+      ? [{ title: null, steps: CLIENT_STAGES.map(stage), current: client.stage }]
+      : platforms.map((p) => ({ title: tm(p.platform), steps: p.stages.map(stage), current: p.stage }))
+
+  // What the team is doing right now, for the all-set card.
+  const focus = client.stage !== 'onboarded' ? client.stage : (platforms.find((p) => p.stage !== 'managing') ?? platforms[0])?.stage
+  const allSetHelp = focus ? to(`stageHelp.${focus}`) : t('allSetFallback')
+
+  const platformNames = Object.fromEntries(platforms.map((p) => [p.id, tm(p.platform)]))
+  const wa = whatsappUrl(settings.whatsapp)
 
   return (
     <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          {t('welcome', { name: clientUser.full_name.split(' ')[0] })}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+        <h1 className="font-display text-3xl font-bold tracking-tight">{t('hello', { name: clientUser.full_name.split(' ')[0] })}</h1>
+        <p className="mt-1 text-base text-muted-foreground">{t('intro')}</p>
       </div>
 
-      {/* Action needed */}
-      <section aria-labelledby="todo-title" className="space-y-3">
-        <h2 id="todo-title" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {t('actionNeeded')}
-        </h2>
-        {todos.length === 0 ? (
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-flow-lime/20 p-4">
-            <PartyPopper className="mt-0.5 h-5 w-5 shrink-0 text-flow-green" />
-            <div>
-              <p className="font-medium">{t('allSet')}</p>
-              <p className="text-sm text-muted-foreground">{t('allSetHelp')}</p>
-            </div>
-          </div>
-        ) : (
-          <ul className="space-y-2">
-            {todos.map((todo) => {
-              const Icon = todo.icon
-              return (
-                <li key={todo.href}>
-                  <Link
-                    href={todo.href}
-                    className={`flex min-h-14 items-center gap-3 rounded-xl border p-4 transition-colors hover:border-flow-green ${
-                      todo.urgent ? 'border-amber-300 bg-amber-50' : 'border-border bg-card'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5 shrink-0 text-flow-green" />
-                    <span className="flex-1 text-sm font-medium">{todo.text}</span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        )}
+      <NextStepCard step={step} allSetHelp={allSetHelp} />
+
+      <section aria-label={t('sectionsLabel')} className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+        <SectionCard
+          href="/contract"
+          icon={FileSignature}
+          title={t('sectionContract')}
+          hint={contractWaiting ? t('contractSign') : contractSigned ? t('contractDone') : t('contractNone')}
+          badge={contractWaiting ? { text: t('badgeSign'), tone: 'todo' } : contractSigned ? { text: t('badgeSigned'), tone: 'good' } : undefined}
+        />
+        <SectionCard
+          href="/papers"
+          icon={ClipboardCheck}
+          title={t('sectionPapers')}
+          hint={requiredPapers.length ? t('papersHint', { done: sentPapers, total: requiredPapers.length }) : t('papersNone')}
+          badge={toSend > 0 ? { text: t('badgeSend', { count: toSend }), tone: 'todo' } : undefined}
+        />
+        <SectionCard
+          href="/tickets"
+          icon={LifeBuoy}
+          title={t('sectionRequests')}
+          hint={live ? t('requestsHint') : t('requestsLocked')}
+          badge={waiting > 0 ? { text: t('badgeReply'), tone: 'todo' } : undefined}
+        />
+        <SectionCard
+          href="/invoices"
+          icon={Wallet}
+          title={t('sectionPayments')}
+          hint={due.length ? t('paymentsDue', { amount: formatMoney(amountDue, 'EGP', 0) }) : invoices.length ? t('paymentsPaid') : t('paymentsNone')}
+          badge={due.length ? { text: t('badgeDue', { count: due.length }), tone: 'todo' } : undefined}
+        />
+        <SectionCard href="/chat" icon={MessageCircle} title={t('sectionMessages')} hint={t('messagesHint')} />
+        <SectionCard href="/products" icon={Package} title={t('sectionProducts')} hint={t('productsHint', { count: productCount })} />
       </section>
 
-      {/* Where things stand */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{t('whereWeAre')}</h2>
-        {client.stage !== 'onboarded' ? (
-          <Card>
-            <CardContent className="p-5">
-              <ProgressSteps
-                current={client.stage}
-                steps={CLIENT_STAGES.map((s) => ({ id: s, label: stageLabel(s), help: stageHelp(s) }))}
-              />
-            </CardContent>
-          </Card>
-        ) : platforms.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('noPlatforms')}</p>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {platforms.map((p) => (
-              <Card key={p.id}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">{tm(p.platform)}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProgressSteps
-                    current={p.stage}
-                    steps={p.stages.map((s) => ({ id: s, label: stageLabel(s), help: stageHelp(s) }))}
-                  />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        <StatCard label={t('products')} value={productList.length} icon={Package} />
-        <StatCard label={t('live')} value={live} icon={CheckCircle2} tone="success" />
-        <StatCard label={t('openTasks')} value={openTasks.length} icon={ListChecks} />
+      <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
+        <JourneyCard percent={percent} tracks={tracks} />
+        <LatestUpdates events={(eventsRes.data as StageEvent[]) ?? []} platformNames={platformNames} />
       </div>
 
-      {/* The header nav covers these on larger screens; the phone tab bar has no room. */}
-      <nav aria-label={t('more')} className="space-y-2 sm:hidden">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{t('more')}</h2>
-        {[
-          { href: '/contract', label: t('linkContract') },
-          { href: '/products', label: t('linkProducts') },
-          { href: '/tasks', label: t('linkTasks') },
-        ].map((l) => (
-          <Link key={l.href} href={l.href}
-            className="flex min-h-12 items-center justify-between rounded-xl border border-border bg-card px-4 text-sm font-medium">
-            {l.label}
-            <ChevronRight className="h-4 w-4 text-muted-foreground rtl:rotate-180" />
-          </Link>
-        ))}
-      </nav>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t('recentProducts')}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {productList.length === 0 ? (
-            <p className="px-6 pb-6 text-sm text-muted-foreground">{t('noProducts')}</p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {productList.slice(0, 6).map((p) => (
-                <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">{p.marketplace ?? '—'}</p>
-                  </div>
-                  <ProductStatusBadge status={p.status} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <TalkToUs whatsapp={wa} />
     </div>
   )
 }

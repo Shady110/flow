@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { Send } from 'lucide-react'
 import { replyTicketAction } from '@/lib/db/ticket-actions'
+import { formatDateTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ds/button'
 import { Textarea } from '@/components/ds/textarea'
@@ -33,6 +34,7 @@ export function TicketThread({
 }) {
   const router = useRouter()
   const t = useTranslations('internal.tickets')
+  const locale = useLocale()
   const [body, setBody] = useState('')
   const [pending, startTransition] = useTransition()
 
@@ -49,9 +51,9 @@ export function TicketThread({
           const mine = m.sender_type === (viewer === 'staff' ? 'staff' : 'client')
           return (
             <li key={m.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
-              <div className={cn('max-w-[85%] rounded-2xl px-4 py-2.5 text-sm', mine ? 'bg-flow-green text-white' : 'bg-muted')}>
+              <div className={cn('max-w-[85%] rounded-2xl px-4 py-2.5', viewer === 'client' ? 'text-base' : 'text-sm', mine ? 'rounded-ee-sm bg-primary text-primary-foreground' : 'rounded-es-sm bg-muted')}>
                 <p className={cn('mb-0.5 text-xs font-medium', mine ? 'text-white/80' : 'text-muted-foreground')}>
-                  {author(m)} · {new Date(m.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                  {author(m)} · {formatDateTime(m.created_at, locale)}
                 </p>
                 <p className="whitespace-pre-line">{m.body}</p>
               </div>
@@ -75,8 +77,8 @@ export function TicketThread({
             })
           }}
         >
-          <Textarea rows={3} value={body} placeholder={t('replyPlaceholder')} onChange={(e) => setBody(e.target.value)} />
-          <Button type="submit" disabled={pending || !body.trim()}>
+          <Textarea rows={3} value={body} placeholder={t('replyPlaceholder')} className={viewer === 'client' ? 'min-h-24 text-base' : undefined} onChange={(e) => setBody(e.target.value)} />
+          <Button type="submit" size={viewer === 'client' ? 'lg' : 'default'} className={viewer === 'client' ? 'h-14 w-full text-base' : undefined} disabled={pending || !body.trim()}>
             <Send className="h-4 w-4 rtl:-scale-x-100" /> {t('send')}
           </Button>
         </form>

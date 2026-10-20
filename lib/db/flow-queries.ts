@@ -32,3 +32,26 @@ export async function getMonthlyClientCap(): Promise<number> {
   const n = Number(data?.value)
   return Number.isFinite(n) && n >= 0 ? n : 10
 }
+
+export interface CompanySettings {
+  cap: number
+  whatsapp: string
+  paymentEn: string
+  paymentAr: string
+}
+
+/** Everything on the Company settings page (internal users only, via RLS). */
+export async function getCompanySettings(): Promise<CompanySettings> {
+  const supabase = await createClient()
+  const { data } = await supabase.from('app_settings').select('key, value')
+  const get = (k: string) => data?.find((r) => r.key === k)?.value
+  const pay = (get('payment_instructions') ?? {}) as { en?: string; ar?: string }
+  const cap = Number(get('monthly_client_cap'))
+  const wa = get('support_whatsapp')
+  return {
+    cap: Number.isFinite(cap) && cap >= 0 ? cap : 10,
+    whatsapp: typeof wa === 'string' ? wa : '',
+    paymentEn: pay.en ?? '',
+    paymentAr: pay.ar ?? '',
+  }
+}

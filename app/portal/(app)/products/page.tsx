@@ -1,69 +1,11 @@
-import { getTranslations } from 'next-intl/server'
 import { requireClientContext } from '@/lib/auth/client-session'
 import { createClient } from '@/lib/supabase/server'
 import type { Product } from '@/lib/types'
-import { Card } from '@/components/ds/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ds/table'
-import { ProductStatusBadge } from '@/components/dashboard/indicators'
+import { ProductsView } from '@/components/portal/ProductsView'
 
 export default async function PortalProducts() {
   const { client } = await requireClientContext()
-  const t = await getTranslations('portal.products')
   const supabase = await createClient()
-  const { data } = await supabase
-    .from('products')
-    .select('*')
-    .eq('client_id', client.id)
-    .order('updated_at', { ascending: false })
-  const products = (data as Product[]) ?? []
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('subtitle')}
-        </p>
-      </div>
-
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('product')}</TableHead>
-              <TableHead>{t('sku')}</TableHead>
-              <TableHead>{t('marketplace')}</TableHead>
-              <TableHead>{t('status')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {products.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
-                  {t('noProducts')}
-                </TableCell>
-              </TableRow>
-            )}
-            {products.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell className="font-medium">{p.name}</TableCell>
-                <TableCell className="text-muted-foreground">{p.sku ?? '—'}</TableCell>
-                <TableCell className="text-muted-foreground">{p.marketplace ?? '—'}</TableCell>
-                <TableCell>
-                  <ProductStatusBadge status={p.status} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
-    </div>
-  )
+  const { data } = await supabase.from('products').select('*').eq('client_id', client.id).order('updated_at', { ascending: false })
+  return <ProductsView products={(data as Product[]) ?? []} />
 }

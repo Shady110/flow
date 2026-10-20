@@ -31,6 +31,7 @@ export async function provisionClientUser(
       email: email.toLowerCase(),
       full_name: fullName,
       role_at_company: roleAtCompany ?? null,
+      locale: 'ar', // portal users start in Arabic; they can switch any time
     })
     .select('id')
     .single()

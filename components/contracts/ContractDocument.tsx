@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { formatDateTime } from '@/lib/format'
 import type { Contract } from '@/lib/types'
 
 /**
@@ -6,11 +6,20 @@ import type { Contract } from '@/lib/types'
  * CEO's detail page and the client's portal alike; the body is plain text where
  * a blank line starts a new paragraph.
  */
-export function ContractDocument({ contract, clientName }: { contract: Contract; clientName: string }) {
+export function ContractDocument({
+  contract,
+  clientName,
+  portal = false,
+}: {
+  contract: Contract
+  clientName: string
+  /** Client view: no technical receipt (the hash stays internal). */
+  portal?: boolean
+}) {
   const rtl = contract.locale === 'ar'
   const paragraphs = contract.body.split(/\n{2,}/)
   const accepted = contract.status === 'accepted'
-  const when = (iso: string) => format(new Date(iso), 'PPP p')
+  const when = (iso: string) => formatDateTime(iso, contract.locale)
 
   return (
     <article
@@ -47,7 +56,7 @@ export function ContractDocument({ contract, clientName }: { contract: Contract;
             {contract.accepted_name}
             {contract.accepted_at ? ` · ${when(contract.accepted_at)}` : ''}
           </p>
-          {contract.body_sha256 && (
+          {!portal && contract.body_sha256 && (
             <p className="mt-1 break-all font-mono text-[11px] text-flow-text-muted" dir="ltr">
               SHA-256 {contract.body_sha256}
             </p>

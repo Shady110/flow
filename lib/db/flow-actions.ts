@@ -166,15 +166,28 @@ export async function updateAccountStatusAction(input: unknown): Promise<ActionR
   return { ok: true }
 }
 
-export async function setMonthlyClientCapAction(cap: number): Promise<ActionResult> {
+const companySchema = z.object({
+  cap: z.number().int('Enter a whole number between 0 and 1000.').min(0, 'Enter a whole number between 0 and 1000.').max(1000, 'Enter a whole number between 0 and 1000.'),
+  whatsapp: z.string().trim().max(40),
+  paymentEn: z.string().trim().max(2000),
+  paymentAr: z.string().trim().max(2000),
+})
+
+/** Company-wide settings in one save: monthly client limit, support WhatsApp number, and the how-to-pay text clients see. */
+export async function saveCompanySettingsAction(input: unknown): Promise<ActionResult> {
   const user = await requirePermission('settings.company')
-  if (!Number.isInteger(cap) || cap < 0 || cap > 1000) {
-    return { ok: false, error: 'Enter a whole number between 0 and 1000.' }
-  }
+  const parsed = companySchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message }
+  const { cap, whatsapp, paymentEn, paymentAr } = parsed.data
+
+  const now = new Date().toISOString()
+  const row = (key: string, value: unknown) => ({ key, value, updated_by: user.id, updated_at: now })
   const supabase = await createClient()
-  const { error } = await supabase
-    .from('app_settings')
-    .upsert({ key: 'monthly_client_cap', value: cap, updated_by: user.id, updated_at: new Date().toISOString() })
+  const { error } = await supabase.from('app_settings').upsert([
+    row('monthly_client_cap', cap),
+    row('support_whatsapp', whatsapp),
+    row('payment_instructions', { en: paymentEn, ar: paymentAr }),
+  ])
   if (error) return { ok: false, error: error.message }
   revalidatePath('/settings/company')
   revalidatePath('/leads')

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowUpRight, type LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ds/card'
+import { BorderBeam } from '@/components/ds/border-beam'
 import { cn } from '@/lib/utils'
 
 /**
@@ -44,7 +45,7 @@ export function StatCard({
     <Card
       className={cn(
         'h-full gap-0 p-4 sm:p-5',
-        hero && 'border-transparent text-white shadow-[var(--shadow-md)]',
+        hero && 'relative overflow-hidden border-transparent text-white shadow-[var(--shadow-md)]',
         href && 'transition-shadow hover:shadow-[var(--shadow-md)]',
         // With a link, the grid item is the <Link>; it carries the layout classes instead.
         !href && className,
@@ -67,6 +68,7 @@ export function StatCard({
           </span>
         )}
       </div>
+      {hero && <BorderBeam size={110} duration={10} borderWidth={1.5} colorFrom="#C4F075" colorTo="#2E6B45" />}
       <p className={cn('mt-3 font-display text-4xl font-bold leading-none tracking-tight sm:mt-4 sm:text-5xl', valueTone)}>
         {/* Isolate the number so "7 / 10" doesn't flip to "10 / 7" in RTL. */}
         <bdi dir="ltr">{value}</bdi>

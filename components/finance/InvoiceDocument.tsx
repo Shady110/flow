@@ -1,22 +1,33 @@
+import { getLocale, getTranslations } from 'next-intl/server'
 import { formatMoney } from '@/lib/money'
+import { formatDate } from '@/lib/format'
 import type { InvoiceWithMeta } from '@/lib/db/finance-queries'
 
 /**
- * Branded, print-friendly invoice document. Purely presentational so it can be
- * rendered in the internal dashboard and the client portal alike.
+ * Branded, print-friendly invoice document, in the viewer's language. Purely
+ * presentational so it renders in the team dashboard and the client portal alike.
+ * Layout uses logical properties so Arabic mirrors correctly, and the line items
+ * stack on a phone instead of forcing a four-column table.
  *
- * `portal` hides the Issued date and Status entirely (client-facing view).
- * On the internal view those two fields show on screen but are marked
- * `no-print`, so they never appear in a downloaded/printed PDF.
+ * `portal` hides the Issued date and Status (client-facing view). On the team
+ * view those two show on screen but are `no-print`, so they never reach a PDF.
  */
-export function InvoiceDocument({
+export async function InvoiceDocument({
   invoice,
   portal = false,
 }: {
   invoice: InvoiceWithMeta
   portal?: boolean
 }) {
+  const [t, ts, locale] = await Promise.all([
+    getTranslations('invoiceDoc'),
+    getTranslations('internal.invoiceStatus'),
+    getLocale(),
+  ])
   const { currency } = invoice
+  const money = (n: number) => formatMoney(n, currency, 2, locale)
+  const label = 'text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted'
+
   return (
     <div className="print-invoice mx-auto max-w-3xl rounded-2xl border border-flow-border bg-white p-5 text-flow-text shadow-sm sm:p-10">
       {/* Header */}
@@ -24,96 +35,99 @@ export function InvoiceDocument({
         <div>
           <div className="print-exact inline-flex items-center rounded-xl bg-flow-green px-4 py-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/assets/flow-wordmark-white.png"
-              alt="FLOW Agency"
-              className="h-7 w-auto object-contain"
-            />
+            <img src="/assets/flow-wordmark-white.png" alt="FLOW Agency" className="h-7 w-auto object-contain" />
           </div>
-          <p className="mt-3 text-xs text-flow-text-muted">
-            FLOW Agency · E-commerce content & marketplace management
-          </p>
+          <p className="mt-3 text-xs text-flow-text-muted">{t('tagline')}</p>
         </div>
-        <div className="text-end">
-          <p className="font-display text-xl font-bold uppercase tracking-wide text-flow-green">Invoice</p>
-          <p className="mt-1 text-sm font-medium">{invoice.number}</p>
+        <div className="sm:text-end">
+          <p className="font-display text-xl font-bold uppercase tracking-wide text-flow-green">{t('invoice')}</p>
+          <p className="mt-1 text-sm font-medium"><bdi dir="ltr">{invoice.number}</bdi></p>
         </div>
       </div>
 
       {/* Meta */}
       <div className="grid grid-cols-2 gap-6 py-6 sm:grid-cols-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Billed to</p>
+          <p className={label}>{t('billedTo')}</p>
           <p className="mt-1 text-sm font-medium">{invoice.client_name}</p>
         </div>
         {!portal && (
           <div className="no-print">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Issued</p>
-            <p className="mt-1 text-sm">{new Date(invoice.issue_date).toLocaleDateString()}</p>
+            <p className={label}>{t('issued')}</p>
+            <p className="mt-1 text-sm">{formatDate(invoice.issue_date, locale)}</p>
           </div>
         )}
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Due</p>
-          <p className="mt-1 text-sm">
-            {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : '—'}
-          </p>
+          <p className={label}>{t('due')}</p>
+          <p className="mt-1 text-sm">{invoice.due_date ? formatDate(invoice.due_date, locale) : '—'}</p>
         </div>
         {!portal && (
           <div className="no-print">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Status</p>
-            <p className="mt-1 text-sm capitalize">{invoice.status}</p>
+            <p className={label}>{t('status')}</p>
+            <p className="mt-1 text-sm">{ts(invoice.status)}</p>
           </div>
         )}
       </div>
 
-      {/* Line items */}
-      <table className="w-full text-sm">
+      {/* Line items: a table from `sm` up (and in print), stacked rows on a phone. */}
+      <table className="hidden w-full text-sm sm:table print:table">
         <thead>
-          <tr className="border-y border-flow-border text-left text-[11px] uppercase tracking-wider text-flow-text-muted">
-            <th className="py-2 font-semibold">Description</th>
-            <th className="py-2 text-right font-semibold">Qty</th>
-            <th className="py-2 text-right font-semibold">Unit</th>
-            <th className="py-2 text-right font-semibold">Amount</th>
+          <tr className={`border-y border-flow-border text-start ${label}`}>
+            <th className="py-2 text-start font-semibold">{t('description')}</th>
+            <th className="py-2 text-end font-semibold">{t('qty')}</th>
+            <th className="py-2 text-end font-semibold">{t('unit')}</th>
+            <th className="py-2 text-end font-semibold">{t('amount')}</th>
           </tr>
         </thead>
         <tbody>
           {invoice.items.map((it) => (
             <tr key={it.id} className="border-b border-flow-border/60">
-              <td className="py-2.5 pr-4">{it.description}</td>
-              <td className="py-2.5 text-right tabular-nums">{Number(it.quantity)}</td>
-              <td className="py-2.5 text-right tabular-nums">{formatMoney(Number(it.unit_price), currency)}</td>
-              <td className="py-2.5 text-right tabular-nums">
-                {formatMoney(Number(it.quantity) * Number(it.unit_price), currency)}
-              </td>
+              <td className="py-2.5 pe-4">{it.description}</td>
+              <td className="py-2.5 text-end tabular-nums">{Number(it.quantity)}</td>
+              <td className="py-2.5 text-end tabular-nums">{money(Number(it.unit_price))}</td>
+              <td className="py-2.5 text-end tabular-nums">{money(Number(it.quantity) * Number(it.unit_price))}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      <ul className="divide-y divide-flow-border/60 border-y border-flow-border sm:hidden print:hidden">
+        {invoice.items.map((it) => (
+          <li key={it.id} className="flex items-start justify-between gap-4 py-3 text-sm">
+            <div className="min-w-0">
+              <p className="font-medium">{it.description}</p>
+              <p className="mt-0.5 text-xs text-flow-text-muted">
+                {Number(it.quantity)} × {money(Number(it.unit_price))}
+              </p>
+            </div>
+            <p className="shrink-0 font-medium tabular-nums">{money(Number(it.quantity) * Number(it.unit_price))}</p>
+          </li>
+        ))}
+      </ul>
 
       {/* Totals */}
-      <div className="ml-auto mt-6 w-full max-w-xs space-y-2 text-sm">
+      <div className="ms-auto mt-6 w-full max-w-xs space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-flow-text-muted">Subtotal</span>
-          <span className="tabular-nums">{formatMoney(invoice.total, currency)}</span>
+          <span className="text-flow-text-muted">{t('subtotal')}</span>
+          <span className="tabular-nums">{money(invoice.total)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-flow-text-muted">Paid</span>
-          <span className="tabular-nums">{formatMoney(invoice.paid, currency)}</span>
+          <span className="text-flow-text-muted">{t('paid')}</span>
+          <span className="tabular-nums">{money(invoice.paid)}</span>
         </div>
         <div className="flex justify-between border-t border-flow-border pt-2 font-display text-base font-bold text-flow-green">
-          <span>Balance due</span>
-          <span className="tabular-nums">{formatMoney(invoice.balance, currency)}</span>
+          <span>{t('balanceDue')}</span>
+          <span className="tabular-nums">{money(invoice.balance)}</span>
         </div>
       </div>
 
       {invoice.notes && (
         <div className="mt-8 border-t border-flow-border pt-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-flow-text-muted">Notes</p>
+          <p className={label}>{t('notes')}</p>
           <p className="mt-1 whitespace-pre-wrap text-sm text-flow-text-muted">{invoice.notes}</p>
         </div>
       )}
 
-      <p className="mt-8 text-center text-xs text-flow-text-muted">Thank you for working with FLOW.</p>
+      <p className="mt-8 text-center text-xs text-flow-text-muted">{t('thanks')}</p>
     </div>
   )
 }

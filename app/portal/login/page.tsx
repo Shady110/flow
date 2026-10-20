@@ -1,64 +1,50 @@
-'use client'
+import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { brandCss, normalizeHex, readableOn } from '@/lib/brand'
+import { whatsappUrl } from '@/lib/contact'
+import { getPortalSettings } from '@/lib/db/portal-settings'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { LoginForm } from '@/components/portal/LoginForm'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/browser'
-import { Button } from '@/components/ds/button'
-import { Input } from '@/components/ds/input'
-import { Label } from '@/components/ds/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
-
-export default function PortalLoginPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
-    if (error) return setError(error.message)
-    router.replace('/')
-    router.refresh()
-  }
+/** The first thing a client sees: their own name and colour, in their language. */
+export default async function PortalLoginPage() {
+  const slug = (await headers()).get('x-tenant-slug')
+  const [t, settings, { data: client }] = await Promise.all([
+    getTranslations('portal.login'),
+    getPortalSettings(),
+    // Public branding only (name, logo, colour) for the tenant on this address.
+    slug
+      ? createAdminClient().from('clients').select('name, logo_url, brand_color').eq('slug', slug).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ])
+  const brand = normalizeHex(client?.brand_color)
 
   return (
-    <div
-      className="flex min-h-screen items-center justify-center px-4"
-      style={{ background: 'var(--gradient-brand-soft)' }}
-    >
-      <Card className="w-full max-w-sm shadow-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-lg">Client sign in</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in…' : 'Sign in'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="flex min-h-screen flex-col bg-background">
+      <style dangerouslySetInnerHTML={{ __html: brandCss(client?.brand_color) }} />
+      <div className="flex justify-end p-4">
+        <LanguageSwitcher className="min-h-11 px-3" />
+      </div>
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-8 px-5 pb-16">
+        <div className="flex flex-col items-center gap-4 text-center">
+          {client?.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={client.logo_url} alt="" className="h-20 w-20 rounded-3xl object-contain" />
+          ) : (
+            <span className="flex h-20 w-20 items-center justify-center rounded-3xl font-display text-3xl font-bold" style={{ background: brand, color: readableOn(brand) }}>
+              {(client?.name ?? 'F')[0]?.toUpperCase()}
+            </span>
+          )}
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">{client?.name ? t('welcomeNamed', { name: client.name }) : t('welcome')}</h1>
+            <p className="mt-2 text-base text-muted-foreground">{t('subtitle')}</p>
+          </div>
+        </div>
+        <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-[var(--shadow-md)] sm:p-7">
+          <LoginForm helpHref={whatsappUrl(settings.whatsapp, t('helpText'))} />
+        </div>
+      </main>
     </div>
   )
 }
