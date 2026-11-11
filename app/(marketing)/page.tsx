@@ -77,7 +77,7 @@ export default async function Home() {
       {/* States the offer once before asking anyone to fill in seven fields. */}
       <FinalCTA />
       <ContactSection content={content.contact} />
-      <Footer />
+      <Footer contact={content.contact} />
     </main>
   )
 }

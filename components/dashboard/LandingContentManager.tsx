@@ -368,6 +368,9 @@ function SectionEditor({
       <LinesField label="Phone numbers" value={data.phones ?? []} onChange={(v) => field('phones', v)} />
       <TextField label="Email" value={data.email} onChange={(v) => field('email', v)} />
       <TextField label="Location" value={data.location} onChange={(v) => field('location', v)} />
+      <TextField label="Footer tagline" value={data.tagline ?? ''} onChange={(v) => field('tagline', v)} />
+      <TextField label="Footer description" value={data.blurb ?? ''} textarea onChange={(v) => field('blurb', v)} />
+      <TextField label="Footer copyright line" value={data.rights ?? ''} onChange={(v) => field('rights', v)} />
     </div>
   )
 }

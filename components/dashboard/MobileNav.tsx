@@ -6,10 +6,12 @@ import { Menu } from 'lucide-react'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ds/sheet'
 import { SidebarNav } from './SidebarNav'
 import { Brand } from './Brand'
+import { NavSearch } from './NavSearch'
+import { SidebarControls, type SidebarUser } from './SidebarControls'
 import type { PermissionKey } from '@/lib/types'
 
 /** Hamburger + drawer with the full menu, for screens too narrow for the sidebar. */
-export function MobileNav({ permissions, department }: { permissions: PermissionKey[]; department?: string | null }) {
+export function MobileNav({ permissions, user }: { permissions: PermissionKey[]; user: SidebarUser }) {
   const [open, setOpen] = useState(false)
   const t = useTranslations('internal.shell')
   // The drawer opens from the reading-start edge.
@@ -30,9 +32,13 @@ export function MobileNav({ permissions, department }: { permissions: Permission
         <div className="px-2 pb-2 pt-1">
           <Brand />
         </div>
-        <div className="flex-1 overflow-y-auto">
-          <SidebarNav permissions={permissions} department={department} onNavigate={() => setOpen(false)} />
+        <div className="pb-3">
+          <NavSearch permissions={permissions} onNavigate={() => setOpen(false)} />
         </div>
+        <div className="flex-1 overflow-y-auto">
+          <SidebarNav permissions={permissions} onNavigate={() => setOpen(false)} />
+        </div>
+        <SidebarControls user={user} />
       </SheetContent>
     </Sheet>
   )

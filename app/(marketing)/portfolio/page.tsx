@@ -4,6 +4,9 @@ import Footer from '@/components/Footer'
 import ScrollProgress from '@/components/ui/ScrollProgress'
 import PortfolioClient from '@/components/portfolio/PortfolioClient'
 import { portfolioData } from '@/data/portfolioData'
+import { getLocale } from 'next-intl/server'
+import { getLandingContent } from '@/lib/db/landing'
+import type { Locale } from '@/i18n/config'
 
 export const metadata: Metadata = {
   title: 'Portfolio | Product Photography & E-Commerce Content Egypt',
@@ -24,13 +27,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default function PortfolioPage() {
+export default async function PortfolioPage() {
+  const content = await getLandingContent((await getLocale()) as Locale)
   return (
     <main>
       <ScrollProgress />
       <Navbar heroTone="dark" />
       <PortfolioClient data={portfolioData} />
-      <Footer />
+      <Footer contact={content.contact} />
     </main>
   )
 }

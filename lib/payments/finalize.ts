@@ -1,5 +1,6 @@
 import 'server-only'
 import { revalidatePath } from 'next/cache'
+import { notify } from '@/lib/notify'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { syncInvoiceStatus } from '@/lib/db/invoice-sync'
 import type { CheckoutSession } from '@/lib/types'
@@ -65,6 +66,9 @@ export async function finalizeCheckout(merchantOrderId: string, result: PaymentR
 
   await admin.from('checkout_sessions').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', session.id)
   await syncInvoiceStatus(admin, session.invoice_id)
+  if (!error) {
+    await notify({ audience: 'staff', clientId: session.client_id, kind: 'payment_received', href: `/finance/invoices/${session.invoice_id}`, payload: { amount: Number(session.amount) } })
+  }
 
   // A saved card (the client ticked "pay automatically"): keep the token for next month.
   if (session.save_card && result.card) {

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { ArrowUpRight, FileText } from 'lucide-react'
 import { getClient, getTasks, getTeam } from '@/lib/db/queries'
 import { getInvoices } from '@/lib/db/finance-queries'
+import { getAssignments } from '@/lib/db/assignment-queries'
 import { getPlatforms, getStageEvents } from '@/lib/db/flow-queries'
 import { PageTabs } from '@/components/dashboard/PageTabs'
 import { ClientFlowCard } from '@/components/flow/ClientFlowCard'
@@ -67,6 +68,7 @@ export default async function ClientDetailPage({
   ])
   if (!client) notFound()
 
+  const assignments = await getAssignments()
   const contracts = user?.permissions.has('contracts.manage') ? await getContracts(clientId) : []
   const invoices = user?.permissions.has('finance.view') ? await getInvoices(clientId) : []
 
@@ -97,6 +99,10 @@ export default async function ClientDetailPage({
   const overdue = open.filter((task) => deadlineState(task) === 'overdue').length
   const clientOptions = [{ id: client.id, label: client.name }]
   const teamOptions = team.map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
+  // Only account-management people can be assigned to a client.
+  const assignOptions = team
+    .filter((m) => m.roles.some((r) => r.department_key === 'accounts'))
+    .map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
 
   return (
     <div className="space-y-6">
@@ -178,7 +184,10 @@ export default async function ClientDetailPage({
         client={client}
         platforms={platforms}
         events={stageEvents}
-        team={teamOptions}
+        team={assignOptions}
+        people={teamOptions}
+        assignedIds={assignments.filter((a) => a.client_id === client.id).map((a) => a.profile_id)}
+        canAssign={!!user?.permissions.has('accounts.assign')}
         canManage={!!user?.permissions.has('pipeline.manage')}
       />
 

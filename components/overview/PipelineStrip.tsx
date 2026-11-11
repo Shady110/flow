@@ -16,7 +16,7 @@ const TONE: Record<PipelineColumn, string> = {
 }
 
 /** Every stage at a glance: a proportional bar over seven tiles that link to the board. */
-export async function PipelineStrip({ counts }: { counts: Record<PipelineColumn, number> }) {
+export async function PipelineStrip({ counts, boardHref }: { counts: Record<PipelineColumn, number>; boardHref?: string }) {
   const t = await getTranslations('internal.overview')
   const tf = await getTranslations('internal.flow')
   const total = PIPELINE_COLUMNS.reduce((s, c) => s + counts[c], 0)
@@ -26,9 +26,11 @@ export async function PipelineStrip({ counts }: { counts: Record<PipelineColumn,
       title={t('pipelineTitle')}
       description={t('pipelineDescription')}
       action={
-        <Link href="/pipeline" className="shrink-0 whitespace-nowrap rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">
-          {t('openBoard')}
-        </Link>
+        boardHref ? (
+          <Link href={boardHref} className="shrink-0 whitespace-nowrap rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">
+            {t('openBoard')}
+          </Link>
+        ) : undefined
       }
     >
       {total === 0 ? (
@@ -42,19 +44,21 @@ export async function PipelineStrip({ counts }: { counts: Record<PipelineColumn,
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
             {PIPELINE_COLUMNS.map((c) => (
-              <Link
-                key={c}
-                href="/pipeline"
-                className="group rounded-2xl bg-muted/60 p-3 transition-colors hover:bg-secondary"
-              >
+              <Tile key={c} href={boardHref}>
                 <span className={cn('block h-1.5 w-8 rounded-full', TONE[c])} />
                 <p className="mt-3 font-display text-3xl font-bold leading-none">{counts[c]}</p>
                 <p className="mt-1.5 text-xs leading-tight text-muted-foreground">{tf(`stage.${c}`)}</p>
-              </Link>
+              </Tile>
             ))}
           </div>
         </>
       )}
     </Panel>
   )
+}
+
+/** A stage tile: a link to the board when the viewer may open it, otherwise plain. */
+function Tile({ href, children }: { href?: string; children: React.ReactNode }) {
+  const cls = 'group rounded-2xl bg-muted/60 p-3 transition-colors'
+  return href ? <Link href={href} className={cn(cls, 'hover:bg-secondary')}>{children}</Link> : <div className={cls}>{children}</div>
 }

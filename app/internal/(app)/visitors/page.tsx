@@ -16,7 +16,7 @@ import type { LeadStatus } from '@/lib/types'
  * expecting a list of people to call should read the "identified" figure.
  */
 export default async function VisitorsPage() {
-  await requirePermission('leads.view')
+  await requirePermission('sales.workspace')
   const [visitors, t] = await Promise.all([getVisitors(), getTranslations('internal.visitors')])
 
   const identified = visitors.filter((v) => v.lead_id).length

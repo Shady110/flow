@@ -8,12 +8,12 @@ import { ArrowUpRight } from 'lucide-react'
  * Dark card pinned to the bottom of the sidebar: how many new clients this
  * month against the CEO's cap. Lime = closed so far, hatched = room left.
  */
-export function CapCard({ won, cap }: { won: number; cap: number }) {
+export function CapCard({ won, cap, href = '/leads' }: { won: number; cap: number; href?: string }) {
   const t = useTranslations('internal.shell')
   const pct = cap > 0 ? Math.min(100, Math.round((won / cap) * 100)) : 100
   return (
     <Link
-      href="/leads"
+      href={href}
       className="group relative block overflow-hidden rounded-2xl p-3.5 text-white"
       style={{ background: 'var(--gradient-dark-panel)' }}
     >

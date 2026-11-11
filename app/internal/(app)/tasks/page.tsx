@@ -18,7 +18,7 @@ import {
 } from '@/components/ds/table'
 
 export default async function TasksPage() {
-  await requirePermission('tasks.view')
+  await requirePermission('tasks.create')
   const [clients, tasks, team, user, tr, tc] = await Promise.all([
     getClients(),
     // Subtasks are rolled up onto their parent rather than listed separately.

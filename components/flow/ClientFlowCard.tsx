@@ -9,6 +9,7 @@ import {
   moveClientStageAction,
   movePlatformStageAction,
   removePlatformAction,
+  setClientAssignmentsAction,
   updateClientFlowAction,
   updatePlatformSetupAction,
 } from '@/lib/db/flow-actions'
@@ -32,12 +33,20 @@ export function ClientFlowCard({
   platforms,
   events,
   team,
+  people,
+  assignedIds,
+  canAssign,
   canManage,
 }: {
   client: Pick<Client, 'id' | 'stage' | 'budget' | 'estimated_cost' | 'target_live_date'>
   platforms: ClientPlatform[]
   events: StageEvent[]
+  /** Account-management people who can be assigned to this client. */
   team: { id: string; label: string }[]
+  /** Everyone, to name who made each stage change. */
+  people: { id: string; label: string }[]
+  assignedIds: string[]
+  canAssign: boolean
   canManage: boolean
 }) {
   const router = useRouter()
@@ -51,7 +60,8 @@ export function ClientFlowCard({
   const [target, setTarget] = useState(client.target_live_date ?? '')
   const [adding, setAdding] = useState<Marketplace | ''>('')
   // Per-platform pending edits to the "which stages apply" checkboxes + AM.
-  const [setup, setSetup] = useState<Record<string, { stages: PlatformStage[]; am: string }>>({})
+  const [setup, setSetup] = useState<Record<string, { stages: PlatformStage[] }>>({})
+  const [assigned, setAssigned] = useState<string[]>(assignedIds)
 
   const stageLabel = (s: string) => t(`stage.${s}`)
   const run = (fn: () => Promise<{ ok: true } | { ok: false; error: string }>, ok?: string) =>
@@ -63,7 +73,9 @@ export function ClientFlowCard({
     })
 
   const availableToAdd = MARKETPLACES.filter((m) => !platforms.some((p) => p.platform === m))
-  const nameOf = (id: string | null) => team.find((m) => m.id === id)?.label ?? '—'
+  const nameOf = (id: string | null) => people.find((m) => m.id === id)?.label ?? '—'
+  const assignedNames = assignedIds.map((id) => team.find((m) => m.id === id)?.label).filter(Boolean).join(', ') || '—'
+  const assignmentDirty = [...assigned].sort().join() !== [...assignedIds].sort().join()
 
   return (
     <Card>
@@ -130,6 +142,39 @@ export function ClientFlowCard({
           </div>
         )}
 
+        {/* Who works this client (per client, all marketplaces) */}
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">{t('assignedTo')}</p>
+          {canAssign ? (
+            <>
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {team.length === 0 && <p className="text-sm text-muted-foreground">{t('noAccountManagers')}</p>}
+                {team.map((m) => (
+                  <label key={m.id} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={assigned.includes(m.id)}
+                      onCheckedChange={(on) =>
+                        setAssigned((list) => (on ? [...list, m.id] : list.filter((id) => id !== m.id)))
+                      }
+                    />
+                    {m.label}
+                  </label>
+                ))}
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={pending || !assignmentDirty}
+                onClick={() => run(() => setClientAssignmentsAction({ clientId: client.id, profileIds: assigned }), t('saved'))}
+              >
+                {t('save')}
+              </Button>
+            </>
+          ) : (
+            <p className="text-sm">{assignedNames}</p>
+          )}
+        </div>
+
         {/* Platform accounts */}
         <div className="space-y-3">
           <p className="text-xs font-medium text-muted-foreground">{t('platforms')}</p>
@@ -137,16 +182,12 @@ export function ClientFlowCard({
             <p className="text-sm text-muted-foreground">{t('noPlatformsYet')}</p>
           )}
           {platforms.map((p) => {
-            const edit = setup[p.id] ?? { stages: p.stages, am: p.account_manager_id ?? 'none' }
-            const dirty =
-              edit.stages.join() !== p.stages.join() || edit.am !== (p.account_manager_id ?? 'none')
+            const edit = setup[p.id] ?? { stages: p.stages }
+            const dirty = edit.stages.join() !== p.stages.join()
             return (
               <div key={p.id} className="space-y-3 rounded-lg border border-border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">{tm(p.platform)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('manager')}: {nameOf(p.account_manager_id)}
-                  </p>
                 </div>
                 <Stepper
                   steps={p.stages.map((s) => ({ id: s, label: stageLabel(s) }))}
@@ -188,15 +229,6 @@ export function ClientFlowCard({
                       </div>
                     </div>
                     <div className="flex flex-wrap items-end gap-3">
-                      <div className="w-48 space-y-1">
-                        <Label className="text-xs">{t('manager')}</Label>
-                        <StageSelect
-                          value={edit.am}
-                          label={t('manager')}
-                          options={[{ value: 'none', label: '—' }, ...team.map((m) => ({ value: m.id, label: m.label }))]}
-                          onChange={(am) => setSetup((m) => ({ ...m, [p.id]: { ...edit, am } }))}
-                        />
-                      </div>
                       <Button
                         size="sm"
                         variant="outline"
@@ -208,7 +240,6 @@ export function ClientFlowCard({
                                 platformId: p.id,
                                 clientId: client.id,
                                 stages: edit.stages,
-                                account_manager_id: edit.am === 'none' ? null : edit.am,
                               }),
                             t('saved'),
                           )

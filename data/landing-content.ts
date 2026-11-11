@@ -124,6 +124,10 @@ export interface ContactContent {
   phones: string[]
   email: string
   location: string
+  /** Footer text; empty falls back to the translated default. */
+  tagline?: string
+  blurb?: string
+  rights?: string
 }
 
 export interface LandingContent {

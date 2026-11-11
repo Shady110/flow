@@ -5,6 +5,7 @@ import { relativeTime } from '@/lib/overview'
 import type { CeoOverview } from '@/lib/db/overview-queries'
 import { Panel } from '@/components/dashboard/Panel'
 import { EmptyState } from '@/components/dashboard/EmptyState'
+import { AnimatedListItem } from '@/components/ds/animated-list'
 
 /** The latest stage moves across the company, newest first. */
 export async function ActivityFeed({ events }: { events: CeoOverview['events'] }) {
@@ -22,6 +23,7 @@ export async function ActivityFeed({ events }: { events: CeoOverview['events'] }
         <ul className="space-y-1">
           {events.map((e) => (
             <li key={e.id}>
+              <AnimatedListItem>
               <Link href={`/clients/${e.client_id}`} className="flex items-center gap-3 rounded-2xl p-2.5 transition-colors hover:bg-muted/60">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-flow-green">
                   <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
@@ -39,6 +41,7 @@ export async function ActivityFeed({ events }: { events: CeoOverview['events'] }
                 </span>
                 <span className="shrink-0 text-xs text-muted-foreground">{relativeTime(e.created_at, locale)}</span>
               </Link>
+              </AnimatedListItem>
             </li>
           ))}
         </ul>

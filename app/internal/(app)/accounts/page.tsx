@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { requirePermission } from '@/lib/auth/session'
 import { getClients, getTeam } from '@/lib/db/queries'
 import { getPlatforms } from '@/lib/db/flow-queries'
+import { assigneeNames, getAssignments } from '@/lib/db/assignment-queries'
 import { getTickets } from '@/lib/db/ticket-queries'
 import { Briefcase, ShieldAlert, LifeBuoy } from 'lucide-react'
 import { PageHeader } from '@/components/dashboard/PageHeader'
@@ -19,16 +20,18 @@ export default async function AccountsPage({
 }) {
   const user = await requirePermission('accounts.workspace')
   const { mine } = await searchParams
-  const [clients, platforms, team, tickets, t, tm] = await Promise.all([
+  const [clients, platforms, team, assignments, tickets, t, tm] = await Promise.all([
     getClients(),
     getPlatforms(),
     getTeam(),
+    getAssignments(),
     getTickets({ status: 'active' }),
     getTranslations('internal.accounts'),
     getTranslations('internal.marketplace'),
   ])
   const client = new Map(clients.map((c) => [c.id, c]))
-  const manager = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
+  const assignedTo = assigneeNames(assignments, new Map(team.map((m) => [m.id, m.full_name ?? '—'])))
+  const myClients = new Set(assignments.filter((a) => a.profile_id === user.id).map((a) => a.client_id))
   const openByPlatform = new Map<string, number>()
   for (const tk of tickets) openByPlatform.set(tk.platform_id, (openByPlatform.get(tk.platform_id) ?? 0) + 1)
 
@@ -36,7 +39,7 @@ export default async function AccountsPage({
   // the CEO and view_all can narrow to theirs.
   const accounts = platforms
     .filter((p) => p.stage === 'pushing' || p.stage === 'managing')
-    .filter((p) => mine !== '1' || p.account_manager_id === user.id)
+    .filter((p) => mine !== '1' || myClients.has(p.client_id))
   const live = accounts.filter((p) => p.stage === 'managing').length
   const atRisk = accounts.filter((p) => p.account_status === 'at_risk' || p.account_status === 'suspended').length
   const openTotal = accounts.reduce((n, p) => n + (openByPlatform.get(p.id) ?? 0), 0)
@@ -95,7 +98,7 @@ export default async function AccountsPage({
                     </span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {t('manager')}: {p.account_manager_id ? manager.get(p.account_manager_id) ?? '—' : t('unassigned')}
+                    {t('manager')}: {assignedTo.get(p.client_id)?.join(', ') ?? t('unassigned')}
                     {p.checked_at ? ` · ${t('checked', { date: format(new Date(p.checked_at), 'PP') })}` : ''}
                   </p>
                 </Card>

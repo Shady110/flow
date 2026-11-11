@@ -12,36 +12,38 @@ import type { CurrentUser, PermissionKey } from '@/lib/types'
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return null
+  // Verified locally (the proxy already refreshed the session), so no extra round trip to Auth.
+  const { data: auth } = await supabase.auth.getClaims()
+  const claims = auth?.claims as { sub?: string; email?: string } | undefined
+  if (!claims?.sub) return null
+  const user = { id: claims.sub, email: claims.email }
 
   const { data: profile } = await supabase
     .from('profiles')
     .select(
-      `id, full_name, avatar_url, status, department_key, level,
-       role:roles ( id, name, is_system,
-         role_permissions ( permission_key ) )`,
+      `id, full_name, avatar_url, status,
+       profile_roles ( role:roles ( id, name, is_system, department_key, rank ) )`,
     )
     .eq('id', user.id)
     .maybeSingle()
 
   if (!profile || profile.status === 'disabled') return null
 
-  // Supabase returns the joined relation as an array or object depending on FK;
-  // normalise to a single role object.
-  const role = Array.isArray(profile.role) ? profile.role[0] : profile.role
-  // Co-founders implicitly hold every permission (mirrors the DB has_permission
-  // function), so newly-added permissions don't need to be re-granted to them.
-  const permissions =
-    role?.name === 'co-founder'
-      ? new Set<PermissionKey>(ALL_PERMISSION_KEYS)
-      : new Set<PermissionKey>(
-          (role?.role_permissions ?? []).map(
-            (rp: { permission_key: string }) => rp.permission_key as PermissionKey,
-          ),
-        )
+  type RoleRow = {
+    id: string
+    name: string
+    is_system: boolean
+    department_key: string | null
+    rank: 'director' | 'employee' | null
+  }
+  // Supabase returns the joined relation as an array or object depending on FK; normalise.
+  const roleRows: RoleRow[] = (profile.profile_roles ?? [])
+    .map((pr: { role: RoleRow | RoleRow[] | null }) => (Array.isArray(pr.role) ? pr.role[0] : pr.role))
+    .filter((r: RoleRow | null | undefined): r is RoleRow => !!r)
+  // One-person company: every internal login is the Flow Dashboard owner with every permission.
+  const permissions = new Set<PermissionKey>(ALL_PERMISSION_KEYS)
+  const roles = roleRows.map((r) => ({ id: r.id, name: r.name, department_key: r.department_key, rank: r.rank }))
+  const first = roleRows[0]
 
   return {
     id: profile.id,
@@ -49,10 +51,12 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     full_name: profile.full_name,
     avatar_url: profile.avatar_url,
     status: profile.status,
-    role: role ? { id: role.id, name: role.name, is_system: role.is_system } : null,
+    role: first ? { id: first.id, name: first.name, is_system: first.is_system } : null,
+    roles,
     permissions,
-    department_key: profile.department_key ?? null,
-    level: profile.level ?? null,
+    department_key: null,
+    departments: [],
+    level: null,
   }
 })
 
@@ -67,6 +71,13 @@ export async function requireUser(): Promise<CurrentUser> {
 export async function requirePermission(perm: PermissionKey): Promise<CurrentUser> {
   const user = await requireUser()
   if (!user.permissions.has(perm)) redirect('/')
+  return user
+}
+
+/** Require at least one of several permissions. */
+export async function requireAnyPermission(perms: PermissionKey[]): Promise<CurrentUser> {
+  const user = await requireUser()
+  if (!perms.some((p) => user.permissions.has(p))) redirect('/')
   return user
 }
 

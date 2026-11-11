@@ -113,14 +113,13 @@ const platformSetupSchema = z.object({
   clientId: z.string().uuid(),
   /** Which stages apply to this account. Must contain at least one. */
   stages: z.array(z.enum(PLATFORM_STAGES as [string, ...string[]])).min(1, 'Pick at least one stage'),
-  account_manager_id: z.string().uuid().nullable(),
 })
 
 export async function updatePlatformSetupAction(input: unknown): Promise<ActionResult> {
   await requirePermission('pipeline.manage')
   const parsed = platformSetupSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message }
-  const { platformId, clientId, stages, account_manager_id } = parsed.data
+  const { platformId, clientId, stages } = parsed.data
   // Keep flow order whatever order the UI sent.
   const ordered = PLATFORM_STAGES.filter((s) => stages.includes(s))
 
@@ -136,7 +135,7 @@ export async function updatePlatformSetupAction(input: unknown): Promise<ActionR
 
   const { error } = await supabase
     .from('client_platforms')
-    .update({ stages: ordered, account_manager_id })
+    .update({ stages: ordered })
     .eq('id', platformId)
   if (error) return { ok: false, error: error.message }
   refresh(clientId)
@@ -193,5 +192,42 @@ export async function saveCompanySettingsAction(input: unknown): Promise<ActionR
   revalidatePath('/settings/company')
   revalidateTag(PORTAL_SETTINGS_TAG, 'max')
   revalidatePath('/leads')
+  return { ok: true }
+}
+
+const assignmentSchema = z.object({
+  clientId: z.string().uuid(),
+  profileIds: z.array(z.string().uuid()),
+})
+
+/** Who works this client. Account employees see only the clients assigned to them. */
+export async function setClientAssignmentsAction(input: unknown): Promise<ActionResult> {
+  await requirePermission('accounts.assign')
+  const parsed = assignmentSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message }
+  const { clientId, profileIds } = parsed.data
+
+  const supabase = await createClient()
+  const { data: existing, error: readError } = await supabase
+    .from('client_assignments')
+    .select('profile_id')
+    .eq('client_id', clientId)
+  if (readError) return { ok: false, error: readError.message }
+
+  const have = new Set((existing ?? []).map((r) => r.profile_id as string))
+  const want = new Set(profileIds)
+  const add = [...want].filter((id) => !have.has(id)).map((profile_id) => ({ client_id: clientId, profile_id }))
+  const drop = [...have].filter((id) => !want.has(id))
+
+  // Add first, then remove, so a failure never leaves the client with nobody.
+  if (add.length) {
+    const { error } = await supabase.from('client_assignments').insert(add)
+    if (error) return { ok: false, error: error.message }
+  }
+  if (drop.length) {
+    const { error } = await supabase.from('client_assignments').delete().eq('client_id', clientId).in('profile_id', drop)
+    if (error) return { ok: false, error: error.message }
+  }
+  refresh(clientId)
   return { ok: true }
 }

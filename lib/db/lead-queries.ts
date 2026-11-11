@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import { UNASSIGNED_OWNER } from '@/lib/constants'
@@ -52,12 +53,17 @@ export interface LeadCapInfo {
 }
 
 /** This month's wins against the CEO's monthly cap, from the viewer's point of view. */
-export async function getLeadCapInfo(exempt: boolean): Promise<LeadCapInfo> {
+// Per-request cache: the layout and the overview both ask for it.
+const capNumbers = cache(async () => {
   const supabase = await createClient()
   const [cap, { data: won }] = await Promise.all([
     getMonthlyClientCap(),
     supabase.rpc('leads_won_this_month'),
   ])
-  const wonCount = typeof won === 'number' ? won : 0
-  return { cap, won: wonCount, blocked: !exempt && wonCount >= cap }
+  return { cap, won: typeof won === 'number' ? won : 0 }
+})
+
+export async function getLeadCapInfo(exempt: boolean): Promise<LeadCapInfo> {
+  const { cap, won } = await capNumbers()
+  return { cap, won, blocked: !exempt && won >= cap }
 }

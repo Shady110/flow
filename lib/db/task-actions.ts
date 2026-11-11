@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import type { ActionResult } from '@/lib/db/client-actions'
+import { notify } from '@/lib/notify'
 
 const taskSchema = z.object({
   client_id: z.string().uuid(),
@@ -122,6 +123,16 @@ export async function createTaskAction(input: unknown): Promise<ActionResult> {
     detail: { title: parsed.data.title, subtasks: subtask_titles.length },
   })
 
+  if (!parsed.data.parent_task_id) {
+    await notify({
+      audience: 'client',
+      clientId: parsed.data.client_id,
+      kind: 'task_created',
+      href: `/tasks/${data.id}`,
+      payload: { title: parsed.data.title },
+    })
+  }
+
   revalidateTask(parsed.data.client_id, parsed.data.parent_task_id ?? undefined)
   return { ok: true }
 }
@@ -161,6 +172,16 @@ export async function updateTaskAction(id: string, input: unknown): Promise<Acti
   if (assignee_ids) {
     const assignError = await setAssignees(supabase, id, assignee_ids)
     if (assignError) return { ok: false, error: assignError }
+  }
+
+  if (parsed.data.status && before?.client_id && !before.parent_task_id && parsed.data.status !== before.status) {
+    await notify({
+      audience: 'client',
+      clientId: before.client_id,
+      kind: 'task_updated',
+      href: `/tasks/${id}`,
+      payload: { title: parsed.data.title ?? null, status: parsed.data.status },
+    })
   }
 
   const actor = user?.id ?? null

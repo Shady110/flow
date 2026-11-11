@@ -33,7 +33,7 @@ export default async function LeadDetailPage({
 }: {
   params: Promise<{ leadId: string }>
 }) {
-  await requirePermission('leads.view')
+  await requirePermission('sales.workspace')
   const { leadId } = await params
   const [lead, team, user, t, tc, activities] = await Promise.all([
     getLead(leadId),

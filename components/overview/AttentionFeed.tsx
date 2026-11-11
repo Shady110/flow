@@ -21,9 +21,12 @@ const DOT = { high: 'bg-destructive', medium: 'bg-warning', low: 'bg-muted-foreg
 export async function AttentionFeed({
   items,
   clientNames,
+  canOpen = () => true,
 }: {
   items: AttentionItem[]
   clientNames: Record<string, string>
+  /** Whether the viewer may open an item's page; items they can't open show without a link. */
+  canOpen?: (href: string) => boolean
 }) {
   const t = await getTranslations('internal.overview')
   return (
@@ -36,7 +39,7 @@ export async function AttentionFeed({
             const Icon = ICON[it.kind]
             return (
               <li key={`${it.kind}-${i}`}>
-                <Link href={it.href} className="flex items-start gap-3 rounded-2xl p-2.5 transition-colors hover:bg-muted/60">
+                <Row href={canOpen(it.href) ? it.href : undefined}>
                   <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-flow-green">
                     <Icon className="h-[18px] w-[18px]" />
                     <span className={cn('absolute -end-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-card', DOT[it.severity])} />
@@ -49,7 +52,7 @@ export async function AttentionFeed({
                       <span className="mt-0.5 block text-xs text-muted-foreground">{t('age', { days: it.ageDays })}</span>
                     )}
                   </span>
-                </Link>
+                </Row>
               </li>
             )
           })}
@@ -57,4 +60,9 @@ export async function AttentionFeed({
       )}
     </Panel>
   )
+}
+
+function Row({ href, children }: { href?: string; children: React.ReactNode }) {
+  const cls = 'flex items-start gap-3 rounded-2xl p-2.5 transition-colors'
+  return href ? <Link href={href} className={cn(cls, 'hover:bg-muted/60')}>{children}</Link> : <div className={cls}>{children}</div>
 }

@@ -1,6 +1,11 @@
 // Domain types shared across the dashboard. Mirrors the SQL schema.
 
 export type PermissionKey =
+  | 'insights.sales'
+  | 'insights.content'
+  | 'insights.accounts'
+  | 'accounts.assign'
+  | 'tickets.view'
   | 'clients.view'
   | 'clients.create'
   | 'clients.edit'
@@ -87,10 +92,23 @@ export interface CurrentUser {
   full_name: string | null
   avatar_url: string | null
   status: ProfileStatus
+  /** The first role (kept for places that show one name); see `roles` for all of them. */
   role: Pick<Role, 'id' | 'name' | 'is_system'> | null
+  roles: RoleInfo[]
+  /** Union of every role's permissions. */
   permissions: Set<PermissionKey>
+  /** Derived from the roles: the first department, and every department. */
   department_key: string | null
+  departments: string[]
   level: 'member' | 'lead' | 'head' | null
+}
+
+/** A role as it matters for access: which department it belongs to and its rank there. */
+export interface RoleInfo {
+  id: string
+  name: string
+  department_key: string | null
+  rank: 'director' | 'employee' | null
 }
 
 export interface Client {

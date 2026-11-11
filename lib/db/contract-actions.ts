@@ -1,5 +1,6 @@
 'use server'
 
+import { notify } from '@/lib/notify'
 import { createHash } from 'node:crypto'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
@@ -115,8 +116,34 @@ export async function sendContractAction(id: string): Promise<ActionResult> {
     .update({ status: 'sent', sent_at: new Date().toISOString(), body_sha256: sha256(c.body) })
     .eq('id', id)
   if (error) return { ok: false, error: error.message }
+  await notify({ audience: 'client', clientId: c.client_id, kind: 'contract_sent', href: '/contract', payload: { title: c.title } })
   refresh(c.client_id)
   return { ok: true }
+}
+
+/** A fresh draft with the same text and terms: how a sent contract gets corrected. */
+export async function duplicateContractAction(id: string): Promise<ActionResult & { id?: string }> {
+  const user = await requirePermission('contracts.manage')
+  const c = await loadContract(id)
+  if (!c) return { ok: false, error: 'Contract not found.' }
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('contracts')
+    .insert({
+      client_id: c.client_id,
+      template_id: c.template_id,
+      title: `${c.title} (copy)`,
+      locale: c.locale,
+      body: c.body,
+      terms: c.terms,
+      start_date: c.start_date,
+      created_by: user.id,
+    })
+    .select('id')
+    .single()
+  if (error || !data) return { ok: false, error: error?.message ?? 'Could not duplicate the contract.' }
+  refresh(c.client_id)
+  return { ok: true, id: data.id }
 }
 
 export async function voidContractAction(id: string): Promise<ActionResult> {
@@ -210,6 +237,7 @@ export async function acceptContractAction(input: unknown): Promise<ActionResult
 
   // What was signed is now what we bill against (read by billing in Phase H).
   if (c.terms) await admin.from('clients').update({ deal: c.terms }).eq('id', c.client_id)
+  await notify({ audience: 'staff', clientId: c.client_id, kind: 'contract_accepted', href: `/contracts/${c.id}`, payload: { title: c.title, name: parsed.data.name } })
   refresh(c.client_id)
   return { ok: true }
 }

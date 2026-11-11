@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getLocale } from 'next-intl/server'
 import { PRODUCT } from '@/lib/product'
+import { AreaMessages } from '@/i18n/area-messages'
 import { Toaster } from '@/components/ds/sonner'
 
 export const metadata: Metadata = {
@@ -11,9 +12,11 @@ export const metadata: Metadata = {
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const rtl = (await getLocale()) === 'ar'
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {children}
-      <Toaster richColors position={rtl ? 'top-left' : 'top-right'} />
-    </div>
+    <AreaMessages namespaces={['common', 'portal', 'auth', 'chat', 'invoiceDoc', 'internal.tickets', 'notifications']}>
+      <div className="min-h-screen bg-background text-foreground">
+        {children}
+        <Toaster richColors position={rtl ? 'top-left' : 'top-right'} />
+      </div>
+    </AreaMessages>
   )
 }

@@ -70,11 +70,23 @@ export async function proxy(request: NextRequest) {
   // Strip an already-applied prefix so the guard sees the public path.
   const publicPath = pathname.startsWith(`${prefix}/`) ? pathname.slice(prefix.length) : pathname === prefix ? '/' : pathname
 
+  // A token can still look valid locally after the session was revoked (signing out elsewhere).
+  // The sign-in page is the one place that would bounce such a visitor back into the app and loop,
+  // so there we ask Supabase; a dead session is cleared and the sign-in form is shown.
+  let signedIn = !!claims?.sub
+  if (signedIn && publicPath === '/login') {
+    const { data: live } = await supabase.auth.getUser()
+    if (!live?.user) {
+      await supabase.auth.signOut({ scope: 'local' })
+      signedIn = false
+    }
+  }
+
   const decision = guard({
     portal,
-    signedIn: !!claims?.sub,
-    kind: claims?.app_metadata?.kind,
-    mustChange: claims?.app_metadata?.must_change_password === true,
+    signedIn,
+    kind: signedIn ? claims?.app_metadata?.kind : undefined,
+    mustChange: signedIn && claims?.app_metadata?.must_change_password === true,
     path: publicPath,
   })
 

@@ -23,8 +23,8 @@ export function CapRingTile({
         <AnimatedCircularProgressBar
           value={cap > 0 ? Math.min(won, cap) : 0}
           max={cap > 0 ? cap : 1}
-          gaugePrimaryColor={full ? 'var(--warning, #b45309)' : '#143C28'}
-          gaugeSecondaryColor="rgba(20,60,40,0.12)"
+          gaugePrimaryColor={full ? 'var(--warning, #b45309)' : 'var(--ink-green)'}
+          gaugeSecondaryColor="var(--ink-track)"
           className="size-20 shrink-0 text-base"
         />
         <div className="min-w-0">

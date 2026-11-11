@@ -1,11 +1,17 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* There is no dark theme: `dark:` utilities only apply under a .dark class, which nothing sets. */
 @custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-display: var(--font-funnel);
   --font-body: var(--font-didact);
+
+  /* ── Document screens (contracts): warm ground, grey cards, near-black ink ── */
+  --color-ground: #F5F5F0;
+  --color-sheet: #EBEBE7;
+  --color-ink: #111111;
 
   /* ── Elevated Green ramp ─────────────────────────────── */
   --color-flow-green: #143C28;          /* primary — deep refined forest */
@@ -43,6 +49,10 @@ html[lang="ar"] body {
 }
 
 :root {
+  /* Chart and ring ink: deep green on light, lime on dark. */
+  --ink-green: #143C28;
+  --ink-track: rgba(20, 60, 40, 0.12);
+  --leaf: #8BB84A;
   /* One look for every client: the portal always uses Flow green. */
   --brand: #143C28;
   --brand-ink: #143C28;
@@ -430,45 +440,6 @@ body {
   --sidebar-ring: #2E6B45;
 }
 
-.dark {
-  --background: #0B2417;
-  --foreground: #F4F7EC;
-  --card: #143C28;
-  --card-foreground: #F4F7EC;
-  --popover: #143C28;
-  --popover-foreground: #F4F7EC;
-  --primary: #C4F075;
-  --primary-foreground: #0B2417;
-  --secondary: #1C4A32;
-  --secondary-foreground: #F4F7EC;
-  --muted: #14321F;
-  --muted-foreground: #A9C0A9;
-  --accent: #2E6B45;
-  --accent-foreground: #F4F7EC;
-  --destructive: #E06B5B;
-  --destructive-foreground: #0B2417;
-  --success: #7FC49A;
-  --warning: #E5B65C;
-  --border: rgba(255, 255, 255, 0.10);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #C4F075;
-
-  --chart-1: #C4F075;
-  --chart-2: #7FC49A;
-  --chart-3: #2E6B45;
-  --chart-4: #E8F8CE;
-  --chart-5: #A9C0A9;
-
-  --sidebar: #0E2E1E;
-  --sidebar-foreground: #F4F7EC;
-  --sidebar-primary: #C4F075;
-  --sidebar-primary-foreground: #0B2417;
-  --sidebar-accent: #14321F;
-  --sidebar-accent-foreground: #F4F7EC;
-  --sidebar-border: rgba(255, 255, 255, 0.10);
-  --sidebar-ring: #C4F075;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -638,12 +609,23 @@ body {
     padding: 0 !important;
   }
 }
-/* Flow loader: the mark fills from the bottom; static and full when motion is reduced. */
-@keyframes flow-loader-fill {
-  0% { transform: translateY(100%); }
-  70%, 100% { transform: translateY(0); }
+/* Flow loader: a ring that turns; still when motion is reduced. */
+@keyframes flow-loader-spin {
+  to { transform: rotate(360deg); }
 }
-.flow-loader-fill { animation: flow-loader-fill 1.2s ease-in-out infinite; }
+.flow-loader-ring { animation: flow-loader-spin 0.9s linear infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .flow-loader-fill { animation: none; transform: translateY(0); }
+  .flow-loader-ring { animation: none; }
 }
+
+
+/* Columns rise from the baseline once; still when motion is reduced. */
+@keyframes col-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.col-grow { transform-origin: bottom; animation: col-grow 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .col-grow { animation: none; }
+}
+

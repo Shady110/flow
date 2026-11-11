@@ -1,35 +1,25 @@
 import { Suspense } from 'react'
-import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { getLocale, getTranslations } from 'next-intl/server'
-import { FileSignature, Users, Briefcase, LifeBuoy } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { getCurrentUser } from '@/lib/auth/session'
 import { getCeoOverview } from '@/lib/db/overview-queries'
-import { getDepartments } from '@/lib/db/queries'
-import { homePathFor } from '@/lib/home'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { StatCard } from '@/components/dashboard/StatCard'
-import { Button } from '@/components/ds/button'
-import { PipelineStrip } from '@/components/overview/PipelineStrip'
 import { AttentionFeed } from '@/components/overview/AttentionFeed'
 import { MoneyPanel } from '@/components/overview/MoneyPanel'
-import { WorkloadPanel } from '@/components/overview/WorkloadPanel'
+import { RevenueHero } from '@/components/overview/RevenueHero'
+import { ClientsTable } from '@/components/overview/ClientsTable'
+import { GrowthCard } from '@/components/overview/GrowthCard'
+import { DeliveryCard } from '@/components/overview/DeliveryCard'
+import { LeadSourcesCard } from '@/components/overview/LeadSourcesCard'
 import { ActivityFeed } from '@/components/overview/ActivityFeed'
-import { CapRingTile } from '@/components/overview/CapRingTile'
+import { canOpenHref } from '@/lib/access'
+import { formatMoney } from '@/lib/money'
 import { Skeleton } from '@/components/ds/skeleton'
 import type { CurrentUser } from '@/lib/types'
 
-export default async function OverviewPage({ searchParams }: { searchParams: Promise<{ start?: string }> }) {
-  // The company overview is for whoever holds it; everyone else lands on their department's workspace.
-  // Right after signing in (?start=1) everyone starts in their own department workspace.
-  const [viewer, { start }] = await Promise.all([getCurrentUser(), searchParams])
-  if (viewer && (!viewer.permissions.has('ops.overview') || start === '1')) {
-    const departments = await getDepartments()
-    const dept = departments.find((d) => d.key === viewer.department_key)
-    const home = homePathFor(viewer.permissions, dept?.home_path)
-    if (home !== '/') redirect(home)
-  }
-
+export default async function OverviewPage() {
+  const viewer = await getCurrentUser()
   const [t, locale] = await Promise.all([getTranslations('internal.overview'), getLocale()])
   const first = (viewer?.full_name ?? '').trim().split(/\s+/)[0]
   const today = new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
@@ -39,16 +29,6 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
       <PageHeader
         title={first ? t('greeting', { name: first }) : t('title')}
         description={`${today} · ${t('description')}`}
-        actions={
-          <>
-            <Button variant="outline" asChild>
-              <Link href="/contracts/new"><FileSignature className="h-4 w-4" /> {t('newContract')}</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/pipeline">{t('openPipeline')}</Link>
-            </Button>
-          </>
-        }
       />
       {/* The header paints at once; the numbers stream in behind it. */}
       <Suspense
@@ -67,63 +47,63 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
 }
 
 async function OverviewBody({ viewer }: { viewer: CurrentUser | null }) {
-  const [data, t] = await Promise.all([getCeoOverview(), getTranslations('internal.overview')])
-  const { kpis } = data
+  const locale = await getLocale()
+  const [data, t] = await Promise.all([getCeoOverview(locale), getTranslations('internal.overview')])
+  const { kpis, trends, finance } = data
   const canSeeMoney = !!viewer?.permissions.has('finance.view')
-  const capFull = kpis.cap.won >= kpis.cap.cap
+  const lateClients = trends.clients.filter((c) => c.status === 'late').length
+  const owedLate = trends.aging.late1to7 + trends.aging.late8to14 + trends.aging.late15plus
+  const fmt = (n: number) => formatMoney(n, finance.currency, 0)
+  const winRate = trends.funnel.winRate
+  const leadsTotal = trends.funnel.steps[0]?.count ?? 0
 
-  // A bento: wide hero + ring up top, the pipeline across, then money / attention, then people / activity.
+  // Command center: revenue and a stack of key numbers, then every client by name, then the detail rows.
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-      <div className="col-span-2">
-        <StatCard
-          variant="hero"
-          icon={Users}
-          label={t('kpiActive')}
-          value={kpis.activeClients}
-          chip={kpis.newClientsThisMonth ? { text: t('kpiNewMonth', { count: kpis.newClientsThisMonth }), tone: 'good' } : undefined}
-          href="/clients"
-        />
-      </div>
-      <Link href="/leads" className="col-span-2 block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:col-span-1">
-        <CapRingTile
-          label={t('kpiCap')}
-          won={kpis.cap.won}
-          cap={kpis.cap.cap}
-          full={capFull}
-          note={capFull ? t('kpiCapFull') : t('kpiCapLeft', { count: kpis.cap.cap - kpis.cap.won })}
-        />
-      </Link>
-      <StatCard
-        icon={Briefcase}
-        label={t('kpiLive')}
-        value={kpis.accountsLive}
-        chip={kpis.accountsAtRisk ? { text: t('kpiAtRisk', { count: kpis.accountsAtRisk }), tone: 'bad' } : { text: t('kpiHealthy'), tone: 'good' }}
-        href="/accounts"
-      />
-      <StatCard
-        icon={LifeBuoy}
-        label={t('kpiTickets')}
-        value={kpis.openTickets}
-        tone={kpis.urgentTickets ? 'danger' : 'default'}
-        chip={kpis.urgentTickets ? { text: t('kpiUrgent', { count: kpis.urgentTickets }), tone: 'bad' } : undefined}
-        href="/accounts/tickets"
-      />
-      <div className="col-span-2 xl:col-span-3">
-        <PipelineStrip counts={data.pipeline} />
-      </div>
-      {canSeeMoney && (
-        <div className="col-span-2">
-          <MoneyPanel finance={data.finance} budget={data.budget} />
+    <div className="space-y-4 sm:space-y-5">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        {canSeeMoney && <RevenueHero finance={finance} />}
+        <div className={canSeeMoney ? 'grid gap-3 sm:gap-4' : 'grid gap-3 sm:grid-cols-3 sm:gap-4 lg:col-span-2'}>
+          {canSeeMoney && (
+            <StatCard
+              size="sm"
+              label={t('outstanding')}
+              value={fmt(finance.outstanding)}
+              tone={owedLate > 0 ? 'warning' : 'default'}
+              hint={lateClients > 0 ? t('outstandingSub', { count: lateClients }) : t('outstandingSubNone')}
+              href="/finance"
+            />
+          )}
+          <StatCard
+            size="sm"
+            icon={Users}
+            label={t('kpiActive')}
+            value={kpis.activeClients}
+            hint={t('activeSub', { won: kpis.cap.won, cap: kpis.cap.cap })}
+            trend={trends.newClients.map((m) => m.count)}
+            trendLabel={t('trendClients')}
+            href="/insights/accounts"
+          />
+          <StatCard
+            size="sm"
+            label={t('winRateLabel')}
+            value={winRate === null ? '—' : `${winRate}%`}
+            hint={t('winSub', { leads: leadsTotal })}
+            href="/insights/sales"
+          />
         </div>
-      )}
-      <div className={canSeeMoney ? 'col-span-2' : 'col-span-2 xl:col-span-4'}>
-        <AttentionFeed items={data.attention} clientNames={data.clientNames} />
       </div>
-      <div className="col-span-2">
-        <WorkloadPanel rows={data.workload} teamHref={viewer?.permissions.has('team.view') ? '/team' : undefined} />
+
+      <ClientsTable rows={trends.clients} currency={finance.currency} />
+
+      {canSeeMoney && <MoneyPanel finance={finance} budget={data.budget} aging={trends.aging} />}
+
+      <div className="grid gap-3 sm:gap-4 xl:grid-cols-2">
+        <GrowthCard trends={trends} />
+        <LeadSourcesCard sources={trends.sources} className="h-full" />
       </div>
-      <div className="col-span-2">
+      <DeliveryCard data={data} />
+      <div className="grid gap-3 sm:gap-4 xl:grid-cols-2">
+        <AttentionFeed items={data.attention} clientNames={data.clientNames} canOpen={(h) => canOpenHref(viewer?.permissions ?? new Set(), h)} />
         <ActivityFeed events={data.events} />
       </div>
     </div>

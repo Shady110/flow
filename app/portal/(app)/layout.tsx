@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ds/dropdown-menu'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { Avatar, AvatarFallback } from '@/components/ds/avatar'
 
 export default async function PortalAppLayout({ children }: { children: React.ReactNode }) {
@@ -59,6 +60,7 @@ export default async function PortalAppLayout({ children }: { children: React.Re
                 <MessageCircle className="h-5 w-5" />
               </a>
             )}
+            <NotificationBell className="h-11 w-11" />
             <LanguageSwitcher className="min-h-11 px-3" />
             <DropdownMenu>
               <DropdownMenuTrigger

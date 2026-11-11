@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react'
 
 /**
- * The Flow mark filling up from the bottom — the page-load indicator for both
- * products. It stays invisible for `delay` ms so fast navigations never flash
- * it; under prefers-reduced-motion the mark is shown filled and static.
+ * The page-load indicator for both products: a plain ring in Flow green, no logo
+ * or letter. It stays invisible for `delay` ms so fast navigations never flash it;
+ * under prefers-reduced-motion the ring is shown still.
  */
 export function FlowLoader({
   delay = 150,
@@ -30,16 +30,9 @@ export function FlowLoader({
       aria-busy="true"
       className={`flex min-h-[50vh] items-center justify-center transition-opacity duration-200 ${shown ? 'opacity-100' : 'opacity-0'} ${className}`}
     >
-      <svg viewBox="0 0 48 48" className="h-14 w-14" aria-hidden="true">
-        <defs>
-          <clipPath id="flow-loader-mark">
-            <path d="M10 6h28v8H20v8h14v8H20v12h-10z" />
-          </clipPath>
-        </defs>
-        <path d="M10 6h28v8H20v8h14v8H20v12h-10z" className="fill-flow-green/15" />
-        <g clipPath="url(#flow-loader-mark)">
-          <rect x="0" y="0" width="48" height="48" className="flow-loader-fill fill-flow-green" />
-        </g>
+      <svg viewBox="0 0 48 48" className="flow-loader-ring h-12 w-12" aria-hidden="true">
+        <circle cx="24" cy="24" r="19" fill="none" strokeWidth="4" className="stroke-flow-green/15" />
+        <circle cx="24" cy="24" r="19" fill="none" strokeWidth="4" strokeLinecap="round" strokeDasharray="30 90" className="stroke-flow-green" />
       </svg>
       <span className="sr-only">{label}</span>
     </div>

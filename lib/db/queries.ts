@@ -1,6 +1,7 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
-import type { Client, Task, TaskRow, TaskActivity, Profile, Department } from '@/lib/types'
+import { departmentsOf, levelOf, roleLabel } from '@/lib/access'
+import type { Client, Task, TaskRow, TaskActivity, Profile, Department, RoleInfo } from '@/lib/types'
 
 /** All clients, newest first. */
 export async function getClients(): Promise<Client[]> {
@@ -117,16 +118,34 @@ export async function getLastSignIns(): Promise<Record<string, string>> {
   return out
 }
 
-export async function getTeam(): Promise<(Profile & { role_name: string | null })[]> {
+export type TeamMember = Profile & {
+  /** Display names of every role ("Sales director · Content employee"), or null. */
+  role_name: string | null
+  /** Raw role names, for logic. */
+  role_names: string[]
+  roles: RoleInfo[]
+}
+
+/** Everyone on the team with their roles; department and level are derived from the roles. */
+export async function getTeam(): Promise<TeamMember[]> {
   const supabase = await createClient()
   const { data } = await supabase
     .from('profiles')
-    .select('*, roles(name)')
+    .select('*, profile_roles ( role:roles ( id, name, department_key, rank ) )')
     .order('created_at', { ascending: true })
-  return (
-    (data as (Profile & { roles: { name: string } | null })[])?.map((p) => ({
+  type Row = Profile & { profile_roles: { role: RoleInfo | RoleInfo[] | null }[] }
+  return ((data as Row[]) ?? []).map((p) => {
+    const roles = p.profile_roles
+      .map((pr) => (Array.isArray(pr.role) ? pr.role[0] : pr.role))
+      .filter((r): r is RoleInfo => !!r)
+    const level = levelOf(roles)
+    return {
       ...p,
-      role_name: p.roles?.name ?? null,
-    })) ?? []
-  )
+      roles,
+      role_names: roles.map((r) => r.name),
+      role_name: roles.length ? roles.map((r) => roleLabel(r.name)).join(' · ') : null,
+      department_key: departmentsOf(roles)[0] ?? null,
+      level: level === 'head' ? 'head' : level === 'member' ? 'member' : null,
+    }
+  })
 }

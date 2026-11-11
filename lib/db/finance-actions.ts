@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { notify } from '@/lib/notify'
 import { syncInvoiceStatus } from '@/lib/db/invoice-sync'
 import type { ActionResult } from '@/lib/db/client-actions'
 
@@ -109,8 +110,22 @@ export async function updateInvoiceStatusAction(
   status: 'draft' | 'sent' | 'paid' | 'void',
 ): Promise<ActionResult> {
   const supabase = await createClient()
-  const { error } = await supabase.from('invoices').update({ status }).eq('id', id)
+  const { data: inv, error } = await supabase
+    .from('invoices')
+    .update({ status })
+    .eq('id', id)
+    .select('client_id, number')
+    .maybeSingle()
   if (error) return { ok: false, error: error.message }
+  if (status === 'sent' && inv?.client_id) {
+    await notify({
+      audience: 'client',
+      clientId: inv.client_id,
+      kind: 'invoice_issued',
+      href: `/invoices/${id}`,
+      payload: { number: inv.number ?? null },
+    })
+  }
   revalidatePath('/finance')
   revalidatePath(`/finance/invoices/${id}`)
   return { ok: true }
@@ -153,6 +168,14 @@ export async function recordPaymentAction(input: unknown): Promise<ActionResult>
     created_by: user?.id ?? null,
   })
   if (error) return { ok: false, error: error.message }
+
+  await notify({
+    audience: 'client',
+    clientId: d.client_id,
+    kind: 'payment_recorded',
+    href: d.invoice_id ? `/invoices/${d.invoice_id}` : '/invoices',
+    payload: { amount: d.amount },
+  })
 
   // Auto-mark the invoice paid once it's fully covered.
   if (d.invoice_id) {

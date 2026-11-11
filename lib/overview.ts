@@ -135,7 +135,9 @@ export interface WorkloadRow {
 export function workloadByPerson(input: {
   team: { id: string; name: string; role: string | null }[]
   leads: { owner_id: string | null; status: string }[]
-  platforms: { stage: string; account_manager_id: string | null }[]
+  platforms: { stage: string; client_id: string }[]
+  /** Who is assigned to which client; a person's accounts are those of their clients. */
+  assignments: { client_id: string; profile_id: string }[]
   tickets: { assignee_id: string | null }[]
   tasks: { assignee_ids: string[] }[]
   /** Accounts at Listing right now (a shared queue, owned by the content director). */
@@ -145,10 +147,11 @@ export function workloadByPerson(input: {
   return input.team
     .map((m) => {
       const leads = count(input.leads, (l) => l.owner_id === m.id && l.status !== 'won' && l.status !== 'lost')
-      const accounts = count(input.platforms, (p) => p.account_manager_id === m.id && (p.stage === 'pushing' || p.stage === 'managing'))
+      const mine = new Set(input.assignments.filter((a) => a.profile_id === m.id).map((a) => a.client_id))
+      const accounts = count(input.platforms, (p) => mine.has(p.client_id) && (p.stage === 'pushing' || p.stage === 'managing'))
       const tickets = count(input.tickets, (t) => t.assignee_id === m.id)
       const tasks = count(input.tasks, (t) => t.assignee_ids.includes(m.id))
-      const contentQueue = m.role === 'content-director' ? input.listingCount : 0
+      const contentQueue = m.role?.includes('content-director') ? input.listingCount : 0
       return { id: m.id, name: m.name, role: m.role, leads, contentQueue, accounts, tickets, tasks, total: leads + contentQueue + accounts + tickets + tasks }
     })
     .sort((a, b) => b.total - a.total)

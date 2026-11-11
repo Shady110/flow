@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import StructuredData from '@/app/structured-data'
+import { AreaMessages } from '@/i18n/area-messages'
 
 // Chrome, not content: neither must block the page or ship in the first payload.
 // They live on the layout so every marketing page gets them, not just the landing.
@@ -133,12 +134,12 @@ const MARKETING_SCALE = '75%'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <AreaMessages namespaces={['common', 'marketing']}>
       <style>{`html{font-size:${MARKETING_SCALE}}`}</style>
       <StructuredData />
       {children}
       <ChatWidget />
       <CookieConsent />
-    </>
+    </AreaMessages>
   )
 }

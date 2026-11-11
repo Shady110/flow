@@ -5,6 +5,7 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 
 const nextConfig: NextConfig = {
   compress: true,
+  experimental: { optimizePackageImports: ['framer-motion', 'lucide-react', 'recharts'] },
   poweredByHeader: false,
   // The chatbot reads the company handbook off disk at request time
   // (lib/ai/knowledge.ts). Without this the .md files are not traced into the

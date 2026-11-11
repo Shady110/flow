@@ -11,7 +11,7 @@ import type { PermissionKey } from '@/lib/types'
  * Jump-to-page box. It only filters the menu the viewer already has (no search
  * index): type, press Enter for the first match, or pick one. ⌘K / Ctrl+K focuses it.
  */
-export function NavSearch({ permissions }: { permissions: PermissionKey[] }) {
+export function NavSearch({ permissions, onNavigate }: { permissions: PermissionKey[]; onNavigate?: () => void }) {
   const router = useRouter()
   const t = useTranslations('internal.nav')
   const ts = useTranslations('internal.shell')
@@ -43,11 +43,12 @@ export function NavSearch({ permissions }: { permissions: PermissionKey[] }) {
     setQ('')
     setOpen(false)
     input.current?.blur()
+    onNavigate?.()
     router.push(href)
   }
 
   return (
-    <div className="relative hidden w-full max-w-sm sm:block">
+    <div className="relative w-full">
       <Search className="pointer-events-none absolute start-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <input
         ref={input}
@@ -67,7 +68,7 @@ export function NavSearch({ permissions }: { permissions: PermissionKey[] }) {
         }}
         placeholder={ts('search')}
         aria-label={ts('search')}
-        className="h-10 w-full rounded-full bg-muted ps-10 pe-14 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
+        className="h-10 w-full rounded-full bg-muted ps-10 pe-12 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
       />
       {!q && (
         <kbd className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 rounded-md bg-card px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground shadow-[var(--shadow-xs)]">

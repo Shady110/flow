@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { ArrowUpRight, type LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ds/card'
 import { BorderBeam } from '@/components/ds/border-beam'
+import { NumberTicker } from '@/components/ds/number-ticker'
+import { MiniBars } from '@/components/dashboard/viz'
+import { VIZ } from '@/components/dashboard/palette'
 import { cn } from '@/lib/utils'
 
 /**
@@ -17,6 +20,9 @@ export function StatCard({
   chip,
   tone = 'default',
   href,
+  trend,
+  trendLabel,
+  size = 'md',
   variant = 'default',
   className,
 }: {
@@ -27,6 +33,11 @@ export function StatCard({
   chip?: { text: string; tone?: 'good' | 'bad' | 'warn' | 'neutral' }
   tone?: 'default' | 'warning' | 'danger' | 'success'
   href?: string
+  /** Monthly series drawn as a small trend under the number. */
+  trend?: number[]
+  trendLabel?: string
+  /** `sm` for stacked side cards. */
+  size?: 'sm' | 'md'
   variant?: 'default' | 'hero'
   className?: string
 }) {
@@ -69,10 +80,15 @@ export function StatCard({
         )}
       </div>
       {hero && <BorderBeam size={110} duration={10} borderWidth={1.5} colorFrom="#C4F075" colorTo="#2E6B45" />}
-      <p className={cn('mt-3 font-display text-4xl font-bold leading-none tracking-tight sm:mt-4 sm:text-5xl', valueTone)}>
+      <p className={cn('mt-3 font-display font-bold leading-none tracking-tight', size === 'sm' ? 'text-3xl' : 'text-4xl sm:mt-4 sm:text-5xl', valueTone)}>
         {/* Isolate the number so "7 / 10" doesn't flip to "10 / 7" in RTL. */}
-        <bdi dir="ltr">{value}</bdi>
+        <bdi dir="ltr">{typeof value === 'number' ? <NumberTicker value={value} /> : value}</bdi>
       </p>
+      {trend && trend.length > 1 && (
+        <div className="mt-3">
+          <MiniBars data={trend} color={hero ? VIZ.lime : VIZ.ink} soft={hero ? VIZ.lime : VIZ.leaf} label={trendLabel ?? ''} />
+        </div>
+      )}
       {(chip || hint) && (
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           {chip && (

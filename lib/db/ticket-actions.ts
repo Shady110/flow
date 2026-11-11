@@ -1,5 +1,6 @@
 'use server'
 
+import { notify } from '@/lib/notify'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
@@ -66,6 +67,9 @@ export async function createTicketAction(
 
   const { data, error } = await supabase.from('tickets').insert(insert).select('id').single()
   if (error || !data) return { ok: false, error: error?.message ?? 'Could not open the ticket.' }
+  if (!staff) {
+    await notify({ audience: 'staff', clientId: plat.client_id, kind: 'ticket_created', href: `/accounts/tickets/${data.id}`, payload: { title } })
+  }
   refresh()
   return { ok: true, id: data.id }
 }
@@ -92,6 +96,14 @@ export async function replyTicketAction(input: unknown): Promise<ActionResult> {
 
   const { error } = await supabase.from('ticket_messages').insert({ ticket_id: ticketId, body, ...sender })
   if (error) return { ok: false, error: error.message }
+  const { data: t } = await supabase.from('tickets').select('client_id, title').eq('id', ticketId).maybeSingle()
+  if (t) {
+    await notify(
+      staff
+        ? { audience: 'client', clientId: t.client_id, kind: 'ticket_reply', href: `/tickets/${ticketId}`, payload: { title: t.title } }
+        : { audience: 'staff', clientId: t.client_id, kind: 'ticket_reply', href: `/accounts/tickets/${ticketId}`, payload: { title: t.title } },
+    )
+  }
   refresh(ticketId)
   revalidatePath(`/tickets/${ticketId}`)
   return { ok: true }
@@ -110,8 +122,16 @@ export async function updateTicketAction(input: unknown): Promise<ActionResult> 
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message }
   const { ticketId, ...fields } = parsed.data
   const supabase = await createClient()
-  const { error } = await supabase.from('tickets').update(fields).eq('id', ticketId)
+  const { data: t, error } = await supabase
+    .from('tickets')
+    .update(fields)
+    .eq('id', ticketId)
+    .select('client_id, title')
+    .maybeSingle()
   if (error) return { ok: false, error: error.message }
+  if (fields.status && t) {
+    await notify({ audience: 'client', clientId: t.client_id, kind: 'ticket_status', href: `/tickets/${ticketId}`, payload: { title: t.title, status: fields.status } })
+  }
   refresh(ticketId)
   return { ok: true }
 }

@@ -4,21 +4,24 @@ import { requirePermission } from '@/lib/auth/session'
 import { getClients, getTeam } from '@/lib/db/queries'
 import { getLeads } from '@/lib/db/lead-queries'
 import { getPlatforms } from '@/lib/db/flow-queries'
+import { assigneeNames, getAssignments } from '@/lib/db/assignment-queries'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { PipelineBoard } from '@/components/flow/PipelineBoard'
 
 export default async function PipelinePage() {
   await requirePermission('pipeline.manage')
-  const [clients, platforms, leads, team, t] = await Promise.all([
+  const [clients, platforms, leads, team, assignments, t] = await Promise.all([
     getClients(),
     getPlatforms(),
     getLeads(),
     getTeam(),
+    getAssignments(),
     getTranslations('internal.flow'),
   ])
 
   const clientById = new Map(clients.map((c) => [c.id, c]))
   const teamName = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
+  const assignedTo = assigneeNames(assignments, teamName)
   const platformsOf = (id: string) => platforms.filter((p) => p.client_id === id)
 
   // Platform cards only exist for onboarded clients; before that the client is one card.
@@ -31,7 +34,7 @@ export default async function PipelinePage() {
       platform: p.platform,
       stage: p.stage,
       stages: p.stages,
-      am: p.account_manager_id ? (teamName.get(p.account_manager_id) ?? null) : null,
+      am: assignedTo.get(p.client_id)?.join(', ') ?? null,
     }))
 
   const noPlatform = clients.filter(

@@ -7,6 +7,7 @@ import { getCurrentUser, requirePermission } from '@/lib/auth/session'
 import { getClientContext } from '@/lib/auth/client-session'
 import { createDownloadUrl, createUploadUrl, CLIENT_BUCKET } from '@/lib/storage'
 import { MARKETPLACES, MAX_UPLOAD_MB, REQUIREMENT_KINDS } from '@/lib/constants'
+import { notify } from '@/lib/notify'
 import type { ActionResult } from '@/lib/db/client-actions'
 import type { ClientRequirement } from '@/lib/types'
 
@@ -177,6 +178,7 @@ export async function addRequirementAction(input: unknown): Promise<ActionResult
     ...rest,
   })
   if (error) return { ok: false, error: error.message }
+  await notify({ audience: 'client', clientId, kind: 'requirement_requested', href: '/papers', payload: { label: rest.label_en } })
   refresh(clientId)
   return { ok: true }
 }
@@ -199,6 +201,9 @@ export async function reviewRequirementAction(input: unknown): Promise<ActionRes
     .update({ status, note: status === 'rejected' ? note || null : null })
     .eq('id', id)
   if (error) return { ok: false, error: error.message }
+  if (status === 'approved' || status === 'rejected') {
+    await notify({ audience: 'client', clientId, kind: 'requirement_reviewed', href: '/papers', payload: { status } })
+  }
   refresh(clientId)
   return { ok: true }
 }
@@ -274,6 +279,10 @@ export async function submitRequirementAction(
     .update({ status: 'submitted', file_path: path, file_name: fileName })
     .eq('id', requirementId)
   if (error) return { ok: false, error: error.message }
+  // Only a client's upload is news to the team (staff uploading know they did).
+  if (!(await getCurrentUser())) {
+    await notify({ audience: 'staff', clientId: req.client_id, kind: 'requirement_submitted', href: `/clients/${req.client_id}`, payload: { label: req.label_en, file: fileName } })
+  }
   refresh(req.client_id)
   return { ok: true }
 }

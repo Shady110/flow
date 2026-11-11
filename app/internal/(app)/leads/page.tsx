@@ -30,7 +30,7 @@ export default async function LeadsPage({
 }: {
   searchParams: Promise<{ view?: string; owner?: string; status?: string; q?: string }>
 }) {
-  await requirePermission('leads.view')
+  await requirePermission('sales.workspace')
   const sp = await searchParams
   const view = sp.view === 'board' ? 'board' : 'table'
   const status = LEAD_STATUSES.includes(sp.status as LeadStatus)

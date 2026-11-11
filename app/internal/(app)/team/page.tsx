@@ -9,6 +9,7 @@ import { formatDateTime } from '@/lib/format'
 import { levelRank, visibleTeam, type Level } from '@/lib/org'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { AddTeamMemberDialog } from '@/components/team/AddTeamMemberDialog'
+import type { RoleOption } from '@/components/team/RolePicker'
 import { TeamEditPanel } from '@/components/team/TeamEditPanel'
 import { cn } from '@/lib/utils'
 
@@ -40,6 +41,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
     getTranslations('internal.team'),
   ])
   const canManage = viewer.permissions.has('users.manage')
+  const deptLabels = Object.fromEntries(departments.map((d) => [d.key, locale === 'ar' ? d.name_ar : d.name_en]))
   const deptLabel = (key: string | null) => {
     const d = departments.find((x) => x.key === key)
     return d ? (locale === 'ar' ? d.name_ar : d.name_en) : '—'
@@ -60,7 +62,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
   if (selected) {
     const supabase = await createClient()
     const [{ data: roleRows }, { data: events }, { data: auth }] = await Promise.all([
-      supabase.from('roles').select('id, name').order('name'),
+      supabase.from('roles').select('id, name, department_key, rank').order('name'),
       supabase.from('auth_events').select('id, event, created_at').eq('user_id', selected.id).order('created_at', { ascending: false }).limit(5),
       createAdminClient().auth.admin.getUserById(selected.id),
     ])
@@ -71,23 +73,21 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
           id: selected.id,
           name: selected.full_name ?? '',
           email: auth?.user?.email ?? '',
-          department_key: selected.department_key,
-          level: selected.level,
-          role_id: selected.role_id,
+          role_ids: selected.roles.map((r) => r.id),
           status: selected.status,
         }}
-        departments={departments.map((d) => ({ key: d.key, label: locale === 'ar' ? d.name_ar : d.name_en }))}
-        roles={(roleRows ?? []) as { id: string; name: string }[]}
+        deptLabels={deptLabels}
+        roles={(roleRows ?? []) as RoleOption[]}
         activity={(events ?? []).map((e) => ({ id: e.id, label: EVENT_LABEL[e.event] ?? e.event, when: formatDateTime(e.created_at, locale) }))}
         closeHref={dept ? `/team?dept=${dept}` : '/team'}
       />
     )
   }
 
-  let addRoles: { id: string; name: string }[] = []
+  let addRoles: RoleOption[] = []
   if (canManage) {
-    const { data } = await (await createClient()).from('roles').select('id, name').order('name')
-    addRoles = (data ?? []) as { id: string; name: string }[]
+    const { data } = await (await createClient()).from('roles').select('id, name, department_key, rank').order('name')
+    addRoles = (data ?? []) as RoleOption[]
   }
 
   const chip = (key: string | null, label: string) => {
@@ -109,7 +109,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
       <PageHeader
         title={t('title')}
         description={t('description')}
-        actions={canManage ? <AddTeamMemberDialog departments={departments.map((d) => ({ key: d.key, label: locale === 'ar' ? d.name_ar : d.name_en }))} roles={addRoles} /> : undefined}
+        actions={canManage ? <AddTeamMemberDialog roles={addRoles} deptLabels={deptLabels} /> : undefined}
       />
       <div className="flex flex-wrap gap-2">
         {chip(null, 'All')}

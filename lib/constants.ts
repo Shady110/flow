@@ -35,7 +35,7 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
 
 export const PAYMENT_METHODS = ['Cash', 'Bank transfer', 'InstaPay', 'Card', 'Other'] as const
 
-/** Every permission key — co-founders implicitly hold all of these. */
+/** Every permission key (the Roles screen lists them; nobody holds them implicitly any more). */
 export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'clients.view', 'clients.create', 'clients.edit', 'clients.delete',
   'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete', 'tasks.assign',
@@ -44,6 +44,7 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'chat.access', 'automation.run', 'roles.manage', 'users.invite',
   'users.manage', 'settings.manage', 'content.manage', 'products.view', 'products.manage',
   'social.view', 'social.create', 'social.publish',
+  'insights.sales', 'insights.content', 'insights.accounts', 'accounts.assign', 'tickets.view',
   'ops.overview', 'pipeline.manage', 'settings.company', 'requirements.manage', 'contracts.manage',
   'sales.workspace', 'content.workspace', 'accounts.workspace', 'accounts.view_all', 'tickets.manage',
 ]

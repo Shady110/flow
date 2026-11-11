@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react'
 import { SidebarNav } from './SidebarNav'
 import { CapCard } from './CapCard'
 import { Brand } from './Brand'
+import { NavSearch } from './NavSearch'
+import { SidebarControls, type SidebarUser } from './SidebarControls'
 import type { PermissionKey } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -18,14 +20,17 @@ export const SIDEBAR_COOKIE = 'flow-sidebar'
  */
 export function Sidebar({
   permissions,
-  department,
   cap,
+  capHref,
+  user,
   initialCollapsed = false,
 }: {
   permissions: PermissionKey[]
-  department?: string | null
   /** Shown to anyone who can see leads. */
   cap?: { won: number; cap: number } | null
+  /** Where the cap card goes: the leads page for sales, the sales insights for the CEO. */
+  capHref?: string
+  user: SidebarUser
   initialCollapsed?: boolean
 }) {
   const t = useTranslations('internal.shell')
@@ -59,10 +64,26 @@ export function Sidebar({
       <div className={cn('pb-2 pt-1', collapsed ? 'px-0' : 'px-2')}>
         <Brand compact={collapsed} />
       </div>
-      <div className={cn('flex-1 overflow-y-auto pb-4', collapsed ? 'w-full' : '-mx-1 px-1')}>
-        <SidebarNav permissions={permissions} department={department} collapsed={collapsed} />
+      <div className={cn('pb-3', collapsed ? 'flex w-full justify-center' : '')}>
+        {collapsed ? (
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={t('search')}
+            title={t('search')}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Search className="h-4 w-4" />
+          </button>
+        ) : (
+          <NavSearch permissions={permissions} />
+        )}
       </div>
-      {cap && !collapsed && <CapCard won={cap.won} cap={cap.cap} />}
+      <div className={cn('flex-1 overflow-y-auto pb-4', collapsed ? 'w-full' : '-mx-1 px-1')}>
+        <SidebarNav permissions={permissions} collapsed={collapsed} />
+      </div>
+      {cap && !collapsed && <CapCard won={cap.won} cap={cap.cap} href={capHref} />}
+      <SidebarControls user={user} compact={collapsed} />
       <button
         type="button"
         onClick={toggle}

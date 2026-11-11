@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { getClients, getTasks } from '@/lib/db/queries'
-import { getCurrentUser, requirePermission } from '@/lib/auth/session'
+import { getCurrentUser, requireAnyPermission } from '@/lib/auth/session'
 import { deadlineState } from '@/lib/deadlines'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { NewClientDialog } from '@/components/dashboard/NewClientDialog'
@@ -8,7 +8,7 @@ import { ClientsTable, type ClientRow } from '@/components/dashboard/ClientsTabl
 import { Card } from '@/components/ds/card'
 
 export default async function ClientsPage() {
-  await requirePermission('clients.view')
+  await requireAnyPermission(['sales.workspace', 'accounts.workspace'])
   const [clients, tasks, user, t] = await Promise.all([
     getClients(),
     getTasks(),

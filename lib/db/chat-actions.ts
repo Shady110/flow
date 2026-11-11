@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { notify } from '@/lib/notify'
 import type { Message } from '@/lib/types'
 
 /**
@@ -102,10 +103,20 @@ export async function sendMessageAction(input: unknown): Promise<SendMessageResu
   const { data: message, error } = await supabase.from('messages').insert(payload).select('*').single()
   if (error) return { ok: false, error: error.message }
 
-  await supabase
+  const { data: convo } = await supabase
     .from('conversations')
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', parsed.data.conversationId)
+    .select('client_id')
+    .maybeSingle()
+
+  if (convo?.client_id) {
+    await notify(
+      profile
+        ? { audience: 'client', clientId: convo.client_id, kind: 'message_received', href: '/chat' }
+        : { audience: 'staff', clientId: convo.client_id, kind: 'message_received', href: `/inbox/${parsed.data.conversationId}` },
+    )
+  }
 
   return { ok: true, message: message as Message }
 }

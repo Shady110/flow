@@ -5,36 +5,32 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { X } from 'lucide-react'
-import { assignRoleAction, updateProfileAction } from '@/lib/db/role-actions'
+import { setProfileRolesAction, updateProfileAction } from '@/lib/db/role-actions'
 import { Button } from '@/components/ds/button'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ds/select'
 import { PasswordResetPanel } from '@/components/dashboard/PasswordResetPanel'
-import { LevelPicker } from '@/components/team/LevelPicker'
-import type { DepartmentOption, RoleOption } from '@/components/team/AddTeamMemberDialog'
-import type { Level } from '@/lib/org'
+import { RolePicker, type RoleOption } from '@/components/team/RolePicker'
 import type { ProfileStatus } from '@/lib/types'
 
-/** The side panel for one person: department, level, role, status, locked-out help and recent sign-ins. */
+/** The side panel for one person: roles (one or several), status, locked-out help and recent sign-ins. */
 export function TeamEditPanel({
   person,
-  departments,
+  deptLabels,
   roles,
   activity,
   closeHref,
 }: {
-  person: { id: string; name: string; email: string; department_key: string | null; level: Level | null; role_id: string | null; status: ProfileStatus }
-  departments: DepartmentOption[]
+  person: { id: string; name: string; email: string; role_ids: string[]; status: ProfileStatus }
+  deptLabels: Record<string, string>
   roles: RoleOption[]
   activity: { id: string; label: string; when: string }[]
   closeHref: string
 }) {
   const router = useRouter()
   const [name, setName] = useState(person.name)
-  const [dept, setDept] = useState(person.department_key ?? '')
-  const [level, setLevel] = useState<Level>(person.level ?? 'member')
-  const [roleId, setRoleId] = useState(person.role_id ?? '')
+  const [roleIds, setRoleIds] = useState<string[]>(person.role_ids)
   const [status, setStatus] = useState<ProfileStatus>(person.status)
   const [pending, start] = useTransition()
 
@@ -43,12 +39,10 @@ export function TeamEditPanel({
       const res = await updateProfileAction(person.id, {
         full_name: name,
         status,
-        ...(dept ? { department_key: dept } : {}),
-        level,
       })
       if (!res.ok) return void toast.error(res.error)
-      if (roleId && roleId !== person.role_id) {
-        const r = await assignRoleAction(person.id, roleId)
+      if ([...roleIds].sort().join() !== [...person.role_ids].sort().join()) {
+        const r = await setProfileRolesAction(person.id, roleIds)
         if (!r.ok) return void toast.error(r.error)
       }
       toast.success('Saved')
@@ -70,22 +64,9 @@ export function TeamEditPanel({
         <Input id="te-name" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="space-y-2">
-        <Label>Department</Label>
-        <Select value={dept} onValueChange={setDept}>
-          <SelectTrigger><SelectValue placeholder="Not set" /></SelectTrigger>
-          <SelectContent>{departments.map((d) => <SelectItem key={d.key} value={d.key}>{d.label}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <Label>Level</Label>
-        <LevelPicker value={level} onChange={setLevel} />
-      </div>
-      <div className="space-y-2">
-        <Label>Role (what they can do)</Label>
-        <Select value={roleId} onValueChange={setRoleId}>
-          <SelectTrigger className="capitalize"><SelectValue placeholder="No role" /></SelectTrigger>
-          <SelectContent>{roles.map((r) => <SelectItem key={r.id} value={r.id} className="capitalize">{r.name}</SelectItem>)}</SelectContent>
-        </Select>
+        <Label>Roles (what they can do)</Label>
+        <RolePicker roles={roles} value={roleIds} onChange={setRoleIds} deptLabels={deptLabels} />
+        <p className="text-xs text-muted-foreground">Two roles give both sets of pages. Department and level follow from the roles.</p>
       </div>
       <div className="space-y-2">
         <Label>Status</Label>
