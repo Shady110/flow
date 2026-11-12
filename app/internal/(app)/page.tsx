@@ -1,141 +1,110 @@
-import Link from 'next/link'
-import { getTranslations } from 'next-intl/server'
-import { Users, UserPlus, ListChecks, AlertTriangle, Clock } from 'lucide-react'
-import { getClients, getTasks, getTeam } from '@/lib/db/queries'
-import { getLeads } from '@/lib/db/lead-queries'
+import { Suspense } from 'react'
+import { getLocale, getTranslations } from 'next-intl/server'
+import { Users } from 'lucide-react'
 import { getCurrentUser } from '@/lib/auth/session'
-import { deadlineState } from '@/lib/deadlines'
-import type { TaskStatus } from '@/lib/types'
+import { getCeoOverview } from '@/lib/db/overview-queries'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { StatCard } from '@/components/dashboard/StatCard'
-import { StatusDonut } from '@/components/dashboard/charts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ds/card'
-import { ClientStatusBadge, DeadlineIndicator } from '@/components/dashboard/indicators'
+import { AttentionFeed } from '@/components/overview/AttentionFeed'
+import { MoneyPanel } from '@/components/overview/MoneyPanel'
+import { RevenueHero } from '@/components/overview/RevenueHero'
+import { ClientsTable } from '@/components/overview/ClientsTable'
+import { GrowthCard } from '@/components/overview/GrowthCard'
+import { DeliveryCard } from '@/components/overview/DeliveryCard'
+import { LeadSourcesCard } from '@/components/overview/LeadSourcesCard'
+import { ActivityFeed } from '@/components/overview/ActivityFeed'
+import { canOpenHref } from '@/lib/access'
+import { formatMoney } from '@/lib/money'
+import { Skeleton } from '@/components/ds/skeleton'
+import type { CurrentUser } from '@/lib/types'
 
 export default async function OverviewPage() {
-  const [clients, tasks, team, user, t, ts, tc] = await Promise.all([
-    getClients(),
-    getTasks(),
-    getTeam(),
-    getCurrentUser(),
-    getTranslations('internal.overview'),
-    getTranslations('internal.status'),
-    getTranslations('internal.common'),
-  ])
-
-  // Null when the viewer can't see leads — the card is then hidden entirely.
-  const newLeads = user?.permissions.has('leads.view')
-    ? (await getLeads()).filter((l) => l.status === 'new').length
-    : null
-
-  const clientName = new Map(clients.map((c) => [c.id, c.name]))
-  const memberName = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
-
-  const activeClients = clients.filter((c) => c.status === 'active').length
-  const openTasks = tasks.filter((t) => t.status !== 'done')
-  const overdue = openTasks.filter((t) => deadlineState(t) === 'overdue')
-  const dueSoon = openTasks.filter((t) => deadlineState(t) === 'due_soon')
-
-  const taskStatuses: TaskStatus[] = ['todo', 'in_progress', 'blocked', 'review', 'done']
-  const statusCounts = taskStatuses.map((s) => ({
-    label: ts(s),
-    value: tasks.filter((task) => task.status === s).length,
-  }))
-
-  const atRisk = [...overdue, ...dueSoon].slice(0, 8)
+  const viewer = await getCurrentUser()
+  const [t, locale] = await Promise.all([getTranslations('internal.overview'), getLocale()])
+  const first = (viewer?.full_name ?? '').trim().split(/\s+/)[0]
+  const today = new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
-        title={t('title')}
-        description={t('description')}
+        title={first ? t('greeting', { name: first }) : t('title')}
+        description={`${today} · ${t('description')}`}
       />
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label={t('activeClients')} value={activeClients} icon={Users} hint={tc('total', { count: clients.length })} href="/clients" />
-        {newLeads !== null && (
-          <StatCard label="New leads" value={newLeads} icon={UserPlus} href="/leads" />
-        )}
-        <StatCard label={t('openTasks')} value={openTasks.length} icon={ListChecks} href="/tasks" />
-        <StatCard label={t('overdue')} value={overdue.length} icon={AlertTriangle} tone={overdue.length ? 'danger' : 'default'} href="/tasks" />
-        <StatCard label={t('dueSoon')} value={dueSoon.length} icon={Clock} tone={dueSoon.length ? 'warning' : 'default'} href="/tasks" />
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-base">{t('taskStatus')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <StatusDonut data={statusCounts} />
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base">{t('needsAttention')}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {atRisk.length === 0 ? (
-              <p className="px-6 pb-6 text-sm text-muted-foreground">
-                {t('allClear')}
-              </p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {atRisk.map((t) => (
-                  <li key={t.id} className="flex items-center justify-between gap-4 px-6 py-3">
-                    <div className="min-w-0">
-                      <Link href={`/tasks/${t.id}`} className="truncate text-sm font-medium hover:underline">
-                        {t.title}
-                      </Link>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {clientName.get(t.client_id)} ·{' '}
-                        {t.assignee_ids.length === 0
-                          ? tc('unassigned')
-                          : t.assignee_ids.map((id) => memberName.get(id) ?? '—').join(', ')}
-                      </p>
-                    </div>
-                    <DeadlineIndicator dueDate={t.due_date} status={t.status} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div>
-        <h2 className="mb-3 font-display text-lg font-bold text-foreground">{t('clients')}</h2>
-        {clients.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t('noClients')}
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {clients.map((c) => {
-              const clientTasks = tasks.filter((t) => t.client_id === c.id)
-              const clientOverdue = clientTasks.filter((t) => deadlineState(t) === 'overdue').length
-              return (
-                <Link key={c.id} href={`/clients/${c.id}`}>
-                  <Card className="transition-shadow hover:shadow-md">
-                    <CardContent className="space-y-3 p-5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate font-medium text-foreground">{c.name}</span>
-                        <ClientStatusBadge status={c.status} />
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{tc('openTasks', { count: clientTasks.filter((ct) => ct.status !== 'done').length })}</span>
-                        {clientOverdue > 0 && (
-                          <span className="font-medium text-destructive">{tc('overdueCount', { count: clientOverdue })}</span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )
-            })}
+      {/* The header paints at once; the numbers stream in behind it. */}
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4" aria-busy="true">
+            <Skeleton className="col-span-2 h-36 rounded-2xl" />
+            <Skeleton className="h-36 rounded-2xl" />
+            <Skeleton className="h-36 rounded-2xl" />
           </div>
-        )}
+        }
+      >
+        <OverviewBody viewer={viewer} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function OverviewBody({ viewer }: { viewer: CurrentUser | null }) {
+  const locale = await getLocale()
+  const [data, t] = await Promise.all([getCeoOverview(locale), getTranslations('internal.overview')])
+  const { kpis, trends, finance } = data
+  const canSeeMoney = !!viewer?.permissions.has('finance.view')
+  const lateClients = trends.clients.filter((c) => c.status === 'late').length
+  const owedLate = trends.aging.late1to7 + trends.aging.late8to14 + trends.aging.late15plus
+  const fmt = (n: number) => formatMoney(n, finance.currency, 0)
+  const winRate = trends.funnel.winRate
+  const leadsTotal = trends.funnel.steps[0]?.count ?? 0
+
+  // Command center: revenue and a stack of key numbers, then every client by name, then the detail rows.
+  return (
+    <div className="space-y-4 sm:space-y-5">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        {canSeeMoney && <RevenueHero finance={finance} />}
+        <div className={canSeeMoney ? 'grid gap-3 sm:gap-4' : 'grid gap-3 sm:grid-cols-3 sm:gap-4 lg:col-span-2'}>
+          {canSeeMoney && (
+            <StatCard
+              size="sm"
+              label={t('outstanding')}
+              value={fmt(finance.outstanding)}
+              tone={owedLate > 0 ? 'warning' : 'default'}
+              hint={lateClients > 0 ? t('outstandingSub', { count: lateClients }) : t('outstandingSubNone')}
+              href="/finance"
+            />
+          )}
+          <StatCard
+            size="sm"
+            icon={Users}
+            label={t('kpiActive')}
+            value={kpis.activeClients}
+            hint={t('activeSub', { won: kpis.cap.won, cap: kpis.cap.cap })}
+            trend={trends.newClients.map((m) => m.count)}
+            trendLabel={t('trendClients')}
+            href="/insights/accounts"
+          />
+          <StatCard
+            size="sm"
+            label={t('winRateLabel')}
+            value={winRate === null ? '—' : `${winRate}%`}
+            hint={t('winSub', { leads: leadsTotal })}
+            href="/insights/sales"
+          />
+        </div>
+      </div>
+
+      <ClientsTable rows={trends.clients} currency={finance.currency} />
+
+      {canSeeMoney && <MoneyPanel finance={finance} budget={data.budget} aging={trends.aging} />}
+
+      <div className="grid gap-3 sm:gap-4 xl:grid-cols-2">
+        <GrowthCard trends={trends} />
+        <LeadSourcesCard sources={trends.sources} className="h-full" />
+      </div>
+      <DeliveryCard data={data} />
+      <div className="grid gap-3 sm:gap-4 xl:grid-cols-2">
+        <AttentionFeed items={data.attention} clientNames={data.clientNames} canOpen={(h) => canOpenHref(viewer?.permissions ?? new Set(), h)} />
+        <ActivityFeed events={data.events} />
       </div>
     </div>
   )

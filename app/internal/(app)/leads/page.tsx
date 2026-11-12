@@ -1,6 +1,9 @@
+import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
+import { Button } from '@/components/ds/button'
 import { requirePermission, getCurrentUser } from '@/lib/auth/session'
-import { getLeads } from '@/lib/db/lead-queries'
+import { getLeads, getLeadCapInfo } from '@/lib/db/lead-queries'
+import { LeadCapBanner } from '@/components/leads/LeadCapBanner'
 import { getTeam } from '@/lib/db/queries'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { LeadDialog } from '@/components/dashboard/LeadDialog'
@@ -27,7 +30,7 @@ export default async function LeadsPage({
 }: {
   searchParams: Promise<{ view?: string; owner?: string; status?: string; q?: string }>
 }) {
-  await requirePermission('leads.view')
+  await requirePermission('sales.workspace')
   const sp = await searchParams
   const view = sp.view === 'board' ? 'board' : 'table'
   const status = LEAD_STATUSES.includes(sp.status as LeadStatus)
@@ -45,6 +48,7 @@ export default async function LeadsPage({
     getTranslations('internal.common'),
   ])
 
+  const cap = await getLeadCapInfo(!!user?.permissions.has('pipeline.manage'))
   const teamOptions = team.map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
   const ownerName = new Map(team.map((m) => [m.id, m.full_name ?? '—']))
   const canCreate = !!user?.permissions.has('leads.create')
@@ -61,11 +65,20 @@ export default async function LeadsPage({
       <PageHeader
         title={t('title')}
         description={t('description')}
-        actions={canCreate ? <LeadDialog team={teamOptions} /> : undefined}
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href="/visitors">{t('visitorsLink')}</Link>
+            </Button>
+            {canCreate && <LeadDialog team={teamOptions} />}
+          </>
+        }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label={t('statNew')} value={counts.new} icon={UserPlus} href="/leads" />
+      <LeadCapBanner info={cap} />
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <StatCard variant="hero" label={t('statNew')} value={counts.new} icon={UserPlus} href="/leads" />
         <StatCard label={t('statPipeline')} value={inPlay} icon={PhoneCall} />
         <StatCard label={t('statWon')} value={counts.won} icon={Trophy} tone={counts.won ? 'success' : 'default'} />
         <StatCard label={t('statLost')} value={counts.lost} icon={Trophy} tone={counts.lost ? 'danger' : 'default'} />
@@ -78,6 +91,7 @@ export default async function LeadsPage({
           leads={leads}
           ownerNames={Object.fromEntries(ownerName)}
           canEdit={canEdit}
+          capBlocked={cap.blocked}
         />
       ) : (
       <Card className="p-0">

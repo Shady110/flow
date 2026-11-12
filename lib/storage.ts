@@ -1,8 +1,10 @@
 import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { CLIENT_FILES_BUCKET } from '@/lib/constants'
 
 export const INPUT_BUCKET = 'automation-inputs'
 export const OUTPUT_BUCKET = 'automation-outputs'
+export const CLIENT_BUCKET = CLIENT_FILES_BUCKET
 
 /** Signed URL the browser can PUT a file to directly (avoids server body limits). */
 export async function createUploadUrl(bucket: string, path: string) {

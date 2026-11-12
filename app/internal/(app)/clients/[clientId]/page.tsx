@@ -3,11 +3,20 @@ import { notFound } from 'next/navigation'
 import { ArrowUpRight, FileText } from 'lucide-react'
 import { getClient, getTasks, getTeam } from '@/lib/db/queries'
 import { getInvoices } from '@/lib/db/finance-queries'
+import { getAssignments } from '@/lib/db/assignment-queries'
+import { getPlatforms, getStageEvents } from '@/lib/db/flow-queries'
+import { PageTabs } from '@/components/dashboard/PageTabs'
+import { ClientFlowCard } from '@/components/flow/ClientFlowCard'
+import { getContracts } from '@/lib/db/contract-queries'
+import { ContractStatusBadge } from '@/components/contracts/ContractStatusBadge'
+import { ClientRequirementsCard } from '@/components/flow/ClientRequirementsCard'
+import { getRequirements, getTemplates } from '@/lib/db/requirement-queries'
 import { getTranslations } from 'next-intl/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { deadlineState } from '@/lib/deadlines'
 import { formatMoney } from '@/lib/money'
+import { portalOrigin } from '@/lib/tenant'
 import type { Product, ClientUser } from '@/lib/types'
 import { deleteClientAction } from '@/lib/db/client-actions'
 import { deleteTaskAction } from '@/lib/db/task-actions'
@@ -22,6 +31,7 @@ import { EditClientUserDialog } from '@/components/dashboard/EditClientUserDialo
 import { deleteClientUserAction } from '@/lib/db/client-user-actions'
 import { MessageClientUserButton } from '@/components/dashboard/MessageClientUserButton'
 import { NewInvoiceDialog } from '@/components/dashboard/NewInvoiceDialog'
+import { GenerateInvoiceButton } from '@/components/finance/GenerateInvoiceButton'
 import { RecordPaymentDialog } from '@/components/dashboard/RecordPaymentDialog'
 import {
   ClientStatusBadge,
@@ -40,7 +50,8 @@ export default async function ClientDetailPage({
 }) {
   const { clientId } = await params
   const supabase = await createClient()
-  const [client, tasks, team, user, t, tt, tc, { data: products }, { data: clientUsers }] = await Promise.all([
+  const tct = await getTranslations('internal.contracts')
+  const [client, tasks, team, user, t, tt, tc, { data: products }, { data: clientUsers }, platforms, stageEvents, requirements, templates] = await Promise.all([
     getClient(clientId),
     getTasks(clientId, { parentOnly: true }),
     getTeam(),
@@ -50,9 +61,15 @@ export default async function ClientDetailPage({
     getTranslations('internal.common'),
     supabase.from('products').select('*').eq('client_id', clientId).order('updated_at', { ascending: false }),
     supabase.from('client_users').select('*').eq('client_id', clientId).order('created_at'),
+    getPlatforms(clientId),
+    getStageEvents(clientId),
+    getRequirements(clientId),
+    getTemplates(),
   ])
   if (!client) notFound()
 
+  const assignments = await getAssignments()
+  const contracts = user?.permissions.has('contracts.manage') ? await getContracts(clientId) : []
   const invoices = user?.permissions.has('finance.view') ? await getInvoices(clientId) : []
 
   const productList = (products as Product[]) ?? []
@@ -76,20 +93,21 @@ export default async function ClientDetailPage({
     .filter((i) => i.balance > 0 && i.status !== 'void')
     .map((i) => ({ id: i.id, client_id: i.client_id, label: `${i.number} · ${formatMoney(i.balance, i.currency)} due` }))
 
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000'
-  const portalProtocol = rootDomain.includes('localhost') ? 'http' : 'https'
-  const portalUrl = `${portalProtocol}://${client.slug}.${rootDomain}`
+  const portalUrl = portalOrigin('client', process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost:3000')
 
   const open = tasks.filter((task) => task.status !== 'done')
   const overdue = open.filter((task) => deadlineState(task) === 'overdue').length
   const clientOptions = [{ id: client.id, label: client.name }]
   const teamOptions = team.map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
+  // Only account-management people can be assigned to a client.
+  const assignOptions = team
+    .filter((m) => m.roles.some((r) => r.department_key === 'accounts'))
+    .map((m) => ({ id: m.id, label: m.full_name ?? m.id }))
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={client.name}
-        description={`${client.slug}.flow…`}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {canIssueInvoice && (
@@ -122,6 +140,10 @@ export default async function ClientDetailPage({
         }
       />
 
+      <PageTabs
+        tabs={[
+          { value: 'overview', label: t('tabOverview'), content: (
+            <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <CardContent className="p-4">
@@ -158,6 +180,53 @@ export default async function ClientDetailPage({
         </Card>
       </div>
 
+      <ClientFlowCard
+        client={client}
+        platforms={platforms}
+        events={stageEvents}
+        team={assignOptions}
+        people={teamOptions}
+        assignedIds={assignments.filter((a) => a.client_id === client.id).map((a) => a.profile_id)}
+        canAssign={!!user?.permissions.has('accounts.assign')}
+        canManage={!!user?.permissions.has('pipeline.manage')}
+      />
+
+            </div>
+          ) },
+          { value: 'papers', label: t('tabPapers'), content: (
+            <div className="space-y-6">
+      <ClientRequirementsCard
+        clientId={client.id}
+        requirements={requirements}
+        platforms={platforms}
+        templates={templates}
+        canManage={!!user?.permissions.has('requirements.manage')}
+      />
+
+      {user?.permissions.has('contracts.manage') && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t('contracts')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {contracts.length === 0 && <p className="text-sm text-muted-foreground">{t('noContracts')}</p>}
+            {contracts.map((c) => (
+              <div key={c.id} className="flex flex-wrap items-center justify-between gap-2">
+                <Link href={`/contracts/${c.id}`} className="text-sm font-medium hover:underline">{c.title}</Link>
+                <ContractStatusBadge status={c.status} label={tct(`status_${c.status}`)} />
+              </div>
+            ))}
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/contracts/new?client=${client.id}`}>{t('newContract')}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+            </div>
+          ) },
+          { value: 'work', label: t('tabWork'), content: (
+            <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{t('actionsAndTasks')}</CardTitle>
@@ -278,6 +347,10 @@ export default async function ClientDetailPage({
         </CardContent>
       </Card>
 
+            </div>
+          ) },
+          ...(canViewFinance ? [{ value: 'money', label: t('tabMoney'), content: (
+            <div className="space-y-6">
       {/* Finance */}
       {canViewFinance && (
         <Card>
@@ -304,6 +377,7 @@ export default async function ClientDetailPage({
                   }
                 />
               )}
+              {canIssueInvoice && <GenerateInvoiceButton clientId={client.id} />}
               {canIssueInvoice && (
                 <NewInvoiceDialog
                   clients={[{ id: client.id, label: client.name }]}
@@ -343,6 +417,10 @@ export default async function ClientDetailPage({
         </Card>
       )}
 
+            </div>
+          ) }] : []),
+          { value: 'people', label: t('tabPeople'), content: (
+            <div className="space-y-6">
       {/* Portal users */}
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
@@ -400,6 +478,10 @@ export default async function ClientDetailPage({
           })}
         </CardContent>
       </Card>
+            </div>
+          ) },
+        ]}
+      />
     </div>
   )
 }

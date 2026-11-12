@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin } from 'lucide-react'
 import { useReducedMotion } from '@/lib/useReducedMotion'
 import Logo from './ui/Logo'
+import type { ContactContent } from '@/data/landing-content'
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -14,7 +15,10 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
   )
 }
 
-export default function Footer() {
+/** 01550408340 -> +201550408340 (Egyptian mobile) so tel: links dial from anywhere. */
+const telHref = (p: string) => `tel:${p.startsWith('+') ? p : '+20' + p.replace(/^0/, '').replace(/\s+/g, '')}`
+
+export default function Footer({ contact }: { contact?: Partial<ContactContent> }) {
   const t = useTranslations('marketing.footer')
   const reduced = useReducedMotion()
   const serviceLinks = [
@@ -43,10 +47,10 @@ export default function Footer() {
             />
             <Logo variant="lockup" tone="white" className="relative mb-5 h-9" />
             <p className="relative text-white font-semibold text-sm mb-3">
-              {t('tagline')}
+              {contact?.tagline || t('tagline')}
             </p>
             <p className="relative text-white/60 text-sm leading-relaxed">
-              {t('blurb')}
+              {contact?.blurb || t('blurb')}
             </p>
           </div>
 
@@ -70,25 +74,21 @@ export default function Footer() {
               {t('contactTitle')}
             </p>
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Phone size={14} className="text-white/60 shrink-0" />
-                <FooterLink href="tel:+201550408340">01550408340</FooterLink>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone size={14} className="text-white/60 shrink-0" />
-                <FooterLink href="tel:+201121443286">01121443286</FooterLink>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone size={14} className="text-white/60 shrink-0" />
-                <FooterLink href="tel:+201125450608">01125450608</FooterLink>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail size={14} className="text-white/60 shrink-0" />
-                <FooterLink href="mailto:flowagency.eg@gmail.com">flowagency.eg@gmail.com</FooterLink>
-              </div>
+              {(contact?.phones ?? []).filter(Boolean).map((p) => (
+                <div key={p} className="flex items-center gap-2">
+                  <Phone size={14} className="text-white/60 shrink-0" />
+                  <FooterLink href={telHref(p)}>{p}</FooterLink>
+                </div>
+              ))}
+              {contact?.email && (
+                <div className="flex items-center gap-2">
+                  <Mail size={14} className="text-white/60 shrink-0" />
+                  <FooterLink href={`mailto:${contact.email}`}>{contact.email}</FooterLink>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-white/60 shrink-0" />
-                <span className="text-white/60 text-sm">{t('location')}</span>
+                <span className="text-white/60 text-sm">{contact?.location || t('location')}</span>
               </div>
             </div>
           </div>
@@ -96,7 +96,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-white/10 mt-12 pt-6 text-center">
-          <p className="text-white/40 text-sm">{t('rights')}</p>
+          <p className="text-white/40 text-sm">{contact?.rights || t('rights')}</p>
         </div>
       </div>
     </footer>

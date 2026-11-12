@@ -8,6 +8,7 @@ import { updateClientUserAction } from '@/lib/db/client-user-actions'
 import { Button } from '@/components/ds/button'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
+import { PasswordResetPanel } from '@/components/dashboard/PasswordResetPanel'
 import {
   Select,
   SelectContent,
@@ -103,6 +104,7 @@ export function EditClientUserDialog({ user }: { user: ClientUser }) {
             </Button>
           </DialogFooter>
         </form>
+        {user.user_id && <PasswordResetPanel userId={user.user_id} />}
       </DialogContent>
     </Dialog>
   )

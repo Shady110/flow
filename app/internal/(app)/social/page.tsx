@@ -21,7 +21,7 @@ export default async function SocialPage({
 }: {
   searchParams: Promise<{ platform?: string; status?: string; campaign?: string }>
 }) {
-  await requirePermission('social.view')
+  await requirePermission('social.create')
   const sp = await searchParams
 
   const platform = SOCIAL_PLATFORMS.includes(sp.platform as SocialPlatform)

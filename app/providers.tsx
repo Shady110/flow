@@ -1,22 +1,8 @@
 'use client'
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MotionConfig } from 'framer-motion'
-import { useState } from 'react'
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 30_000,
-            refetchOnWindowFocus: false,
-          },
-        },
-      }),
-  )
-
   return (
     /* `reducedMotion="user"` makes every framer animation in the app honour
        prefers-reduced-motion: transform animations (x/y/scale/rotate) are
@@ -31,7 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
        Components that must change their *markup* (RevealHeading, Reveal,
        Counter, the pinned workflow reel) still read the hook directly. */
     <MotionConfig reducedMotion="user">
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      {children}
     </MotionConfig>
   )
 }

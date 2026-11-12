@@ -6,9 +6,11 @@ export function formatMoney(
   amount: number,
   currency: string = DEFAULT_CURRENCY,
   maximumFractionDigits = 2,
+  /** Interface language; Arabic keeps Latin digits so amounts match invoice numbers. */
+  locale: string = 'en',
 ): string {
   try {
-    return new Intl.NumberFormat('en-EG', {
+    return new Intl.NumberFormat(locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-EG', {
       style: 'currency',
       currency,
       maximumFractionDigits,

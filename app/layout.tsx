@@ -40,13 +40,15 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = (await getLocale()) as Locale
-  const messages = await getMessages()
+  // Only the shared strings ship from here; each area adds its own (see i18n/area-messages.tsx).
+  const messages = { common: (await getMessages() as Record<string, unknown>).common }
 
   return (
     <html
       lang={locale}
       dir={dirFor(locale)}
       className={`${funnel.variable} ${didact.variable} ${cairo.variable}`}
+      suppressHydrationWarning
     >
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>

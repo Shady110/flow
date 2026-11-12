@@ -52,7 +52,7 @@ export default async function PricingPage() {
       <PricingSection content={content.pricing} />
       <FinalCTA />
       <ContactSection content={content.contact} />
-      <Footer />
+      <Footer contact={content.contact} />
     </main>
   )
 }

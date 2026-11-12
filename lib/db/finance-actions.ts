@@ -3,32 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { invoiceTotal } from '@/lib/money'
+import { notify } from '@/lib/notify'
+import { syncInvoiceStatus } from '@/lib/db/invoice-sync'
 import type { ActionResult } from '@/lib/db/client-actions'
-
-type Supa = Awaited<ReturnType<typeof createClient>>
-
-/**
- * Re-derive an invoice's paid/sent status from its items and payments. Called
- * after anything that moves the total or the amount received, so a corrected
- * payment can un-pay an invoice as well as pay it.
- */
-async function syncInvoiceStatus(supabase: Supa, invoiceId: string) {
-  const [{ data: invoice }, { data: items }, { data: pays }] = await Promise.all([
-    supabase.from('invoices').select('status').eq('id', invoiceId).maybeSingle(),
-    supabase.from('invoice_items').select('quantity, unit_price').eq('invoice_id', invoiceId),
-    supabase.from('payments').select('amount').eq('invoice_id', invoiceId),
-  ])
-  // A voided or draft invoice isn't waiting on money; leave it alone.
-  if (!invoice || invoice.status === 'void' || invoice.status === 'draft') return
-
-  const total = invoiceTotal((items as { quantity: number; unit_price: number }[]) ?? [])
-  const paid = ((pays as { amount: number }[]) ?? []).reduce((s, p) => s + Number(p.amount), 0)
-  const next = total > 0 && paid >= total ? 'paid' : 'sent'
-  if (next !== invoice.status) {
-    await supabase.from('invoices').update({ status: next }).eq('id', invoiceId)
-  }
-}
 
 const itemSchema = z.object({
   description: z.string().min(1, 'Item description required'),
@@ -133,8 +110,22 @@ export async function updateInvoiceStatusAction(
   status: 'draft' | 'sent' | 'paid' | 'void',
 ): Promise<ActionResult> {
   const supabase = await createClient()
-  const { error } = await supabase.from('invoices').update({ status }).eq('id', id)
+  const { data: inv, error } = await supabase
+    .from('invoices')
+    .update({ status })
+    .eq('id', id)
+    .select('client_id, number')
+    .maybeSingle()
   if (error) return { ok: false, error: error.message }
+  if (status === 'sent' && inv?.client_id) {
+    await notify({
+      audience: 'client',
+      clientId: inv.client_id,
+      kind: 'invoice_issued',
+      href: `/invoices/${id}`,
+      payload: { number: inv.number ?? null },
+    })
+  }
   revalidatePath('/finance')
   revalidatePath(`/finance/invoices/${id}`)
   return { ok: true }
@@ -177,6 +168,14 @@ export async function recordPaymentAction(input: unknown): Promise<ActionResult>
     created_by: user?.id ?? null,
   })
   if (error) return { ok: false, error: error.message }
+
+  await notify({
+    audience: 'client',
+    clientId: d.client_id,
+    kind: 'payment_recorded',
+    href: d.invoice_id ? `/invoices/${d.invoice_id}` : '/invoices',
+    payload: { amount: d.amount },
+  })
 
   // Auto-mark the invoice paid once it's fully covered.
   if (d.invoice_id) {

@@ -1,6 +1,11 @@
 // Domain types shared across the dashboard. Mirrors the SQL schema.
 
 export type PermissionKey =
+  | 'insights.sales'
+  | 'insights.content'
+  | 'insights.accounts'
+  | 'accounts.assign'
+  | 'tickets.view'
   | 'clients.view'
   | 'clients.create'
   | 'clients.edit'
@@ -31,6 +36,16 @@ export type PermissionKey =
   | 'social.view'
   | 'social.create'
   | 'social.publish'
+  | 'ops.overview'
+  | 'pipeline.manage'
+  | 'settings.company'
+  | 'requirements.manage'
+  | 'contracts.manage'
+  | 'sales.workspace'
+  | 'content.workspace'
+  | 'accounts.workspace'
+  | 'accounts.view_all'
+  | 'tickets.manage'
 
 export type ProfileStatus = 'invited' | 'active' | 'disabled'
 export type ClientStatus = 'lead' | 'active' | 'paused' | 'churned'
@@ -58,6 +73,16 @@ export interface Profile {
   avatar_url: string | null
   status: ProfileStatus
   created_at: string
+  department_key: string | null
+  level: 'member' | 'lead' | 'head' | null
+}
+
+export interface Department {
+  key: string
+  name_en: string
+  name_ar: string
+  home_path: string
+  sort: number
 }
 
 /** Profile enriched with its role + resolved permission set (server-computed). */
@@ -67,8 +92,23 @@ export interface CurrentUser {
   full_name: string | null
   avatar_url: string | null
   status: ProfileStatus
+  /** The first role (kept for places that show one name); see `roles` for all of them. */
   role: Pick<Role, 'id' | 'name' | 'is_system'> | null
+  roles: RoleInfo[]
+  /** Union of every role's permissions. */
   permissions: Set<PermissionKey>
+  /** Derived from the roles: the first department, and every department. */
+  department_key: string | null
+  departments: string[]
+  level: 'member' | 'lead' | 'head' | null
+}
+
+/** A role as it matters for access: which department it belongs to and its rank there. */
+export interface RoleInfo {
+  id: string
+  name: string
+  department_key: string | null
+  rank: 'director' | 'employee' | null
 }
 
 export interface Client {
@@ -80,7 +120,46 @@ export interface Client {
   status: ClientStatus
   health: number | null
   notes: string | null
+  stage: ClientStage
+  budget: number | null
+  estimated_cost: number | null
+  target_live_date: string | null
+  /** Contract terms agreed in sales; see lib/deals.ts. */
+  deal: unknown | null
   created_by: string | null
+  created_at: string
+}
+
+export type ClientStage = 'group_created' | 'paperwork' | 'onboarded'
+export type PlatformStage = 'platform_creation' | 'listing' | 'pushing' | 'managing'
+export type Marketplace = 'amazon' | 'noon' | 'jumia'
+export type AccountStatus = 'not_created' | 'active' | 'at_risk' | 'suspended' | 'deactivated'
+
+/** One client × marketplace account, moving through its own stages. */
+export interface ClientPlatform {
+  id: string
+  client_id: string
+  platform: Marketplace
+  /** The stages that apply to this account, in flow order. */
+  stages: PlatformStage[]
+  stage: PlatformStage
+  account_manager_id: string | null
+  account_status: AccountStatus
+  store_name: string | null
+  seller_id: string | null
+  status_note: string | null
+  checked_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface StageEvent {
+  id: string
+  client_id: string
+  platform_id: string | null
+  from_stage: string | null
+  to_stage: string
+  actor_id: string | null
   created_at: string
 }
 
@@ -138,9 +217,24 @@ export interface Lead {
   notes: string | null
   owner_id: string | null
   converted_client_id: string | null
+  /** What they're interested in (marketplaces, contract length, package phases); see lib/deals.ts. */
+  deal: unknown | null
+  won_at: string | null
   created_by: string | null
   created_at: string
   updated_at: string
+}
+
+export type ContactMethod = 'call' | 'whatsapp' | 'sms' | 'email' | 'meeting' | 'other'
+
+export interface LeadActivity {
+  id: string
+  lead_id: string
+  method: ContactMethod
+  note: string | null
+  status_after: LeadStatus | null
+  created_by: string | null
+  created_at: string
 }
 
 export type ProductStatus = 'draft' | 'in_progress' | 'review' | 'live' | 'rejected' | 'paused'
@@ -202,6 +296,9 @@ export interface Invoice {
   issue_date: string
   due_date: string | null
   notes: string | null
+  /** First day of the month an auto-created invoice bills; null for manual invoices. */
+  billing_period: string | null
+  source: 'manual' | 'auto'
   created_by: string | null
   created_at: string
   updated_at: string
@@ -224,6 +321,9 @@ export interface Payment {
   method: string | null
   paid_at: string
   notes: string | null
+  /** 'kashier' | 'mock' when paid online; null for manual payments. */
+  gateway: string | null
+  gateway_ref: string | null
   created_by: string | null
   created_at: string
 }
@@ -352,4 +452,144 @@ export interface SocialAccount {
   is_active: boolean
   created_at: string
   updated_at: string
+}
+
+export type RequirementKind = 'client_document' | 'content_deliverable'
+export type RequirementStatus = 'pending' | 'submitted' | 'approved' | 'rejected' | 'waived'
+
+export interface RequirementTemplateItem {
+  id: string
+  template_id: string
+  label_en: string
+  label_ar: string | null
+  hint: string | null
+  required: boolean
+  position: number
+}
+
+export interface RequirementTemplate {
+  id: string
+  name: string
+  kind: RequirementKind
+  platform: Marketplace | null
+  created_at: string
+  items: RequirementTemplateItem[]
+}
+
+/** One file slot asked of a client (document) or of Content (deliverable). */
+export interface ClientRequirement {
+  id: string
+  client_id: string
+  platform_id: string | null
+  kind: RequirementKind
+  label_en: string
+  label_ar: string | null
+  hint: string | null
+  required: boolean
+  position: number
+  status: RequirementStatus
+  file_path: string | null
+  file_name: string | null
+  note: string | null
+  uploaded_by: string | null
+  submitted_at: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  created_at: string
+}
+
+export type ContractStatus = 'draft' | 'sent' | 'accepted' | 'void'
+
+export interface ContractTemplate {
+  id: string
+  name: string
+  locale: 'en' | 'ar'
+  body: string
+  created_at: string
+}
+
+export interface Contract {
+  id: string
+  client_id: string
+  template_id: string | null
+  title: string
+  locale: 'en' | 'ar'
+  body: string
+  body_sha256: string | null
+  /** The deal this contract states; shape in lib/deals.ts. */
+  terms: unknown | null
+  start_date: string | null
+  status: ContractStatus
+  sent_at: string | null
+  accepted_at: string | null
+  accepted_name: string | null
+  accepted_ip: string | null
+  accepted_ua: string | null
+  accepted_by: string | null
+  accepted_offline: boolean
+  created_by: string | null
+  created_at: string
+}
+
+export type TicketStatus = 'open' | 'in_progress' | 'waiting_client' | 'resolved' | 'closed'
+export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent'
+
+export interface Ticket {
+  id: string
+  number: string
+  client_id: string
+  platform_id: string
+  category: string
+  title: string
+  body: string | null
+  status: TicketStatus
+  priority: TicketPriority
+  source: 'portal' | 'offline'
+  created_by_client_user: string | null
+  created_by_profile: string | null
+  assignee_id: string | null
+  resolved_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TicketMessage {
+  id: string
+  ticket_id: string
+  sender_type: 'staff' | 'client'
+  sender_profile_id: string | null
+  sender_client_user_id: string | null
+  body: string
+  created_at: string
+}
+
+export type CheckoutStatus = 'created' | 'paid' | 'failed' | 'expired'
+
+export interface CheckoutSession {
+  id: string
+  invoice_id: string
+  client_id: string
+  provider: string
+  provider_session_id: string | null
+  merchant_order_id: string
+  amount: number
+  currency: string
+  status: CheckoutStatus
+  save_card: boolean
+  session_url: string | null
+  failure_reason: string | null
+  created_at: string
+  paid_at: string | null
+}
+
+/** What a browser may know about a client's saved card (never the token). */
+export interface ClientBillingPublic {
+  client_id: string
+  auto_renew: boolean
+  provider: string | null
+  card_brand: string | null
+  card_last4: string | null
+  status: 'none' | 'active' | 'failed' | 'canceled'
+  failure_count: number
+  last_charge_at: string | null
 }

@@ -17,7 +17,6 @@ import type { ClientStatus } from '@/lib/types'
 export interface ClientRow {
   id: string
   name: string
-  slug: string
   status: ClientStatus
   open: number
   overdue: number
@@ -31,7 +30,6 @@ export function ClientsTable({ rows }: { rows: ClientRow[] }) {
       <TableHeader>
         <TableRow>
           <TableHead>{t('client')}</TableHead>
-          <TableHead>{t('subdomain')}</TableHead>
           <TableHead>{t('status')}</TableHead>
           <TableHead className="text-end">{t('open')}</TableHead>
           <TableHead className="text-end">{t('overdue')}</TableHead>
@@ -41,7 +39,7 @@ export function ClientsTable({ rows }: { rows: ClientRow[] }) {
       <TableBody>
         {rows.length === 0 && (
           <TableRow>
-            <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+            <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
               {t('noClients')}
             </TableCell>
           </TableRow>
@@ -49,7 +47,6 @@ export function ClientsTable({ rows }: { rows: ClientRow[] }) {
         {rows.map((c) => (
           <LinkedTableRow key={c.id} href={`/clients/${c.id}`}>
             <TableCell className="font-medium">{c.name}</TableCell>
-            <TableCell className="text-muted-foreground">{c.slug}.flow…</TableCell>
             <TableCell>
               <ClientStatusBadge status={c.status} />
             </TableCell>

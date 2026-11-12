@@ -14,6 +14,13 @@ import type {
   SocialPillar,
   SocialFormat,
   SocialPostStatus,
+  ClientStage,
+  PlatformStage,
+  Marketplace,
+  AccountStatus,
+  RequirementKind,
+  RequirementStatus,
+  ContactMethod,
 } from '@/lib/types'
 
 /** Default trading currency for the agency. */
@@ -28,7 +35,7 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
 
 export const PAYMENT_METHODS = ['Cash', 'Bank transfer', 'InstaPay', 'Card', 'Other'] as const
 
-/** Every permission key — co-founders implicitly hold all of these. */
+/** Every permission key (the Roles screen lists them; nobody holds them implicitly any more). */
 export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'clients.view', 'clients.create', 'clients.edit', 'clients.delete',
   'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete', 'tasks.assign',
@@ -37,6 +44,17 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'chat.access', 'automation.run', 'roles.manage', 'users.invite',
   'users.manage', 'settings.manage', 'content.manage', 'products.view', 'products.manage',
   'social.view', 'social.create', 'social.publish',
+  'insights.sales', 'insights.content', 'insights.accounts', 'accounts.assign', 'tickets.view',
+  'ops.overview', 'pipeline.manage', 'settings.company', 'requirements.manage', 'contracts.manage',
+  'sales.workspace', 'content.workspace', 'accounts.workspace', 'accounts.view_all', 'tickets.manage',
+]
+
+/** Flow order. Labels live in the `internal.flow` i18n catalog. */
+export const CLIENT_STAGES: ClientStage[] = ['group_created', 'paperwork', 'onboarded']
+export const PLATFORM_STAGES: PlatformStage[] = ['platform_creation', 'listing', 'pushing', 'managing']
+export const MARKETPLACES: Marketplace[] = ['amazon', 'noon', 'jumia']
+export const ACCOUNT_STATUSES: AccountStatus[] = [
+  'not_created', 'active', 'at_risk', 'suspended', 'deactivated',
 ]
 
 export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
@@ -92,3 +110,13 @@ export const SOCIAL_POST_STATUSES: SocialPostStatus[] = [
 export const SOCIAL_OPEN_STATUSES: SocialPostStatus[] = [
   'idea', 'draft', 'needs_design', 'approved',
 ]
+
+export const REQUIREMENT_KINDS: RequirementKind[] = ['client_document', 'content_deliverable']
+export const REQUIREMENT_STATUSES: RequirementStatus[] = [
+  'pending', 'submitted', 'approved', 'rejected', 'waived',
+]
+/** Largest file the browser will try to upload (the bucket enforces 20 MB too). */
+export const MAX_UPLOAD_MB = 20
+export const CLIENT_FILES_BUCKET = 'client-files'
+
+export const CONTACT_METHODS: ContactMethod[] = ['call', 'whatsapp', 'sms', 'email', 'meeting', 'other']

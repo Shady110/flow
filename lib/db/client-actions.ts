@@ -4,15 +4,11 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { slugRe } from '@/lib/slug'
+import { makeSlug } from '@/lib/slug'
 
 
 const clientSchema = z.object({
   name: z.string().min(2, 'Name is required'),
-  slug: z
-    .string()
-    .min(2)
-    .regex(slugRe, 'Use lowercase letters, numbers and hyphens (subdomain-safe)'),
   status: z.enum(['lead', 'active', 'paused', 'churned']),
   brand_color: z.string().optional(),
   notes: z.string().optional(),
@@ -31,12 +27,13 @@ export async function createClientAction(input: unknown): Promise<ActionResult> 
 
   const { error } = await supabase.from('clients').insert({
     ...parsed.data,
+    slug: makeSlug(parsed.data.name),
     created_by: user?.id ?? null,
   })
   if (error) {
     return {
       ok: false,
-      error: error.code === '23505' ? 'That subdomain is already taken.' : error.message,
+      error: error.message,
     }
   }
   revalidatePath('/clients')

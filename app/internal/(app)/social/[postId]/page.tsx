@@ -12,7 +12,7 @@ export default async function SocialPostPage({
 }: {
   params: Promise<{ postId: string }>
 }) {
-  await requirePermission('social.view')
+  await requirePermission('social.create')
   const { postId } = await params
 
   const [post, campaigns, user, t] = await Promise.all([

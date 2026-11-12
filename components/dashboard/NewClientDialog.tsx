@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClientAction } from '@/lib/db/client-actions'
-import { slugify } from '@/lib/slug'
 import { Button } from '@/components/ds/button'
 import { Input } from '@/components/ds/input'
 import { Label } from '@/components/ds/label'
@@ -38,15 +37,13 @@ export function NewClientDialog() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
-  const [slugTouched, setSlugTouched] = useState(false)
   const [status, setStatus] = useState<ClientStatus>('lead')
   const [notes, setNotes] = useState('')
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const res = await createClientAction({ name, slug, status, notes })
+    const res = await createClientAction({ name, status, notes })
     setLoading(false)
     if (!res.ok) {
       toast.error(res.error)
@@ -55,8 +52,6 @@ export function NewClientDialog() {
     toast.success(t('clientCreated'))
     setOpen(false)
     setName('')
-    setSlug('')
-    setSlugTouched(false)
     setNotes('')
     setStatus('lead')
     router.refresh()
@@ -80,27 +75,9 @@ export function NewClientDialog() {
             <Input
               id="c-name"
               value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                if (!slugTouched) setSlug(slugify(e.target.value))
-              }}
+              onChange={(e) => setName(e.target.value)}
               required
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="c-slug">{t('subdomain')}</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id="c-slug"
-                value={slug}
-                onChange={(e) => {
-                  setSlugTouched(true)
-                  setSlug(slugify(e.target.value))
-                }}
-                required
-              />
-              <span className="whitespace-nowrap text-sm text-muted-foreground">.flow…</span>
-            </div>
           </div>
           <div className="space-y-2">
             <Label>{t('status')}</Label>
